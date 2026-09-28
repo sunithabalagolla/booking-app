@@ -3,11 +3,12 @@
 ## Last session
 
 - Date: 2026-09-28
-- Done: Git set up for the personal GitHub account (local config, SSH host `github-personal`). Renamed `docs/requirements (1).md` to `docs/requirements.md`. Created the folder structure from 15.1 (empty folders with `.gitkeep`) and `.gitignore`. First commit pushed to `origin main`.
+- Done: Task 0.3. Client created in `client/` with Vite 8 + React 19 (JavaScript) and React Router 8 (`react-router` package; `RouterProvider` is imported from `react-router/dom`). Routes in `client/src/router.jsx`: placeholder Home page (`/`) and Not found page (`*`). Demo code, logos and CSS removed. Lint (oxlint, from the Vite starter) and build pass; dev server runs on http://localhost:5173.
+- Decisions: JavaScript (not TypeScript). `concurrently` is approved; add it when the root `package.json` is made.
 
 ## Next step
 
-- Phase 0, task 0.3: Client: Vite + React + React Router.
+- Phase 0, task 0.4: Server: Express + folder structure.
 
 ## Known bugs
 
@@ -25,7 +26,7 @@
 ## Phase 0 – Setup
 - [x] 0.1 Folder structure + `git init` + first commit (15.1)
 - [x] 0.2 `CLAUDE.md` + `docs/progress.md` in place
-- [ ] 0.3 Client: Vite + React + React Router
+- [x] 0.3 Client: Vite + React + React Router
 - [ ] 0.4 Server: Express + folder structure
 - [ ] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
 - [ ] 0.6 MongoDB connection + `.env.example`

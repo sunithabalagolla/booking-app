@@ -42,4 +42,6 @@ Project: **Talkies** – movie ticket booking app (MERN) with a vintage 70s–80
 - Seed test data: `npm run seed`
 - Tests: `npm test`
 
+Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5173), `npm run build`, `npm run lint`
+
 (Update this list when the real scripts are created.)
