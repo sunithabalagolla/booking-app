@@ -34,7 +34,7 @@
 - [ ] 0.8 Write `docs/api.md` (all endpoints)
 - [ ] 0.9 Developer reviews database.md and api.md
 - [ ] 0.10 Seed script skeleton (`npm run seed`)
-- [ ] 0.11 Test setup (Jest + Supertest + mongodb-memory-server)
+- [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server)
 
 ## Phase 1 – Auth and roles
 - [ ] U-01 Sign up + verify email

@@ -70,7 +70,7 @@ This file is the single source of truth for the project. Claude CLI (Claude Code
 | Excel export | `exceljs` |
 | Background jobs | `node-cron` |
 | PWA / offline | `vite-plugin-pwa` |
-| Tests | Jest + Supertest + `mongodb-memory-server` |
+| Tests | Vitest + Supertest + `mongodb-memory-server` |
 | Security middleware | helmet, cors, express-rate-limit |
 
 Before installing, check each package's current version and docs. If a package is not suitable, ask before replacing it.
@@ -530,7 +530,7 @@ booking-app/
 5. Connect MongoDB (local or Atlas free tier); add `.env.example`.
 6. Write `docs/database.md` (all collections, fields, indexes) and `docs/api.md` (all endpoints) from this file. **Developer reviews them before Phase 1.**
 7. Add the seed script skeleton (`npm run seed`).
-8. Add test setup (Jest + Supertest + mongodb-memory-server).
+8. Add test setup (Vitest + Supertest + mongodb-memory-server).
 
 ### 15.3 Build phases
 
