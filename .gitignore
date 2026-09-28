@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Secrets (SEC-07) - never commit .env
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
