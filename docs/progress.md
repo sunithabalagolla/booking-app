@@ -3,12 +3,14 @@
 ## Last session
 
 - Date: 2026-09-28
-- Done: Task 0.3. Client created in `client/` with Vite 8 + React 19 (JavaScript) and React Router 8 (`react-router` package; `RouterProvider` is imported from `react-router/dom`). Routes in `client/src/router.jsx`: placeholder Home page (`/`) and Not found page (`*`). Demo code, logos and CSS removed. Lint (oxlint, from the Vite starter) and build pass; dev server runs on http://localhost:5173.
-- Decisions: JavaScript (not TypeScript). `concurrently` is approved; add it when the root `package.json` is made.
+- Done: Task 0.4. Server in `server/` with Express 5 (ES modules). `src/app.js` builds the app (JSON body, `GET /api/health` → `{ "status": "ok" }`, 404 for other `/api` paths) and does not listen, so tests can import it. `src/server.js` starts it on `PORT` (default 5000). Scripts: `npm run dev` (`node --watch`), `npm start`. Checked with curl: health 200, unknown path 404.
+- Earlier today: task 0.3, client with Vite 8 + React 19 + React Router 8 (`RouterProvider` from `react-router/dom`).
+- Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest (requirements Section 2 and 15.2 updated). No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
 
 ## Next step
 
-- Phase 0, task 0.4: Server: Express + folder structure.
+- Phase 0, task 0.5: Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05).
+- Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
 
 ## Known bugs
 
@@ -27,7 +29,7 @@
 - [x] 0.1 Folder structure + `git init` + first commit (15.1)
 - [x] 0.2 `CLAUDE.md` + `docs/progress.md` in place
 - [x] 0.3 Client: Vite + React + React Router
-- [ ] 0.4 Server: Express + folder structure
+- [x] 0.4 Server: Express + folder structure
 - [ ] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
 - [ ] 0.6 MongoDB connection + `.env.example`
 - [ ] 0.7 Write `docs/database.md` (collections, fields, indexes)

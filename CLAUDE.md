@@ -43,5 +43,6 @@ Project: **Talkies** – movie ticket booking app (MERN) with a vintage 70s–80
 - Tests: `npm test`
 
 Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5173), `npm run build`, `npm run lint`
+Server only (works now, run inside `server/`): `npm run dev` (watch mode, http://localhost:5000), `npm start`. Check: http://localhost:5000/api/health
 
 (Update this list when the real scripts are created.)
