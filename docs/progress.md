@@ -5,6 +5,7 @@
 - Date: 2026-09-29
 - Done: Task 0.5. Tailwind v4.3.3 (`tailwindcss` + `@tailwindcss/vite`) in the client. Tailwind v4 has no `tailwind.config.js`: the theme lives in `client/src/theme/theme.css` inside `@theme { }` (colours UI-01, fonts UI-03, radius UI-05). This gives classes like `bg-maroon`, `font-heading`, `rounded-card` and CSS variables like `var(--color-maroon)`. Base style: cream page, ink text, Courier Prime body. Night show (UI-02) follows the phone/browser dark setting (`prefers-color-scheme`). Own classes: `tear-line` and `stamp`. Google Fonts (Rye, Special Elite, Courier Prime) linked in `client/index.html`. Empty `client/src/theme/motion.js`. `HomePage.jsx` is a theme test page for now. Build and lint pass.
 - Also done: UI-02 theme switch (requirements.md updated first). Auto (default) / Day show / Night show. Auto uses device time: 6:00 AM–6:59 PM Day, 7:00 PM–5:59 AM Night, checked every minute. Files: `client/src/theme/themeMode.js` (rules + localStorage), `client/src/store/themeStore.js` (Zustand, installed), `client/src/theme/ThemeManager.jsx` (puts `data-theme` on `<html>`, 1-minute Auto check), `client/src/components/ui/ThemeSwitch.jsx` (sun/moon button, small menu with tick). Small script in `index.html` sets the theme before the page shows (no flash) — keep it the same as `themeMode.js`. Fade 500 ms (from `motion.js`) with the View Transitions API, opacity only; instant with reduce motion or old browsers. `dark:` classes now follow `data-theme="night"`, not the phone setting. Switch is on the test Home page until the header exists. Checked in the browser: menu, tick, save, reload, Escape.
+- Docs: requirements.md updated: intro order decided (Projector first, then Curtain opens onto Home; one Skip skips both), new UI-45 film grain + flicker, UI-46 sepia posters, UI-47 "Behind the scenes" blueprint page (all Phase 10). Section 17 updated.
 - Notes: never use gold text on cream (fails 4.5:1 contrast); in dark mode headings and stamps use gold instead of maroon. Paper texture (UI-04) is left for later, only on big panels, never behind small text.
 - Earlier: 0.3 client (Vite 8 + React 19 + React Router 8), 0.4 server (Express 5, ES modules, `GET /api/health`).
 - Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest. No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
@@ -21,10 +22,11 @@
 
 ## Open questions
 
-- [ ] Intro: Curtain then Projector, or only one? (until decided: build both components, use Curtain only – as in requirements.md Section 17)
 - [ ] Commission % starting value
 - [ ] GST rates and HSN/SAC codes (confirm with a CA)
 - [ ] Hosting for the test URL
+- [ ] UI-45 grain covers the whole site, but UI-04 and 16.8 say texture is "never behind small text". Is very light grain behind small text OK if contrast stays 4.5:1?
+- [ ] UI-46 on phones: tapping a poster usually opens the movie. Should the first tap show colour and the second tap open the movie, or should the tap open the movie straight away?
 
 ---
 
@@ -133,13 +135,15 @@
 - [ ] SF-07 Last-minute deals, JOB-05
 
 ## Phase 10 – Vintage polish
-- [ ] UI-11 Curtain intro
-- [ ] UI-12 Projector intro
+- [ ] UI-12 Projector intro, then UI-11 Curtain intro (order decided; one Skip skips both)
 - [ ] All animations in 16.4
 - [ ] UI-36 Error pages, UI-44 Empty states
 - [ ] U-24 Badges
 - [ ] UI-26 Ticker + A-11 Banners
 - [ ] UI-40 Sound, UI-41 Reduce motion
+- [ ] UI-45 Film grain + flicker
+- [ ] UI-46 Sepia posters (full colour on hover / tap)
+- [ ] UI-47 "Behind the scenes" blueprint page (footer link)
 
 ## Phase 11 – Extras
 - [ ] U-23 Reviews + A-12 Moderation

@@ -548,7 +548,7 @@ Finish and test each phase before the next. After each phase: update `progress.m
 | 7 | Gate staff scanner + check-in, staff accounts, food pickup, check-in report | S-02–S-05, O-09–O-11, 9.7 | Same QR twice is rejected |
 | 8 | Dashboards, reports, payouts, users, audit log | O-02, O-13, O-14, A-01, A-07–A-10, A-14, 9.9, JOB-06 | Numbers match bookings |
 | 9 | Special features | SF-01–SF-07, U-11, U-21, U-22, 9.8, JOB-03, JOB-05, E-06, E-07 | Each SF works as written |
-| 10 | Vintage polish: intros, all animations, error pages, empty states, badges, ticker, sound, reduce motion | UI-10–UI-41, U-24, A-11, E-08 | Matches the preview design; reduce motion works |
+| 10 | Vintage polish: intros, all animations, error pages, empty states, badges, ticker, sound, reduce motion | UI-10–UI-47, U-24, A-11, E-08 | Matches the preview design; reduce motion works |
 | 11 | Reviews, help desk, policy pages, delete account, offline PWA, slow phones | U-23, U-26–U-28, A-12, A-13, NF-01, NF-06, E-09, E-10 | — |
 | 12 | Final: all tests pass, security check, deploy | Section 13, T-01–T-08 | App live on a test URL |
 
@@ -603,7 +603,9 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 ### 16.2 Intros (user side only)
 
-**UI-10 Where intros play**: only on the first screen when a user opens the website, before Home; once per browser session (sessionStorage flag). Never on owner/admin dashboards, staff scanner or direct links (e.g. a ticket link from email). "Skip" button always visible. Auto-skip on slow phones (NF-06). Decision open: Curtain first then Projector, or only one (Section 17).
+**UI-10 Where intros play**: only on the first screen when a user opens the website, before Home; once per browser session (sessionStorage flag). Never on owner/admin dashboards, staff scanner or direct links (e.g. a ticket link from email). "Skip" button always visible. Auto-skip on slow phones (NF-06).
+
+**Intro order (decided)**: Projector intro (UI-12) plays first, then the Curtain intro (UI-11) opens onto Home. One "Skip" button skips both and goes straight to Home.
 
 **UI-11 Curtain intro (`CurtainIntro`)**
 - Dark stage (#1E140E). Centre: row of blinking gold bulbs, "Talkies" (Rye, gold, ~52 px), "The show is about to begin" (Special Elite), another bulb row.
@@ -624,7 +626,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 | 3. Projector on | 1.8–2.2 s | Reels start spinning; light beam flickers on from the lens, over the heads, to the screen |
 | 4. Countdown | 2.4–5.2 s | Old film countdown circle with a sweeping line: 3 → 2 → 1 |
 | 5. Title + clapping | 5.4–8.3 s | "Talkies" (Rye, maroon) + "Now showing in your city" on the screen; audience raises hands and claps |
-| 6. End | 8.5–9 s | Fade out, Home shows |
+| 6. End | 8.5–9 s | Fade out, Curtain intro (UI-11) starts |
 
 - Audience (70s–80s Indian look), simple shapes (head circle, rounded shoulders, 2 hands): men in colourful shirts (mustard, blue, cream, rust, olive, brown) with white collars; women in sarees (green, maroon, rust, purple, blue) with a gold or cream pallu border across the shoulder and a hair bun with white jasmine (gajra). Every head sways slowly (each a little out of step); one person holds a red-and-cream striped popcorn box; clapping about 0.3 s per clap.
 - Reels: black reel with 4 spokes, grey wound film between spokes, gold hub; a dark film strip with sprocket holes between the two reels. Projector: dark box with "PROJECTOR" label and a lens on top.
@@ -681,6 +683,8 @@ Approved preview (private link, only for the developer to look at): https://clau
 - Tables look like register pages with column lines; numbers in Courier Prime; status as tilted rubber stamps: Paid / Approved (green), Pending (dark mustard #8A5A00), Cancelled / Rejected (maroon).
 - Charts hand-drawn with Rough.js (ink brown and maroon, gold for highlight), drawn in once on load.
 
+**UI-47 "Behind the scenes" page** (public, link in the footer): designed like an old cinema blueprint: blue paper, white lines, typewriter labels (Special Elite). Shows the architecture diagram, the tech stack (Section 2) and how seat locking works (9.3). Built in Phase 10.
+
 **UI-31 Staff scanner**: full-screen camera box framed like an old ticket window; big "Type booking number" link; result stamps (UI-35).
 
 ### 16.4 Animations (all)
@@ -704,6 +708,8 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | UI-42 | ProjectorBeam | Mouse over movie card (desktop only) | Soft warm light cone from the top of the card with floating dust | Hover | None |
 | UI-43 | Ink chart draw | Dashboard charts | Rough.js chart draws in | 800 ms | Shows directly |
 | UI-02 | Theme change | Day show ↔ Night show (switch or Auto) | Whole page cross-fades (opacity) | 500 ms | Instant |
+| UI-45 | FilmGrain | Always, whole site | Very light grain + soft flicker (CSS only) | Loop | Off |
+| UI-46 | SepiaPoster | Hover (desktop) / tap (phone) on a poster | Sepia poster turns full colour (done with opacity: colour layer fades in) | 600 ms | Instant colour change |
 
 ### 16.5 Messages with an Indian touch (English)
 
@@ -734,7 +740,13 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 - UI-40 Sounds (off by default): projector whirr (intro/loading), clapperboard clap and audience applause (projector intro), ticket punch (booking confirmed), stamp thud (gate scan). Speaker icon in the header turns sound on/off; saved per user. Short (under 2 s), low volume, never before the user's first click (browsers block it). Use free sound files whose licence allows use in apps; write the source of each file in `docs/credits.md`.
 - UI-41 Reduce motion: setting in profile + follows the phone/browser "reduce motion" setting. When on, use the fallbacks in 16.4.
 
-### 16.7 UI rules
+### 16.7 Vintage extras
+
+- UI-45 Film grain + flicker: very light grain and soft flicker over the whole site. CSS only, `pointer-events: none` (never blocks clicks). Off when reduce motion is on (UI-41) or on slow phones (NF-06). Never lowers text readability (contrast stays at least 4.5:1).
+- UI-46 Sepia posters: posters show in sepia; on hover (desktop) or tap (phone) they turn to full colour in 0.6 s, like old film coming alive.
+- UI-47 "Behind the scenes" page: see 16.3.
+
+### 16.8 UI rules
 
 - Text always easy to read: contrast 4.5:1; textures very light and never behind small text.
 - Touch targets at least 44 × 44 px.
@@ -761,11 +773,13 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | Convenience fee | ₹30 per ticket |
 | Theme | "Talkies" vintage nostalgic theme on all screens |
 | Intros | User side only, once per session |
+| Intro order | Projector intro first, then Curtain opens onto Home; one Skip button skips both |
 | Progress tracking | `CLAUDE.md` + `docs/progress.md` + git commits (not Excel) |
 
 ### Open questions (ask the developer; do not decide alone)
 
-- [ ] Intro: Curtain first then Projector, or only one? Until decided, build both components; use Curtain only.
 - [ ] Commission % starting value.
 - [ ] GST rates and HSN/SAC codes (confirm with a CA).
 - [ ] Hosting for the test URL (Phase 12).
+- [ ] UI-45 grain covers the whole site, but UI-04 and 16.8 say texture is "never behind small text". Is very light grain behind small text OK if contrast stays 4.5:1?
+- [ ] UI-46 on phones: tapping a poster usually opens the movie. Should the first tap show colour and the second tap open the movie, or should the tap open the movie straight away?
