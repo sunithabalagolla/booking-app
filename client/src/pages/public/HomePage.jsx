@@ -1,5 +1,6 @@
 // Placeholder until U-05 (Home page) is built in Phase 3.
 // For now it shows the Talkies theme (UI-01 to UI-05) so we can check it.
+import ThemeSwitch from '../../components/ui/ThemeSwitch.jsx'
 
 const colours = [
   { name: 'Paper cream', className: 'bg-cream', dark: false },
@@ -15,8 +16,12 @@ const colours = [
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-4">
-      {/* Maroon is too dark on the Night show background, so headings turn gold */}
-      <h1 className="font-heading text-4xl text-maroon dark:text-gold">Talkies – coming soon</h1>
+      <div className="flex items-start justify-between gap-4">
+        {/* Maroon is too dark on the Night show background, so headings turn gold */}
+        <h1 className="font-heading text-4xl text-maroon dark:text-gold">Talkies – coming soon</h1>
+        {/* UI-02 switch lives here until the real header is built in Phase 1 */}
+        <ThemeSwitch />
+      </div>
 
       <section className="space-y-2">
         <h2 className="font-type text-xl">Colours (UI-01)</h2>

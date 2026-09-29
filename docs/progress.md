@@ -4,6 +4,7 @@
 
 - Date: 2026-09-29
 - Done: Task 0.5. Tailwind v4.3.3 (`tailwindcss` + `@tailwindcss/vite`) in the client. Tailwind v4 has no `tailwind.config.js`: the theme lives in `client/src/theme/theme.css` inside `@theme { }` (colours UI-01, fonts UI-03, radius UI-05). This gives classes like `bg-maroon`, `font-heading`, `rounded-card` and CSS variables like `var(--color-maroon)`. Base style: cream page, ink text, Courier Prime body. Night show (UI-02) follows the phone/browser dark setting (`prefers-color-scheme`). Own classes: `tear-line` and `stamp`. Google Fonts (Rye, Special Elite, Courier Prime) linked in `client/index.html`. Empty `client/src/theme/motion.js`. `HomePage.jsx` is a theme test page for now. Build and lint pass.
+- Also done: UI-02 theme switch (requirements.md updated first). Auto (default) / Day show / Night show. Auto uses device time: 6:00 AM–6:59 PM Day, 7:00 PM–5:59 AM Night, checked every minute. Files: `client/src/theme/themeMode.js` (rules + localStorage), `client/src/store/themeStore.js` (Zustand, installed), `client/src/theme/ThemeManager.jsx` (puts `data-theme` on `<html>`, 1-minute Auto check), `client/src/components/ui/ThemeSwitch.jsx` (sun/moon button, small menu with tick). Small script in `index.html` sets the theme before the page shows (no flash) — keep it the same as `themeMode.js`. Fade 500 ms (from `motion.js`) with the View Transitions API, opacity only; instant with reduce motion or old browsers. `dark:` classes now follow `data-theme="night"`, not the phone setting. Switch is on the test Home page until the header exists. Checked in the browser: menu, tick, save, reload, Escape.
 - Notes: never use gold text on cream (fails 4.5:1 contrast); in dark mode headings and stamps use gold instead of maroon. Paper texture (UI-04) is left for later, only on big panels, never behind small text.
 - Earlier: 0.3 client (Vite 8 + React 19 + React Router 8), 0.4 server (Express 5, ES modules, `GET /api/health`).
 - Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest. No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
@@ -12,7 +13,7 @@
 
 - Phase 0, task 0.6: MongoDB connection + `.env.example`.
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
-- Developer to check the theme test page in the browser (light and dark mode).
+- Developer to check the theme test page in the browser (use the sun/moon switch).
 
 ## Known bugs
 
@@ -27,12 +28,22 @@
 
 ---
 
+## UI-02 theme switch – later tasks
+- [ ] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
+- [ ] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8)
+- [ ] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
+- [ ] Move `ThemeSwitch` from the test Home page into the real header (Phase 1, basic vintage layout)
+- [ ] Save the choice in the user profile when logged in; profile choice wins over localStorage (Phase 1 login + U-25)
+- [ ] Theme choice in Profile (U-25 / UI-29)
+- [ ] Reduce motion setting in Profile also turns off the theme fade (UI-41, Phase 10). Until then it follows the phone setting
+
 ## Phase 0 – Setup
 - [x] 0.1 Folder structure + `git init` + first commit (15.1)
 - [x] 0.2 `CLAUDE.md` + `docs/progress.md` in place
 - [x] 0.3 Client: Vite + React + React Router
 - [x] 0.4 Server: Express + folder structure
 - [x] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
+- [x] UI-02 Theme switch Auto / Day show / Night show (localStorage for guests)
 - [ ] 0.6 MongoDB connection + `.env.example`
 - [ ] 0.7 Write `docs/database.md` (collections, fields, indexes)
 - [ ] 0.8 Write `docs/api.md` (all endpoints)

@@ -10,6 +10,17 @@
     href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Rye&family=Special+Elite&display=swap"
     rel="stylesheet" />
   <title>Talkies</title>
+  <script>
+    // UI-02: set Day show / Night show before the page shows, so it never flashes the wrong colours.
+    // Same rules as src/theme/themeMode.js - change both together.
+    (function () {
+      var choice = 'auto'
+      try { choice = localStorage.getItem('talkies-theme') || 'auto' } catch (e) {}
+      var hour = new Date().getHours()
+      var theme = choice === 'day' || choice === 'night' ? choice : (hour >= 6 && hour < 19 ? 'day' : 'night')
+      document.documentElement.dataset.theme = theme
+    })()
+  </script>
 </head>
 
 <body>

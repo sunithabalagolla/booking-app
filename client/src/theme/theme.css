@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* UI-02: dark: classes follow the theme switch (data-theme="night" on <html>),
+   not the phone's dark setting */
+@custom-variant dark (&:where([data-theme="night"], [data-theme="night"] *));
+
 /* UI-01 colours, UI-03 fonts, UI-05 shapes */
 @theme {
   --color-cream: #F3E9D2;        /* paper cream */
@@ -20,16 +24,31 @@
 }
 
 @layer base {
+  /* UI-02 Day show (default) */
+  html {
+    color-scheme: light;
+  }
   body {
     @apply bg-cream text-ink font-body;
   }
 
-  /* UI-02 Night show: follows the phone/browser dark setting */
-  @media (prefers-color-scheme: dark) {
-    body {
-      @apply bg-stage text-cream;
-    }
+  /* UI-02 Night show */
+  html[data-theme="night"] {
+    color-scheme: dark;
   }
+  html[data-theme="night"] body {
+    @apply bg-stage text-cream;
+  }
+}
+
+/* UI-02 theme fade: the browser cross-fades the old and new page (opacity only).
+   Duration comes from motion.js. Clicks go through while it fades. */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--theme-fade, 500ms);
 }
 
 /* UI-05 dotted tear line on tickets */

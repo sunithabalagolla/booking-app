@@ -160,7 +160,7 @@ Put these in a settings collection so admin can change them later (except where 
 | U-22 | Waitlist | See SF-04. | — |
 | U-23 | Reviews | Rate 1–5 and write a review (BR-24). Admin can hide reviews (A-12). | Only allowed users can review |
 | U-24 | Jubilee badges | BR-23. Shown on profile and in the ticket album. New badge = medal drop animation + email. | Badge appears after the right number of "Entered" scans |
-| U-25 | Profile | Edit name and phone, change password, sound on/off (UI-40), reduce motion (UI-41). | Changes saved |
+| U-25 | Profile | Edit name and phone, change password, sound on/off (UI-40), reduce motion (UI-41), theme Auto / Day show / Night show (UI-02). | Changes saved |
 | U-26 | Delete account | Personal data removed; booking and invoice records needed for GST are kept without personal details. Confirm with password. | Login no longer works; invoices still exist without name/email |
 | U-27 | Help and support | FAQ page + "Raise an issue" form linked to a booking. User sees replies and gets email. | Issue created and visible to admin |
 | U-28 | Policy pages | Terms, Privacy, Refund and Cancellation, Contact Us (footer links). | Pages exist |
@@ -590,7 +590,13 @@ Approved preview (private link, only for the developer to look at): https://clau
 | UI-01 | Light cream | #E8D9B5 | Available seats, soft panels |
 | UI-01 | Stage dark | #1E140E | Intro background, dark mode base |
 
-- UI-02 Dark mode = "Night show": stage dark / ink brown background, cream text, same accents.
+- UI-02 Theme switch: 3 options — **Auto** (default), **Day show**, **Night show**.
+  - Day show = paper cream background, ink brown text. Night show = stage dark / ink brown background, cream text, same accents.
+  - Auto follows the device's local time: 6:00 AM–6:59 PM = Day show, 7:00 PM–5:59 AM = Night show. Check every minute and switch by itself.
+  - Switch in the header (sun/moon icon) and in Profile. Tapping the icon opens a small menu: Auto / Day show / Night show, with a tick on the current choice.
+  - Save the choice: localStorage for guests, user profile when logged in. When logged in, the profile choice wins.
+  - Theme change uses a 0.5 s fade; instant when reduce motion is on.
+  - Same for all roles.
 - UI-03 Fonts (Google Fonts): **Rye** (headings, "Admit one", stamps, Housefull), **Special Elite** (typewriter: movie titles, labels), **Courier Prime** (body text, numbers, prices, tables). Fallbacks: Georgia (Rye), Courier New / monospace (others).
 - UI-04 Look: flat design, thin ink borders, light paper texture and film grain (very light, never behind small text), sepia tint on posters. No heavy shadows, no glossy gradients.
 - UI-05 Shapes: buttons 6 px radius; cards 8 px; ticket edges with dotted tear line; stamps are bordered text slightly rotated (−6° to −14°).
@@ -627,7 +633,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 ### 16.3 Screens
 
-**UI-15 Home**: dark ticker strip at top (UI-26) → header ("Talkies" logo in Rye maroon, city picker, sound icon) → marquee banner (maroon box, blinking gold bulb rows top and bottom, "Now showing" in gold, movie title in Special Elite, certificate + language, gold "Book tickets" button) → "Now showing" 2-column grid (posters with film-strip holes on top and bottom edges, title, certificate + language) → "Coming soon" row → bottom navigation (Home, Ticket album, Profile).
+**UI-15 Home**: dark ticker strip at top (UI-26) → header ("Talkies" logo in Rye maroon, city picker, sound icon, theme switch UI-02) → marquee banner (maroon box, blinking gold bulb rows top and bottom, "Now showing" in gold, movie title in Special Elite, certificate + language, gold "Book tickets" button) → "Now showing" 2-column grid (posters with film-strip holes on top and bottom edges, title, certificate + language) → "Coming soon" row → bottom navigation (Home, Ticket album, Profile).
 
 **UI-16 Movie details**: poster in a thin film-strip frame, sepia tint; title in Special Elite; certificate stamp; trailer button; cast as small "photo cards"; reviews as typewritten notes.
 
@@ -665,7 +671,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 **UI-28 Ticket album**: scrapbook: cream pages; each booking a paper ticket "pasted" with a small tape piece, slightly tilted. Upcoming (full ticket with QR) on top; past as stubs with stamps "Watched" / "Cancelled" / "Transferred". Tap for details and invoice. Badges shown at the top as metal medals.
 
-**UI-29 Profile**: medals (badges), settings (sound, reduce motion), account.
+**UI-29 Profile**: medals (badges), settings (sound, reduce motion, theme UI-02), account.
 
 **UI-30 Owner and admin dashboards: box office register**
 - Left sidebar (ink brown): logo, menu items for that role.
@@ -697,6 +703,7 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | UI-39 | Medal drop | New badge | Medal drops in and settles | 600 ms | Appears |
 | UI-42 | ProjectorBeam | Mouse over movie card (desktop only) | Soft warm light cone from the top of the card with floating dust | Hover | None |
 | UI-43 | Ink chart draw | Dashboard charts | Rough.js chart draws in | 800 ms | Shows directly |
+| UI-02 | Theme change | Day show ↔ Night show (switch or Auto) | Whole page cross-fades (opacity) | 500 ms | Instant |
 
 ### 16.5 Messages with an Indian touch (English)
 
