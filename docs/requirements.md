@@ -598,7 +598,7 @@ Approved preview (private link, only for the developer to look at): https://clau
   - Theme change uses a 0.5 s fade; instant when reduce motion is on.
   - Same for all roles.
 - UI-03 Fonts (Google Fonts): **Rye** (headings, "Admit one", stamps, Housefull), **Special Elite** (typewriter: movie titles, labels), **Courier Prime** (body text, numbers, prices, tables). Fallbacks: Georgia (Rye), Courier New / monospace (others).
-- UI-04 Look: flat design, thin ink borders, light paper texture and film grain (very light, never behind small text), sepia tint on posters. No heavy shadows, no glossy gradients.
+- UI-04 Look: flat design, thin ink borders, light paper texture and film grain (very light: max 3–4% opacity; allowed behind small text only if text keeps 4.5:1 contrast), sepia tint on posters. No heavy shadows, no glossy gradients.
 - UI-05 Shapes: buttons 6 px radius; cards 8 px; ticket edges with dotted tear line; stamps are bordered text slightly rotated (−6° to −14°).
 
 ### 16.2 Intros (user side only)
@@ -709,7 +709,7 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | UI-43 | Ink chart draw | Dashboard charts | Rough.js chart draws in | 800 ms | Shows directly |
 | UI-02 | Theme change | Day show ↔ Night show (switch or Auto) | Whole page cross-fades (opacity) | 500 ms | Instant |
 | UI-45 | FilmGrain | Always, whole site | Very light grain + soft flicker (CSS only) | Loop | Off |
-| UI-46 | SepiaPoster | Hover (desktop) / tap (phone) on a poster | Sepia poster turns full colour (done with opacity: colour layer fades in) | 600 ms | Instant colour change |
+| UI-46 | SepiaPoster | Hover (desktop) / poster scrolls into view (phone) | Sepia poster turns full colour (done with opacity: colour layer fades in) | 600 ms | Instant colour change |
 
 ### 16.5 Messages with an Indian touch (English)
 
@@ -742,13 +742,13 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 
 ### 16.7 Vintage extras
 
-- UI-45 Film grain + flicker: very light grain and soft flicker over the whole site. CSS only, `pointer-events: none` (never blocks clicks). Off when reduce motion is on (UI-41) or on slow phones (NF-06). Never lowers text readability (contrast stays at least 4.5:1).
-- UI-46 Sepia posters: posters show in sepia; on hover (desktop) or tap (phone) they turn to full colour in 0.6 s, like old film coming alive.
+- UI-45 Film grain + flicker: very light grain and soft flicker over the whole site. CSS only, `pointer-events: none` (never blocks clicks). Off when reduce motion is on (UI-41) or on slow phones (NF-06). Never lowers text readability: max 3–4% opacity, text contrast stays at least 4.5:1.
+- UI-46 Sepia posters: posters show in sepia and turn to full colour in 0.6 s, like old film coming alive. Desktop: on hover. Phone: by themselves when they scroll into view (a tap opens the movie straight away).
 - UI-47 "Behind the scenes" page: see 16.3.
 
 ### 16.8 UI rules
 
-- Text always easy to read: contrast 4.5:1; textures very light and never behind small text.
+- Text always easy to read: contrast 4.5:1. Textures and grain very light (max 3–4% opacity); behind small text only if it keeps 4.5:1 contrast.
 - Touch targets at least 44 × 44 px.
 - Animations short (under 1 s) except the intros and loops.
 - Same vintage look on every screen, but dashboards stay clean and fast for work.
@@ -781,5 +781,3 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 - [ ] Commission % starting value.
 - [ ] GST rates and HSN/SAC codes (confirm with a CA).
 - [ ] Hosting for the test URL (Phase 12).
-- [ ] UI-45 grain covers the whole site, but UI-04 and 16.8 say texture is "never behind small text". Is very light grain behind small text OK if contrast stays 4.5:1?
-- [ ] UI-46 on phones: tapping a poster usually opens the movie. Should the first tap show colour and the second tap open the movie, or should the tap open the movie straight away?
