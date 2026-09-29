@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* UI-01 colours, UI-03 fonts, UI-05 shapes */
+@theme {
+  --color-cream: #F3E9D2;        /* paper cream */
+  --color-maroon: #7B1E1E;       /* curtain maroon */
+  --color-gold: #D9A441;         /* marquee gold */
+  --color-green: #2F5D50;        /* bottle green */
+  --color-ink: #3B2A20;          /* ink brown */
+  --color-wood: #6B4A2E;         /* wood brown */
+  --color-cream-light: #E8D9B5;  /* light cream */
+  --color-stage: #1E140E;        /* stage dark */
+
+  --font-heading: "Rye", Georgia, serif;
+  --font-type: "Special Elite", "Courier New", monospace;
+  --font-body: "Courier Prime", "Courier New", monospace;
+
+  --radius-btn: 6px;
+  --radius-card: 8px;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-body;
+  }
+
+  /* UI-02 Night show: follows the phone/browser dark setting */
+  @media (prefers-color-scheme: dark) {
+    body {
+      @apply bg-stage text-cream;
+    }
+  }
+}
+
+/* UI-05 dotted tear line on tickets */
+@utility tear-line {
+  border-top: 2px dotted var(--color-ink);
+}
+
+/* UI-05 rubber stamp: bordered text, slightly tilted (-6° to -14°) */
+@utility stamp {
+  display: inline-block;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  padding: 0.1rem 0.6rem;
+  transform: rotate(-8deg);
+}

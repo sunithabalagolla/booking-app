@@ -2,15 +2,17 @@
 
 ## Last session
 
-- Date: 2026-09-28
-- Done: Task 0.4. Server in `server/` with Express 5 (ES modules). `src/app.js` builds the app (JSON body, `GET /api/health` → `{ "status": "ok" }`, 404 for other `/api` paths) and does not listen, so tests can import it. `src/server.js` starts it on `PORT` (default 5000). Scripts: `npm run dev` (`node --watch`), `npm start`. Checked with curl: health 200, unknown path 404.
-- Earlier today: task 0.3, client with Vite 8 + React 19 + React Router 8 (`RouterProvider` from `react-router/dom`).
-- Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest (requirements Section 2 and 15.2 updated). No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
+- Date: 2026-09-29
+- Done: Task 0.5. Tailwind v4.3.3 (`tailwindcss` + `@tailwindcss/vite`) in the client. Tailwind v4 has no `tailwind.config.js`: the theme lives in `client/src/theme/theme.css` inside `@theme { }` (colours UI-01, fonts UI-03, radius UI-05). This gives classes like `bg-maroon`, `font-heading`, `rounded-card` and CSS variables like `var(--color-maroon)`. Base style: cream page, ink text, Courier Prime body. Night show (UI-02) follows the phone/browser dark setting (`prefers-color-scheme`). Own classes: `tear-line` and `stamp`. Google Fonts (Rye, Special Elite, Courier Prime) linked in `client/index.html`. Empty `client/src/theme/motion.js`. `HomePage.jsx` is a theme test page for now. Build and lint pass.
+- Notes: never use gold text on cream (fails 4.5:1 contrast); in dark mode headings and stamps use gold instead of maroon. Paper texture (UI-04) is left for later, only on big panels, never behind small text.
+- Earlier: 0.3 client (Vite 8 + React 19 + React Router 8), 0.4 server (Express 5, ES modules, `GET /api/health`).
+- Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest. No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
 
 ## Next step
 
-- Phase 0, task 0.5: Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05).
+- Phase 0, task 0.6: MongoDB connection + `.env.example`.
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
+- Developer to check the theme test page in the browser (light and dark mode).
 
 ## Known bugs
 
@@ -30,7 +32,7 @@
 - [x] 0.2 `CLAUDE.md` + `docs/progress.md` in place
 - [x] 0.3 Client: Vite + React + React Router
 - [x] 0.4 Server: Express + folder structure
-- [ ] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
+- [x] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
 - [ ] 0.6 MongoDB connection + `.env.example`
 - [ ] 0.7 Write `docs/database.md` (collections, fields, indexes)
 - [ ] 0.8 Write `docs/api.md` (all endpoints)
