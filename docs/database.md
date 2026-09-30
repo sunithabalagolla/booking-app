@@ -39,6 +39,26 @@ Code uses `session.withTransaction(...)`, which retries by itself on temporary t
 | Show cancelled (O-06, JOB-04) | Per booking, the same steps as cancel, with 100% refund |
 | Ticket transfer (SF-02) | `bookings` owner / QR nonce change + `transfer` data |
 
+## 2a. Prices include GST – how GST is calculated back
+
+All prices typed by owners and admin **include GST**: ticket prices, food prices and the convenience fee (₹200 = the user pays ₹200). The invoice shows the taxable value + CGST + SGST, **calculated back** from the price. Rates come from settings (BR-20). CGST + SGST are always of the theatre's state (11.3).
+
+For each invoice line (amount = GST-inclusive total of the line, after discount):
+
+```
+taxable = round(amount × 100 / (100 + gstPercent))   // whole paise
+gst     = amount − taxable
+cgst    = floor(gst / 2)
+sgst    = gst − cgst                                  // so taxable + cgst + sgst = amount exactly
+```
+
+- Example: ticket ₹200 (`20000` paise) at 18% → taxable `16949`, GST `3051`, CGST `1525`, SGST `1526`.
+- Calculated per line (for example "2 × First class"), not per seat, and the totals are the sum of the lines. The invoice total is always exactly what the user paid.
+- **Coupons and last-minute deals apply to tickets only** (not food, not the convenience fee). The ticket line is discounted first, then GST is calculated back from the discounted amount.
+- **Base price** (BR-11 commission, payouts) = the taxable value, i.e. the price without the GST inside it.
+- Refunds (BR-05, BR-06) are taken from GST-inclusive amounts; the credit note calculates GST back the same way.
+- This logic lives in one backend module and is tested in T-05.
+
 ## 3. Seat locking – how it works (9.3, T-02, T-03)
 
 - `showseats` has **one document per taken seat** in a show. A seat is taken when it is **held** or **booked**. No document = the seat is available. Blocked seats come from the layout and are never in `showseats`.
@@ -128,7 +148,7 @@ Email verify links, password reset links and refresh tokens (U-01, U-02, U-03).
 | `userId` | ObjectId → users | yes | |
 | `type` | String | yes | `verify_email` · `reset_password` · `refresh` |
 | `tokenHash` | String | yes | SHA-256 of the token. The real token is only in the email link / cookie |
-| `expiresAt` | Date | yes | verify: 24 h *(suggested, see Section 6)* · reset: 30 min (U-03) · refresh: 7 days (BR-19) |
+| `expiresAt` | Date | yes | verify: 24 h (U-01) · reset: 30 min (U-03) · refresh: 7 days (BR-19) |
 | `usedAt` | Date | | Verify and reset links work only once |
 
 **Indexes**
@@ -165,7 +185,7 @@ Owner bank details for payouts (O-14). A separate collection, so that no normal 
 | --- | --- | --- | --- |
 | `holdMinutes` | Number | 10 | BR-01 |
 | `maxSeatsPerBooking` | Number | 10 | BR-02 |
-| `convenienceFeePaise` | Number | 3000 | BR-03, per ticket |
+| `convenienceFeePaise` | Number | 3000 | BR-03, per ticket, GST included |
 | `cancelCutoffMinutes` | Number | 120 | BR-04 |
 | `userRefundTicketPercent` | Number | 75 | BR-05 (after discount) |
 | `userRefundFoodPercent` | Number | 100 | BR-05 |
@@ -181,10 +201,10 @@ Owner bank details for payouts (O-14). A separate collection, so that no normal 
 | `resetLinkMinutes` | Number | 30 | U-03 |
 | `gst.ticketPercent` / `gst.foodPercent` / `gst.convenienceFeePercent` | Number | *empty* | BR-20. **Open question** (confirm with a CA) |
 | `gst.hsnSac.ticket` / `.food` / `.convenienceFee` | String | *empty* | 11.3. **Open question** |
-| `platform.companyName` / `.gstin` / `.state` / `.address` | String | *empty* | 11.3 (platform on the invoice) |
+| `platform.companyName` / `.gstin` / `.address` | String | *empty* | 11.3 (platform on the invoice) |
 | `uploadMaxMb` | Number | 2 | SEC-11 |
 | `posterMaxWidthPx` | Number | 800 | NF-08 |
-| `cities` | [{ `code`, `name`, `state` }] | seeded | **Fixed city list** (O-03, U-04). Set by the seed script; there is no admin screen for it (not in the requirements). `code` e.g. `hyderabad`, `state` is used for GST (CGST+SGST or IGST) |
+| `cities` | [{ `code`, `name`, `state` }] | seeded | **Fixed city list** (O-03, U-04). Set by the seed script; there is no admin screen for it (not in the requirements). `code` e.g. `hyderabad`, `state` is the theatre's GST state (all invoice lines use CGST + SGST of this state) |
 
 - Fixed rules that are **not** in settings (they never change, so they live in code): show labels BR-22, badge counts BR-23, time zone BR-21, payout day BR-12, coupon rule BR-16, review rule BR-24.
 - Bookings cannot be created while `commissionPercent` or the GST values are empty (the seed script fills test values).
@@ -247,7 +267,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `decidedBy` / `decidedAt` | ObjectId → users / Date | | |
 
 - The **user city picker** (U-04) = `distinct('cityCode', { status: 'approved' })`, with names from `settings.cities`.
-- The theatre's GST state = the `state` of its city in `settings.cities`.
+- The theatre's GST state = the `state` of its city in `settings.cities`. **Every invoice line (tickets, food, convenience fee) uses CGST + SGST of this state** (11.3). No IGST.
 
 **Indexes**
 - `{ ownerId: 1 }`
@@ -298,7 +318,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `subtitles` | Boolean | yes | SF-08 |
 | `tags` | [String] | | `parent_baby` (SF-08) |
 | `wheelchairFriendly` | Boolean | yes | Copy from the screen (SF-08 filter) |
-| `prices` | [{ `seatClass`, `pricePaise` }] | yes | Price per seat class in this screen |
+| `prices` | [{ `seatClass`, `pricePaise` }] | yes | Price per seat class in this screen, GST included (Section 2a) |
 | `layout` | Same as `screens.layout` | yes | **Copy of the screen layout when the show is made**. Later layout edits do not break seats of existing shows |
 | `totalSeats` | Number | yes | |
 | `bookedCount` | Number | yes | Default 0. Changed in the confirm / cancel transactions. `bookedCount == totalSeats` → "Housefull" (U-09) |
@@ -344,7 +364,7 @@ See **Section 3** for the full locking rules.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `bookingNumber` | String | yes | Unique, short, easy to type at the gate (S-02). Format suggested: `TK` + 8 letters/digits without 0/O/1/I, e.g. `TK7F3K9QXM` *(see Section 6)* |
+| `bookingNumber` | String | yes | Unique, short, easy to type at the gate (S-02). Format: `TK` + 8 random characters from A–Z and 2–9 without `0`, `O`, `1`, `I`, e.g. `TK7F3K9QXM` |
 | `userId` | ObjectId → users | yes | Current holder of the ticket (changes on transfer) |
 | `showId` / `movieId` / `theatreId` / `screenId` / `ownerId` | ObjectId | yes | |
 | `cityCode` | String | yes | |
@@ -365,7 +385,7 @@ See **Section 3** for the full locking rules.
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 
 **`pricing`** (all paise, plus the rates used):
-`ticketsPaise`, `foodPaise`, `ticketDiscountPaise`, `foodDiscountPaise`, `discountType` (`coupon` · `deal` · none), `dealPercent`, `convenienceFeePaise`, `gstLines` (per line: taxable value, rate, CGST, SGST, IGST), `totalPaise`, and `rates` = copy of `commissionPercent`, GST rates, `convenienceFeePaise` per ticket and the refund percents at booking time.
+`ticketsPaise`, `foodPaise`, `ticketDiscountPaise` (coupon or deal, tickets only), `discountType` (`coupon` · `deal` · none), `dealPercent`, `convenienceFeePaise`, `gstLines` (per line: GST-inclusive amount, taxable value, rate, CGST, SGST, see Section 2a), `totalPaise`, and `rates` = copy of `commissionPercent`, GST rates, `convenienceFeePaise` per ticket and the refund percents at booking time.
 
 - Ticket album (U-18) of a user = bookings with `userId = me` **or** `transfer.fromUserId = me` (shown as "Transferred").
 - S-03 check order uses: QR signature + `qrNonce` → `theatreId` in the staff's theatres → time inside BR-08 → `status: 'confirmed'` → `checkIn.usedAt` empty.
@@ -411,17 +431,17 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `type` | String | yes | `invoice` · `credit_note` |
-| `number` | String | yes | Unique. Invoice `INV/2026-27/000123`. Credit note suggested `CN/2026-27/000001` *(own series, see Section 6)* |
+| `number` | String | yes | Unique. Invoice `INV/2026-27/000123`. Credit note: own series `CN/2026-27/000001` |
 | `financialYear` | String | yes | e.g. `2026-27` |
 | `bookingId` / `theatreId` / `ownerId` | ObjectId | yes | |
 | `userId` | ObjectId → users | | Removed when the user deletes the account (U-26) |
 | `invoiceId` | ObjectId → invoices | credit note: yes | The invoice this credit note is for (GST-02) |
 | `issuedAt` | Date | yes | |
-| `seller` | { `theatreName`, `address`, `gstin`, `state` } | yes | Snapshot |
-| `platform` | { `companyName`, `gstin`, `state` } | yes | Snapshot |
-| `buyer` | { `name`, `email`, `state` } | yes | Snapshot. `name` / `email` set to empty on account delete (U-26). **`state`: see Section 6** |
-| `lines` | [{ `kind` (`ticket` · `food` · `convenience_fee`), `description`, `hsnSac`, `qty`, `taxablePaise`, `gstPercent`, `cgstPaise`, `sgstPaise`, `igstPaise`, `totalPaise` }] | yes | CGST + SGST when same state, IGST when other state |
-| `totals` | { `taxablePaise`, `cgstPaise`, `sgstPaise`, `igstPaise`, `totalPaise` } | yes | |
+| `seller` | { `theatreName`, `address`, `gstin`, `state` } | yes | Snapshot. `state` = the GST state for all lines |
+| `platform` | { `companyName`, `gstin` } | yes | Snapshot |
+| `buyer` | { `name`, `email` } | yes | Snapshot. No state (users have no state field). `name` / `email` set to empty on account delete (U-26) |
+| `lines` | [{ `kind` (`ticket` · `food` · `convenience_fee`), `description`, `hsnSac`, `qty`, `taxablePaise`, `gstPercent`, `cgstPaise`, `sgstPaise`, `totalPaise` }] | yes | Always CGST + SGST of the theatre's state (each = half of `gstPercent`). Rates from settings (BR-20) |
+| `totals` | { `taxablePaise`, `cgstPaise`, `sgstPaise`, `totalPaise` } | yes | |
 
 **Indexes**
 - `{ number: 1 }` unique
@@ -437,7 +457,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `theatreId` / `ownerId` | ObjectId | yes | |
 | `name` | String | yes | |
 | `photoUrl` | String | | Cloudinary |
-| `pricePaise` | Number | yes | |
+| `pricePaise` | Number | yes | GST included |
 | `isVeg` | Boolean | yes | Veg / non-veg mark |
 | `inStock` | Boolean | yes | Default `true` |
 | `isCombo` | Boolean | yes | Default `false` |
@@ -453,12 +473,12 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `code` | String | yes | Uppercase, unique |
 | `discountType` | String | yes | `percent` · `flat` |
 | `value` | Number | yes | Percent (`percent`) or paise (`flat`) |
-| `minAmountPaise` | Number | | |
+| `minAmountPaise` | Number | | Checked against the ticket amount (coupons apply to tickets only) |
 | `maxDiscountPaise` | Number | | |
 | `startAt` / `endAt` | Date | yes | |
 | `totalLimit` | Number | | Empty = no limit |
 | `perUserLimit` | Number | | Empty = no limit |
-| `usedCount` | Number | yes | Default 0. +1 in the confirm transaction, only if `usedCount < totalLimit` |
+| `usedCount` | Number | yes | Default 0. +1 in the confirm transaction, only if `usedCount < totalLimit`. Not given back when the booking is cancelled |
 | `cityCodes` / `theatreIds` | [String] / [ObjectId] | | Empty = everywhere |
 | `createdBy` | ObjectId → users | yes | Admin |
 
@@ -499,7 +519,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | --- | --- | --- | --- |
 | `ownerId` | ObjectId → users | yes | |
 | `periodStart` / `periodEnd` | Date | yes | Monday 00:00 to Sunday 23:59:59 IST of the previous week (BR-12) |
-| `grossPaise` | Number | yes | Ticket + food base price of the completed shows |
+| `grossPaise` | Number | yes | Ticket + food base price (taxable value, without the GST inside the price) of the completed shows |
 | `commissionPaise` | Number | yes | BR-11 |
 | `refundsPaise` | Number | yes | Refunds taken back (11.1) |
 | `netPaise` | Number | yes | `gross − commission − refunds` |
@@ -533,7 +553,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | --- | --- | --- | --- |
 | `kind` | String | yes | `banner` · `ticker` |
 | `text` | String | yes | |
-| `cityCode` | String | | Empty = all cities *(suggested)* |
+| `cityCode` | String | | Empty = show in all cities |
 | `startAt` / `endAt` | Date | yes | |
 | `createdBy` | ObjectId → users | yes | |
 
@@ -571,17 +591,17 @@ Read only. The app only inserts; it never updates or deletes.
 
 ---
 
-## 6. Questions for the developer review (task 0.9)
+## 6. Decisions from the developer review (2026-09-30)
 
-Things the requirements do not say. The items marked *(suggested)* above are placeholders until you answer.
-
-1. **Buyer state on the invoice (11.3)**: users have no "state" field, and sign up asks only name, email and password. Options: (a) ask the state in sign up / profile, (b) use the theatre's state (always CGST + SGST). This decides CGST+SGST vs IGST.
-2. **Verify email link life (U-01)**: not written. Suggested 24 hours.
-3. **Prices entered by owners**: are ticket and food prices *without* GST (base price, GST added on top) or *with* GST included? BR-11 says commission is on the "base price, before GST".
-4. **Coupon on food**: does a coupon discount only tickets, or tickets + food?
-5. **Booking number format**: suggested `TK` + 8 letters/digits (easy to type at the gate).
-6. **Credit note numbers**: suggested their own series `CN/2026-27/000001`.
-7. **Coupon use after cancel**: when a booking is cancelled, does the user get the coupon use back? Suggested: no.
-8. **Banners / ticker with no city**: show in all cities? Suggested: yes.
+| Question | Decision |
+| --- | --- |
+| Buyer state on the invoice | No state field for users. All lines use CGST + SGST of the theatre's state |
+| Verify email link life (U-01) | 24 hours |
+| Prices and GST | All prices include GST (tickets, food, convenience fee). Invoice calculates taxable value + CGST + SGST back (Section 2a) |
+| Coupon on food | Coupons apply to tickets only |
+| Booking number | `TK` + 8 characters, no `0`, `O`, `1`, `I` |
+| Credit note numbers | Own series `CN/2026-27/000001` |
+| Coupon use after cancel | Not given back; the coupon cannot be used again |
+| Banners / ticker with no city | Shown in all cities |
 
 Still open from `requirements.md` Section 17: commission % starting value, GST rates and HSN/SAC codes, hosting.

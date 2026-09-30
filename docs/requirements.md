@@ -106,7 +106,7 @@ Put these in a settings collection so admin can change them later (except where 
 | --- | --- | --- |
 | BR-01 | Seat hold time | 10 minutes |
 | BR-02 | Max seats per booking | 10 |
-| BR-03 | Convenience fee | ₹30 per ticket (goes to the platform) |
+| BR-03 | Convenience fee | ₹30 per ticket, GST included (goes to the platform) |
 | BR-04 | User cancellation cutoff | Up to 2 hours before show start |
 | BR-05 | Refund on user cancellation | 75% of ticket price (after discount); food 100%; convenience fee not refunded |
 | BR-06 | Refund on show cancelled by owner/admin | 100% of everything (tickets + food + convenience fee) |
@@ -114,16 +114,16 @@ Put these in a settings collection so admin can change them later (except where 
 | BR-08 | Gate check-in window | From 30 minutes before start until show end |
 | BR-09 | Cleaning break between shows | 15 minutes (default, owner can change per screen) |
 | BR-10 | Show end time | Start time + movie duration + cleaning break |
-| BR-11 | Platform commission | % set by admin (applies to ticket and food base price, before GST) |
+| BR-11 | Platform commission | % set by admin (applies to ticket and food base price = taxable value, without the GST inside the price) |
 | BR-12 | Owner payout | Every Monday, for the previous week's completed shows |
 | BR-13 | Waitlist offer time | 10 minutes per person, then offered to the next person |
 | BR-14 | Last-minute deal start | 30 minutes before show start; discount % set by owner (max 50%, default) |
 | BR-15 | Ticket transfer allowed | Until 30 minutes before show start; only once per booking; not after "Used" (default) |
-| BR-16 | Coupons | One coupon per booking; cannot be combined with a last-minute deal (default) |
+| BR-16 | Coupons | One coupon per booking; cannot be combined with a last-minute deal (default). Coupons apply to tickets only (not food, not convenience fee). A coupon use is not given back when the booking is cancelled |
 | BR-17 | Login rate limit | Max 5 wrong logins per 15 minutes per account + IP |
 | BR-18 | Password | Min 8 characters, at least 1 letter and 1 number |
 | BR-19 | Access token life | 15 minutes; refresh token 7 days (default) |
-| BR-20 | GST rates | Set by admin in settings (ticket, food, convenience fee separately). Not hard-coded. Confirm current rates with a CA. |
+| BR-20 | GST rates | Set by admin in settings (ticket, food, convenience fee separately). Not hard-coded. Confirm current rates with a CA. All prices (tickets, food, convenience fee) include GST; the invoice calculates taxable value + CGST + SGST back from the price |
 | BR-21 | Time zone | Store UTC, show IST (Asia/Kolkata) |
 | BR-22 | Show labels (fixed, from start time) | Before 12:00 PM = Morning show · 12:00–3:59 PM = Matinee · 4:00–7:59 PM = First show · 8:00 PM and later = Second show |
 | BR-23 | Jubilee badges (watched = ticket scanned "Entered") | 1 = First show · 10 = Regular · 25 = Silver Jubilee · 50 = Golden Jubilee · 100 = Diamond Jubilee |
@@ -136,7 +136,7 @@ Put these in a settings collection so admin can change them later (except where 
 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
-| U-01 | Sign up | Name, email, password (BR-18). Verification email with link. Account works only after email is verified. | User can sign up, gets email, link verifies account |
+| U-01 | Sign up | Name, email, password (BR-18). Verification email with link (valid 24 hours). Account works only after email is verified. | User can sign up, gets email, link verifies account |
 | U-02 | Login / logout | Email + password only. JWT (BR-19). Wrong password limit (BR-17). | Login works; tokens refresh; logout clears cookie |
 | U-03 | Forgot password | Email with reset link (valid 30 min, default). | Password can be reset from the link |
 | U-04 | Select city | City picker in header; saved for next visit. The picker shows only cities that have at least one approved theatre. All lists show only that city. | Changing city changes shows and theatres |
@@ -197,12 +197,12 @@ Put these in a settings collection so admin can change them later (except where 
 | A-03 | Owner approvals | See Pending owners; approve / reject with reason; block owners. | Emails sent on decision |
 | A-04 | Theatre approvals | See Pending theatres; approve / reject with reason. | — |
 | A-05 | Platform settings | All BR values that can change: commission %, convenience fee, GST rates, hold time, cancellation cutoff and refund %, etc. Every change is saved in the audit log. | New values used in new bookings only |
-| A-06 | Coupons | Create codes: % or flat off, min amount, max discount, start/end date, total usage limit, per-user limit, cities or theatres. | — |
+| A-06 | Coupons | Create codes (tickets only, BR-16): % or flat off, min amount (of the tickets), max discount, start/end date, total usage limit, per-user limit, cities or theatres. | — |
 | A-07 | Users | View, search, block / unblock users. | Blocked users cannot log in |
 | A-08 | All bookings | Search by booking number, user email, theatre, date; see payments and refunds. | — |
 | A-09 | Payouts | See all owners' payouts; mark Processing / Paid (mock). | Status updates visible to the owner |
 | A-10 | Reports | Platform sales, commission, GST, per city / theatre / movie; export Excel and PDF. | — |
-| A-11 | Banners and ticker | Home page banners and ticker messages: text, city, start/end date. | Show on home page for the right city and dates |
+| A-11 | Banners and ticker | Home page banners and ticker messages: text, city (empty = all cities), start/end date. | Show on home page for the right city and dates |
 | A-12 | Review moderation | Hide / show reviews with a reason. | Hidden reviews do not show to users |
 | A-13 | Help desk | See issues, reply, mark Open / Solved. | User gets the reply by email |
 | A-14 | Audit log | Who did what and when for admin and owner actions (approvals, cancellations, payouts, settings). Read only. | — |
@@ -214,7 +214,7 @@ Put these in a settings collection so admin can change them later (except where 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
 | S-01 | Staff login | Email + password; opens straight to the scanner (no intro animation). | — |
-| S-02 | Scan ticket | Phone camera scans the QR (`html5-qrcode`). Backup: type the booking number. | — |
+| S-02 | Scan ticket | Phone camera scans the QR (`html5-qrcode`). Backup: type the booking number (`TK` + 8 characters without 0, O, 1, I, e.g. `TK7F3K9QXM`). | — |
 | S-03 | Verify | Backend checks, in this order: QR signature valid → booking is for this staff's theatre → time inside BR-08 → status Confirmed (not Cancelled / Transferred-away) → not already Used. | Each failure shows its own reason |
 | S-04 | Mark Used | Atomic update (only one scan can win). Save time and staff ID. | Same ticket scanned twice = second is rejected |
 | S-05 | Result screen | Valid: green "ENTERED" stamp (UI-35) + movie, screen, seats, food. Invalid: maroon "REJECTED" stamp + reason (e.g. "Already used at 6:05 PM"). Resets after 3 seconds. | — |
@@ -405,13 +405,13 @@ Every confirmed booking gets a GST tax invoice PDF (download in the ticket album
 | Invoice number | Unique, in series per financial year, e.g. `INV/2026-27/000123` |
 | Seller | Theatre name, address, GSTIN (for tickets and food) |
 | Platform | Company name, GSTIN (for convenience fee) |
-| Buyer | User name, email, state |
+| Buyer | User name, email (no state) |
 | Lines | Tickets, food items, convenience fee — each with HSN/SAC code |
-| Tax | Taxable value; CGST + SGST (same state) or IGST (other state) |
+| Tax | Prices include GST: taxable value and GST are calculated back from the price. CGST + SGST of the theatre's state for every line (tickets, food, convenience fee). No IGST. Rates from admin settings (BR-20) |
 | Total | Amount paid |
 
 - GST-01 Rates from settings (BR-20). Confirm with a CA before real use.
-- GST-02 Cancelled or partly refunded booking = credit note PDF.
+- GST-02 Cancelled or partly refunded booking = credit note PDF, with its own number series, e.g. `CN/2026-27/000001`.
 - GST-03 Monthly GST report for owner and admin (Excel).
 
 ---
@@ -766,6 +766,13 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | Roles | User, Theatre Owner, Gate Staff, Admin |
 | Login | Email + password only |
 | Database | Docker MongoDB (single-node replica set) for development; MongoDB Atlas free tier for deployment (Phase 12, already a replica set), only `MONGODB_URI` changes. Booking confirm uses a transaction. |
+| GST on invoice | All lines (tickets, food, convenience fee) use CGST + SGST of the theatre's state. Users have no state field. GST rates stay admin settings (BR-20) |
+| Prices and GST | All prices include GST (tickets, food, convenience fee). Invoice calculates taxable value + CGST + SGST back |
+| Coupons | Tickets only; a coupon use is not given back after cancel |
+| Booking number | `TK` + 8 characters without 0, O, 1, I |
+| Credit notes | Own series `CN/2026-27/000001` |
+| Verify email link | Valid 24 hours |
+| Banners / ticker | No city = shown in all cities |
 | Cities | Fixed city list in settings (seeded). Owners pick a theatre city from it; users see only cities with approved theatres |
 | Owner bank details | Separate `bankaccounts` collection, encrypted (SEC-12), owner only |
 | Payment | Mock Razorpay-style service; real Razorpay later |

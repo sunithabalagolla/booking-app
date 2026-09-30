@@ -6,12 +6,12 @@
 - Done: committed 0.6. Task 0.7: wrote `docs/database.md` (22 collections, fields, indexes, transactions, seat locking rules).
 - Docker MongoDB is now a single-node replica set `rs0` (needed for transactions). Container recreated, same volume. `MONGODB_URI` now ends with `?replicaSet=rs0` (`.env` and `.env.example`). Checked: a transaction works, server connects, `/api/health` 200. `CLAUDE.md` commands updated.
 - Requirements updated: fixed city list in settings (seeded), owners pick from it (O-03), users see only cities with approved theatres (U-04); separate `bankaccounts` collection; replica set + `MongoMemoryReplSet` for tests (Section 2, 15.2, 15.5, 17).
+- Review answers (all 8 questions) written in `database.md` Section 6 + `requirements.md` (BR-03, BR-11, BR-16, BR-20, U-01, A-06, A-11, S-02, 11.3, GST-02, Section 17). New `database.md` Section 2a: prices include GST, how GST is calculated back.
 - Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
 
 ## Next step
 
 - Phase 0, task 0.8: write `docs/api.md` (all endpoints). Include saving the theme choice in the profile API.
-- Answer the 8 questions in `docs/database.md` Section 6 (can be done in the 0.9 review).
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
 - Not done (you can decide later): `/api/health` showing database status.
 
@@ -24,7 +24,8 @@
 - [ ] Commission % starting value
 - [ ] GST rates and HSN/SAC codes (confirm with a CA)
 - [ ] Hosting for the test URL
-- [ ] 8 database questions in `docs/database.md` Section 6 (buyer state for GST, verify link life, prices with/without GST, coupon on food, booking number format, credit note series, coupon use after cancel, banners without city)
+- [x] Buyer state for GST: decided, theatre's state, CGST + SGST for all lines (2026-09-30)
+- [x] 7 database questions answered (2026-09-30): verify link 24 h, prices include GST (calculated back), coupons tickets only, booking number TK + 8, credit note series CN/, coupon not given back after cancel, no city = all cities. See `database.md` Section 6
 
 ---
 
