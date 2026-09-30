@@ -10,13 +10,13 @@
 - Task 0.8: wrote `docs/api.md` (rules, error format, rate limits, all endpoints by role, Socket.io events). Requirements: Gate Staff can also use the food pickup screen (Section 3, O-11); "Resend verify email" max 3 per hour (U-01, SEC-03).
 - Task 0.9 review done. Decisions written in `api.md` Section 13 and `requirements.md` (O-01, O-05, SF-04, SEC-03, Section 17); waitlist offer hold also in `database.md` (5.10, 5.17).
 - Task 0.10: seed script skeleton. `server/src/seed/index.js` runs the steps in `seed/steps/index.js` (empty for now; steps added phase by phase), `--reset` drops all collections, refuses a non-local `MONGODB_URI` unless `--yes`. `seed/sample.js`: `isSample: true` marker + `SEED_PASSWORD` from `.env`. Root `package.json`: `npm run dev` (client + server with `concurrently` 10.0.5, dev dependency) and `npm run seed`. Checked: seed, reset, Atlas-like URI refused, both apps start with `npm run dev`.
+- Task 0.11: test setup. Vitest 5.0.2 (client + server), Supertest 7.3.0, mongodb-memory-server 11.3.0 (dev dependencies). `npm test` from the root runs both. Server: one in-memory `MongoMemoryReplSet` (MongoDB 8.3.11) per run, test files one after another. Tests: client 9 (UI-02 `getAutoTheme`, `resolveTheme`, `loadThemeChoice`), server 12 (health + 404, seed safety `isLocalUri`, transaction commit / abort). **All 21 pass.** **Phase 0 done.**
 - Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
 
 ## Next step
 
-- Phase 0, task 0.11: test setup (Vitest + Supertest + `MongoMemoryReplSet`), `npm test` from the root. First tests: `getAutoTheme` (UI-02) and `isLocalUri` (seed safety).
+- **Phase 1 – Auth and roles**, first task: U-01 sign up + verify email (with resend, max 3 per hour). Start with the `users` + `authtokens` models, the error shape (`api.md` 1.5, also fixes the `/api` 404 answer) and the rate limit config file (`server/src/config/rateLimits.js`).
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins, Phase 1).
-- Phase 1: change the `/api` 404 answer in `server/src/app.js` to the error shape in `api.md` 1.5.
 - Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
@@ -37,13 +37,13 @@
 ## UI-02 theme switch – later tasks
 - [x] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
 - [x] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8): `PATCH /api/me/prefs`
-- [ ] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
+- [x] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
 - [ ] Move `ThemeSwitch` from the test Home page into the real header (Phase 1, basic vintage layout)
 - [ ] Save the choice in the user profile when logged in; profile choice wins over localStorage (Phase 1 login + U-25)
 - [ ] Theme choice in Profile (U-25 / UI-29)
 - [ ] Reduce motion setting in Profile also turns off the theme fade (UI-41, Phase 10). Until then it follows the phone setting
 
-## Phase 0 – Setup
+## Phase 0 – Setup ✅ done
 - [x] 0.1 Folder structure + `git init` + first commit (15.1)
 - [x] 0.2 `CLAUDE.md` + `docs/progress.md` in place
 - [x] 0.3 Client: Vite + React + React Router
@@ -55,7 +55,9 @@
 - [x] 0.8 Write `docs/api.md` (all endpoints)
 - [x] 0.9 Developer reviews database.md and api.md
 - [x] 0.10 Seed script skeleton (`npm run seed`)
-- [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server, use `MongoMemoryReplSet` for transactions)
+- [x] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server, use `MongoMemoryReplSet` for transactions)
+
+**Phase 0 done (2026-09-30).**
 
 ## Phase 1 – Auth and roles
 - [ ] U-01 Sign up + verify email

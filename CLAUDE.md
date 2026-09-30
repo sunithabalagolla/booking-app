@@ -40,7 +40,10 @@ Project: **Talkies** – movie ticket booking app (MERN) with a vintage 70s–80
 - Install: `npm install` (root, client and server)
 - Run both (works now, project root): `npm run dev`: client + server together with `concurrently`
 - Seed test data (works now, project root): `npm run seed`. Clear first: `npm run seed -- --reset`. Refuses a non-local `MONGODB_URI` (e.g. Atlas) unless `-- --yes`. Test login password comes from `SEED_PASSWORD` in `.env`
-- Tests: `npm test` (not yet, task 0.11)
+- Tests (works now, project root): `npm test` runs client tests, then server tests (Vitest)
+  - Client tests: next to the code, `client/src/**/*.test.js`
+  - Server tests: `server/tests/**/*.test.js`. One in-memory `MongoMemoryReplSet` (MongoDB 8.3.11, same as Docker) for the whole run (`tests/globalSetup.js`); helpers `connectTestDB` / `clearTestDB` / `closeTestDB` in `tests/helpers/db.js`. Never uses the Docker database
+  - First server test run downloads MongoDB once (~880 MB, cached in the user folder)
 
 Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5173), `npm run build`, `npm run lint`
 Server only (works now, run inside `server/`): `npm run dev` (watch mode, http://localhost:5000), `npm start`. Check: http://localhost:5000/api/health
