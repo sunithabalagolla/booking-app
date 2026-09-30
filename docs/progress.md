@@ -3,18 +3,15 @@
 ## Last session
 
 - Date: 2026-09-29
-- Done: Task 0.5. Tailwind v4.3.3 (`tailwindcss` + `@tailwindcss/vite`) in the client. Tailwind v4 has no `tailwind.config.js`: the theme lives in `client/src/theme/theme.css` inside `@theme { }` (colours UI-01, fonts UI-03, radius UI-05). This gives classes like `bg-maroon`, `font-heading`, `rounded-card` and CSS variables like `var(--color-maroon)`. Base style: cream page, ink text, Courier Prime body. Night show (UI-02) follows the phone/browser dark setting (`prefers-color-scheme`). Own classes: `tear-line` and `stamp`. Google Fonts (Rye, Special Elite, Courier Prime) linked in `client/index.html`. Empty `client/src/theme/motion.js`. `HomePage.jsx` is a theme test page for now. Build and lint pass.
-- Also done: UI-02 theme switch (requirements.md updated first). Auto (default) / Day show / Night show. Auto uses device time: 6:00 AM–6:59 PM Day, 7:00 PM–5:59 AM Night, checked every minute. Files: `client/src/theme/themeMode.js` (rules + localStorage), `client/src/store/themeStore.js` (Zustand, installed), `client/src/theme/ThemeManager.jsx` (puts `data-theme` on `<html>`, 1-minute Auto check), `client/src/components/ui/ThemeSwitch.jsx` (sun/moon button, small menu with tick). Small script in `index.html` sets the theme before the page shows (no flash) — keep it the same as `themeMode.js`. Fade 500 ms (from `motion.js`) with the View Transitions API, opacity only; instant with reduce motion or old browsers. `dark:` classes now follow `data-theme="night"`, not the phone setting. Switch is on the test Home page until the header exists. Checked in the browser: menu, tick, save, reload, Escape.
-- Docs: requirements.md updated: intro order decided (Projector first, then Curtain opens onto Home; one Skip skips both), new UI-45 film grain + flicker, UI-46 sepia posters, UI-47 "Behind the scenes" blueprint page (all Phase 10). Section 17 updated. Then answered: grain behind small text OK at max 3–4% opacity with 4.5:1 contrast (UI-04, UI-45, 16.8); UI-46 on phones colours posters on scroll into view, tap opens the movie.
-- Notes: never use gold text on cream (fails 4.5:1 contrast); in dark mode headings and stamps use gold instead of maroon. Paper texture (UI-04) is left for later, only on big panels, never behind small text.
-- Earlier: 0.3 client (Vite 8 + React 19 + React Router 8), 0.4 server (Express 5, ES modules, `GET /api/health`).
-- Decisions: JavaScript (not TypeScript). Server uses ES modules. Tests use Vitest instead of Jest. No `nodemon` (use `node --watch`) and no `dotenv` (Node 24 reads `.env` itself). `concurrently` is approved; add it when the root `package.json` is made.
+- Done: Task 0.6. MongoDB 8 runs in Docker (container `talkies-mongo`, volume `talkies-mongo-data`, port 27017 only on 127.0.0.1). Mongoose 9.10.2 in `server/`. `server/src/config/db.js` has `connectDB(uri)` (5 s timeout, logs only host/database, never the full link) and `disconnectDB()` for tests. `server.js` connects first, then listens; clear message + exit if `MONGODB_URI` is missing or MongoDB is off. `.env.example` in the project root with all SEC-07 keys (secrets empty); server scripts read the root `.env` with `--env-file-if-exists=../.env`. Checked: connect + health 200, MongoDB stopped = clear error, missing URI = clear error.
+- Docs: database plan written (Section 2, 15.2, Phase 12 in 15.3, Section 17; Phase 12 tasks here): Docker now, Atlas free tier in Phase 12, only `MONGODB_URI` changes.
+- Earlier today: 0.5 Tailwind + theme, UI-02 theme switch, docs for intro order and UI-45 to UI-47.
 
 ## Next step
 
-- Phase 0, task 0.6: MongoDB connection + `.env.example`.
+- Phase 0, task 0.7: write `docs/database.md` (collections, fields, indexes). Include the `theme` field on users (UI-02 later tasks).
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
-- Developer to check the theme test page in the browser (use the sun/moon switch).
+- Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
 
@@ -44,7 +41,7 @@
 - [x] 0.4 Server: Express + folder structure
 - [x] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
 - [x] UI-02 Theme switch Auto / Day show / Night show (localStorage for guests)
-- [ ] 0.6 MongoDB connection + `.env.example`
+- [x] 0.6 MongoDB connection + `.env.example`
 - [ ] 0.7 Write `docs/database.md` (collections, fields, indexes)
 - [ ] 0.8 Write `docs/api.md` (all endpoints)
 - [ ] 0.9 Developer reviews database.md and api.md
@@ -154,4 +151,7 @@
 ## Phase 12 – Final
 - [ ] All tests pass (T-01 to T-08)
 - [ ] Security check (Section 13)
+- [ ] Create MongoDB Atlas free tier cluster (developer creates the account)
+- [ ] Set `MONGODB_URI` in the deployed `.env` to the Atlas link (no code changes)
+- [ ] Run the seed script once on Atlas (`npm run seed`)
 - [ ] Deploy to a test URL

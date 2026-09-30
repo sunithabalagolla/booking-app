@@ -59,7 +59,7 @@ This file is the single source of truth for the project. Claude CLI (Claude Code
 | Animations | Framer Motion (components) + CSS keyframes (simple loops) |
 | Hand-drawn charts | Rough.js |
 | Backend | Node.js (current LTS) + Express |
-| Database | MongoDB (MongoDB Atlas free tier for cloud) + Mongoose |
+| Database | MongoDB + Mongoose. Development: MongoDB in Docker on the developer's laptop. Deployment (Phase 12): MongoDB Atlas free tier. Only `MONGODB_URI` in `.env` changes; the code stays the same. |
 | Real-time | Socket.io (live seat map, live dashboards) |
 | Validation | Zod (backend, and forms on the frontend) |
 | Auth | JWT access token + refresh token (httpOnly cookie), bcrypt |
@@ -527,7 +527,7 @@ booking-app/
 2. Create `CLAUDE.md` and `docs/progress.md`.
 3. Create `client` (Vite + React) and `server` (Express) with the folder structure above.
 4. Add Tailwind with the Talkies theme (UI-01 to UI-05) and the three Google Fonts.
-5. Connect MongoDB (local or Atlas free tier); add `.env.example`.
+5. Connect MongoDB (Docker on the laptop for development; Atlas comes in Phase 12); add `.env.example`.
 6. Write `docs/database.md` (all collections, fields, indexes) and `docs/api.md` (all endpoints) from this file. **Developer reviews them before Phase 1.**
 7. Add the seed script skeleton (`npm run seed`).
 8. Add test setup (Vitest + Supertest + mongodb-memory-server).
@@ -550,7 +550,7 @@ Finish and test each phase before the next. After each phase: update `progress.m
 | 9 | Special features | SF-01–SF-07, U-11, U-21, U-22, 9.8, JOB-03, JOB-05, E-06, E-07 | Each SF works as written |
 | 10 | Vintage polish: intros, all animations, error pages, empty states, badges, ticker, sound, reduce motion | UI-10–UI-47, U-24, A-11, E-08 | Matches the preview design; reduce motion works |
 | 11 | Reviews, help desk, policy pages, delete account, offline PWA, slow phones | U-23, U-26–U-28, A-12, A-13, NF-01, NF-06, E-09, E-10 | — |
-| 12 | Final: all tests pass, security check, deploy | Section 13, T-01–T-08 | App live on a test URL |
+| 12 | Final: all tests pass, security check, deploy. Database moves to MongoDB Atlas free tier: set `MONGODB_URI` to the Atlas link (no code changes) and run the seed script once on Atlas | Section 13, T-01–T-08 | App live on a test URL |
 
 ### 15.4 Tests that must exist
 
@@ -765,6 +765,7 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | Theatres | Many theatres in many cities |
 | Roles | User, Theatre Owner, Gate Staff, Admin |
 | Login | Email + password only |
+| Database | Docker MongoDB for development; MongoDB Atlas free tier for deployment (Phase 12), only `MONGODB_URI` changes |
 | Payment | Mock Razorpay-style service; real Razorpay later |
 | Email | Postmark free plan |
 | Images | Cloudinary free plan |

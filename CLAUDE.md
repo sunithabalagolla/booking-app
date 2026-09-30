@@ -44,5 +44,11 @@ Project: **Talkies** – movie ticket booking app (MERN) with a vintage 70s–80
 
 Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5173), `npm run build`, `npm run lint`
 Server only (works now, run inside `server/`): `npm run dev` (watch mode, http://localhost:5000), `npm start`. Check: http://localhost:5000/api/health
+Server settings: copy `.env.example` (project root) to `.env`. The server reads the root `.env` with Node's `--env-file-if-exists` (no dotenv).
+
+Database (development = Docker MongoDB, only on 127.0.0.1):
+- First time: `docker run -d --name talkies-mongo -p 127.0.0.1:27017:27017 -v talkies-mongo-data:/data/db --restart unless-stopped mongo:8`
+- Start / stop later: `docker start talkies-mongo` / `docker stop talkies-mongo`
+- Data is kept in the Docker volume `talkies-mongo-data`
 
 (Update this list when the real scripts are created.)
