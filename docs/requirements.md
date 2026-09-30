@@ -85,7 +85,7 @@ There are 4 roles. A visitor who is not logged in is a **guest** (not a role): a
 | --- | --- | --- |
 | User | Browse, book, pay, cancel, transfer tickets, waitlist, reviews, badges, ticket album, help | Any owner/admin/staff page |
 | Theatre Owner | Own theatres only: screens, seat layouts, shows, food, staff, bookings, reports, payouts | Other owners' data, platform settings, movies list edits |
-| Gate Staff | Scan tickets for the theatre they belong to; see check-in result | Anything else |
+| Gate Staff | Scan tickets for the theatre they belong to; see check-in result; food pickup screen for those theatres (O-11: scan ticket, mark food Collected) | Anything else |
 | Admin | Everything on the platform: movies, approve owners and theatres, commission, GST rates, coupons, users, all reports, payouts | — |
 
 **Permission rules**
@@ -136,7 +136,7 @@ Put these in a settings collection so admin can change them later (except where 
 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
-| U-01 | Sign up | Name, email, password (BR-18). Verification email with link (valid 24 hours). Account works only after email is verified. | User can sign up, gets email, link verifies account |
+| U-01 | Sign up | Name, email, password (BR-18). Verification email with link (valid 24 hours). Account works only after email is verified. "Resend verify email" button: sends a new link (old link stops working), max 3 per hour (SEC-03). | User can sign up, gets email, link verifies account |
 | U-02 | Login / logout | Email + password only. JWT (BR-19). Wrong password limit (BR-17). | Login works; tokens refresh; logout clears cookie |
 | U-03 | Forgot password | Email with reset link (valid 30 min, default). | Password can be reset from the link |
 | U-04 | Select city | City picker in header; saved for next visit. The picker shows only cities that have at least one approved theatre. All lists show only that city. | Changing city changes shows and theatres |
@@ -181,7 +181,7 @@ Put these in a settings collection so admin can change them later (except where 
 | O-08 | Bookings | See bookings for own shows only; search by booking number; see check-in status. | — |
 | O-09 | Gate Staff accounts | Create / block staff logins for own theatres (ROLE-05). | Staff can log in and scan only for their theatre |
 | O-10 | Check-in report | Per show: booked vs came (Entered) count. | — |
-| O-11 | Food pickup screen | For the canteen counter: scan ticket QR → shows food order → mark "Collected" (SF-06). | Order cannot be collected twice |
+| O-11 | Food pickup screen | For the canteen counter: scan ticket QR → shows food order → mark "Collected" (SF-06). Used by the owner or by Gate Staff of that theatre. | Order cannot be collected twice |
 | O-12 | Last-minute deals | Turn on per show or for all shows; set discount % (BR-14). | Discount applies automatically at the right time |
 | O-13 | Reports | Daily / weekly / monthly sales, food sales, GST report; export Excel and PDF. | Files download with correct numbers |
 | O-14 | Payouts | Earnings, commission cut, refunds taken back, payout history and status (flow 9.9). Bank details (account name, account number, IFSC) stored encrypted. | Payout lines match bookings |
@@ -444,7 +444,7 @@ Emails use the vintage style too: cream background, maroon header "Talkies" in a
 | --- | --- | --- |
 | SEC-01 | Passwords | BR-18; bcrypt hash |
 | SEC-02 | Tokens | BR-19; refresh token in httpOnly, secure, sameSite cookie |
-| SEC-03 | Rate limit | BR-17; also limits on email, booking, payment and scan APIs |
+| SEC-03 | Rate limit | BR-17; resend verify email max 3 per hour per account; also limits on email, booking, payment and scan APIs |
 | SEC-04 | Roles | ROLE-01 on every API |
 | SEC-05 | Ownership | ROLE-02 on every owner and staff API |
 | SEC-06 | Input | Validate all input with Zod; block NoSQL injection (no raw `$` keys from users) |
@@ -773,6 +773,8 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | Credit notes | Own series `CN/2026-27/000001` |
 | Verify email link | Valid 24 hours |
 | Banners / ticker | No city = shown in all cities |
+| Food pickup (O-11) | Owner or Gate Staff of that theatre |
+| Resend verify email | Allowed, max 3 per hour |
 | Cities | Fixed city list in settings (seeded). Owners pick a theatre city from it; users see only cities with approved theatres |
 | Owner bank details | Separate `bankaccounts` collection, encrypted (SEC-12), owner only |
 | Payment | Mock Razorpay-style service; real Razorpay later |

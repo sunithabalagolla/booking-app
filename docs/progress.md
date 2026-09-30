@@ -7,11 +7,14 @@
 - Docker MongoDB is now a single-node replica set `rs0` (needed for transactions). Container recreated, same volume. `MONGODB_URI` now ends with `?replicaSet=rs0` (`.env` and `.env.example`). Checked: a transaction works, server connects, `/api/health` 200. `CLAUDE.md` commands updated.
 - Requirements updated: fixed city list in settings (seeded), owners pick from it (O-03), users see only cities with approved theatres (U-04); separate `bankaccounts` collection; replica set + `MongoMemoryReplSet` for tests (Section 2, 15.2, 15.5, 17).
 - Review answers (all 8 questions) written in `database.md` Section 6 + `requirements.md` (BR-03, BR-11, BR-16, BR-20, U-01, A-06, A-11, S-02, 11.3, GST-02, Section 17). New `database.md` Section 2a: prices include GST, how GST is calculated back.
+- Task 0.8: wrote `docs/api.md` (rules, error format, rate limits, all endpoints by role, Socket.io events). Requirements: Gate Staff can also use the food pickup screen (Section 3, O-11); "Resend verify email" max 3 per hour (U-01, SEC-03).
 - Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
 
 ## Next step
 
-- Phase 0, task 0.8: write `docs/api.md` (all endpoints). Include saving the theme choice in the profile API.
+- Task 0.9: developer reviews `docs/database.md` and `docs/api.md`. Answer the 4 questions in `api.md` Section 13 (owner email verify, rate limit numbers, editing a show with bookings, waitlist offer seats; the last can wait for Phase 9).
+- Then 0.10 seed script skeleton.
+- Phase 1: change the `/api` 404 answer in `server/src/app.js` to the error shape in `api.md` 1.5.
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
 - Not done (you can decide later): `/api/health` showing database status.
 
@@ -24,6 +27,7 @@
 - [ ] Commission % starting value
 - [ ] GST rates and HSN/SAC codes (confirm with a CA)
 - [ ] Hosting for the test URL
+- [ ] 4 API questions in `docs/api.md` Section 13 (task 0.9)
 - [x] Buyer state for GST: decided, theatre's state, CGST + SGST for all lines (2026-09-30)
 - [x] 7 database questions answered (2026-09-30): verify link 24 h, prices include GST (calculated back), coupons tickets only, booking number TK + 8, credit note series CN/, coupon not given back after cancel, no city = all cities. See `database.md` Section 6
 
@@ -31,7 +35,7 @@
 
 ## UI-02 theme switch – later tasks
 - [x] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
-- [ ] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8)
+- [x] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8): `PATCH /api/me/prefs`
 - [ ] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
 - [ ] Move `ThemeSwitch` from the test Home page into the real header (Phase 1, basic vintage layout)
 - [ ] Save the choice in the user profile when logged in; profile choice wins over localStorage (Phase 1 login + U-25)
@@ -47,7 +51,7 @@
 - [x] UI-02 Theme switch Auto / Day show / Night show (localStorage for guests)
 - [x] 0.6 MongoDB connection + `.env.example`
 - [x] 0.7 Write `docs/database.md` (collections, fields, indexes)
-- [ ] 0.8 Write `docs/api.md` (all endpoints)
+- [x] 0.8 Write `docs/api.md` (all endpoints)
 - [ ] 0.9 Developer reviews database.md and api.md
 - [ ] 0.10 Seed script skeleton (`npm run seed`)
 - [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server, use `MongoMemoryReplSet` for transactions)

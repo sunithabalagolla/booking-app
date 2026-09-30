@@ -151,6 +151,8 @@ Email verify links, password reset links and refresh tokens (U-01, U-02, U-03).
 | `expiresAt` | Date | yes | verify: 24 h (U-01) · reset: 30 min (U-03) · refresh: 7 days (BR-19) |
 | `usedAt` | Date | | Verify and reset links work only once |
 
+- Resend verify email (U-01): deletes the user's old `verify_email` tokens and makes a new one, so the old link stops working. Max 3 per hour (SEC-03).
+
 **Indexes**
 - `{ tokenHash: 1 }` unique
 - `{ userId: 1, type: 1 }` (logout / password change deletes all refresh tokens of the user)
@@ -374,7 +376,7 @@ See **Section 3** for the full locking rules.
 | `seats` | [{ `seatId`, `seatClass`, `className`, `pricePaise` }] | yes | 1 to `maxSeatsPerBooking` (BR-02) |
 | `food` | [{ `foodItemId`, `name`, `isVeg`, `unitPricePaise`, `qty` }] | | U-13 |
 | `foodPickup` | String | | `before_movie` · `interval` (SF-06). Required if `food` is not empty |
-| `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11. Set once only (atomic update, like check-in) |
+| `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11, by the owner or Gate Staff of that theatre. Set once only (atomic update, like check-in) |
 | `pricing` | object | yes | Calculated by the backend only (SEC-10). See below |
 | `couponId` / `couponCode` | ObjectId / String | | U-15. Not together with a deal (BR-16) |
 | `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid |
