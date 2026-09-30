@@ -46,9 +46,13 @@ Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5
 Server only (works now, run inside `server/`): `npm run dev` (watch mode, http://localhost:5000), `npm start`. Check: http://localhost:5000/api/health
 Server settings: copy `.env.example` (project root) to `.env`. The server reads the root `.env` with Node's `--env-file-if-exists` (no dotenv).
 
-Database (development = Docker MongoDB, only on 127.0.0.1):
-- First time: `docker run -d --name talkies-mongo -p 127.0.0.1:27017:27017 -v talkies-mongo-data:/data/db --restart unless-stopped mongo:8`
-- Start / stop later: `docker start talkies-mongo` / `docker stop talkies-mongo`
+Database (development = Docker MongoDB as a single-node replica set `rs0`, only on 127.0.0.1; replica set is needed for transactions):
+- First time: `docker run -d --name talkies-mongo -p 127.0.0.1:27017:27017 -v talkies-mongo-data:/data/db --restart unless-stopped mongo:8 --replSet rs0`
+- Then once (after a few seconds): `docker exec talkies-mongo mongosh --quiet --eval "rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '127.0.0.1:27017' }] })"`
+- Check: `docker exec talkies-mongo mongosh --quiet --eval "rs.status().members[0].stateStr"` → `PRIMARY`
+- `.env`: `MONGODB_URI=mongodb://127.0.0.1:27017/talkies?replicaSet=rs0`
+- Start / stop later: `docker start talkies-mongo` / `docker stop talkies-mongo` (replica set config is kept)
 - Data is kept in the Docker volume `talkies-mongo-data`
+- Tests use `MongoMemoryReplSet` (not `MongoMemoryServer`) so transactions work
 
 (Update this list when the real scripts are created.)

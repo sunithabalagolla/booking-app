@@ -2,14 +2,16 @@
 
 ## Last session
 
-- Date: 2026-09-29
-- Done: Task 0.6. MongoDB 8 runs in Docker (container `talkies-mongo`, volume `talkies-mongo-data`, port 27017 only on 127.0.0.1). Mongoose 9.10.2 in `server/`. `server/src/config/db.js` has `connectDB(uri)` (5 s timeout, logs only host/database, never the full link) and `disconnectDB()` for tests. `server.js` connects first, then listens; clear message + exit if `MONGODB_URI` is missing or MongoDB is off. `.env.example` in the project root with all SEC-07 keys (secrets empty); server scripts read the root `.env` with `--env-file-if-exists=../.env`. Checked: connect + health 200, MongoDB stopped = clear error, missing URI = clear error.
-- Docs: database plan written (Section 2, 15.2, Phase 12 in 15.3, Section 17; Phase 12 tasks here): Docker now, Atlas free tier in Phase 12, only `MONGODB_URI` changes.
-- Earlier today: 0.5 Tailwind + theme, UI-02 theme switch, docs for intro order and UI-45 to UI-47.
+- Date: 2026-09-30
+- Done: committed 0.6. Task 0.7: wrote `docs/database.md` (22 collections, fields, indexes, transactions, seat locking rules).
+- Docker MongoDB is now a single-node replica set `rs0` (needed for transactions). Container recreated, same volume. `MONGODB_URI` now ends with `?replicaSet=rs0` (`.env` and `.env.example`). Checked: a transaction works, server connects, `/api/health` 200. `CLAUDE.md` commands updated.
+- Requirements updated: fixed city list in settings (seeded), owners pick from it (O-03), users see only cities with approved theatres (U-04); separate `bankaccounts` collection; replica set + `MongoMemoryReplSet` for tests (Section 2, 15.2, 15.5, 17).
+- Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
 
 ## Next step
 
-- Phase 0, task 0.7: write `docs/database.md` (collections, fields, indexes). Include the `theme` field on users (UI-02 later tasks).
+- Phase 0, task 0.8: write `docs/api.md` (all endpoints). Include saving the theme choice in the profile API.
+- Answer the 8 questions in `docs/database.md` Section 6 (can be done in the 0.9 review).
 - Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
 - Not done (you can decide later): `/api/health` showing database status.
 
@@ -22,11 +24,12 @@
 - [ ] Commission % starting value
 - [ ] GST rates and HSN/SAC codes (confirm with a CA)
 - [ ] Hosting for the test URL
+- [ ] 8 database questions in `docs/database.md` Section 6 (buyer state for GST, verify link life, prices with/without GST, coupon on food, booking number format, credit note series, coupon use after cancel, banners without city)
 
 ---
 
 ## UI-02 theme switch – later tasks
-- [ ] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
+- [x] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
 - [ ] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8)
 - [ ] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
 - [ ] Move `ThemeSwitch` from the test Home page into the real header (Phase 1, basic vintage layout)
@@ -42,11 +45,11 @@
 - [x] 0.5 Tailwind + Talkies theme colours + 3 Google Fonts (UI-01 to UI-05)
 - [x] UI-02 Theme switch Auto / Day show / Night show (localStorage for guests)
 - [x] 0.6 MongoDB connection + `.env.example`
-- [ ] 0.7 Write `docs/database.md` (collections, fields, indexes)
+- [x] 0.7 Write `docs/database.md` (collections, fields, indexes)
 - [ ] 0.8 Write `docs/api.md` (all endpoints)
 - [ ] 0.9 Developer reviews database.md and api.md
 - [ ] 0.10 Seed script skeleton (`npm run seed`)
-- [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server)
+- [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server, use `MongoMemoryReplSet` for transactions)
 
 ## Phase 1 – Auth and roles
 - [ ] U-01 Sign up + verify email

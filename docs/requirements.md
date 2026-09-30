@@ -59,7 +59,7 @@ This file is the single source of truth for the project. Claude CLI (Claude Code
 | Animations | Framer Motion (components) + CSS keyframes (simple loops) |
 | Hand-drawn charts | Rough.js |
 | Backend | Node.js (current LTS) + Express |
-| Database | MongoDB + Mongoose. Development: MongoDB in Docker on the developer's laptop. Deployment (Phase 12): MongoDB Atlas free tier. Only `MONGODB_URI` in `.env` changes; the code stays the same. |
+| Database | MongoDB + Mongoose. Must run as a replica set (transactions are needed to confirm a booking). Development: MongoDB in Docker on the developer's laptop as a single-node replica set (`rs0`). Deployment (Phase 12): MongoDB Atlas free tier. Only `MONGODB_URI` in `.env` changes; the code stays the same. |
 | Real-time | Socket.io (live seat map, live dashboards) |
 | Validation | Zod (backend, and forms on the frontend) |
 | Auth | JWT access token + refresh token (httpOnly cookie), bcrypt |
@@ -70,7 +70,7 @@ This file is the single source of truth for the project. Claude CLI (Claude Code
 | Excel export | `exceljs` |
 | Background jobs | `node-cron` |
 | PWA / offline | `vite-plugin-pwa` |
-| Tests | Vitest + Supertest + `mongodb-memory-server` |
+| Tests | Vitest + Supertest + `mongodb-memory-server` (replica-set version `MongoMemoryReplSet`, so transactions work in tests) |
 | Security middleware | helmet, cors, express-rate-limit |
 
 Before installing, check each package's current version and docs. If a package is not suitable, ask before replacing it.
@@ -139,7 +139,7 @@ Put these in a settings collection so admin can change them later (except where 
 | U-01 | Sign up | Name, email, password (BR-18). Verification email with link. Account works only after email is verified. | User can sign up, gets email, link verifies account |
 | U-02 | Login / logout | Email + password only. JWT (BR-19). Wrong password limit (BR-17). | Login works; tokens refresh; logout clears cookie |
 | U-03 | Forgot password | Email with reset link (valid 30 min, default). | Password can be reset from the link |
-| U-04 | Select city | City picker in header; saved for next visit. All lists show only that city. | Changing city changes shows and theatres |
+| U-04 | Select city | City picker in header; saved for next visit. The picker shows only cities that have at least one approved theatre. All lists show only that city. | Changing city changes shows and theatres |
 | U-05 | Home page | Coming soon ticker (UI-26), marquee "Now showing" banner, "Now showing" grid, "Coming soon" row. | Home shows real movies of the selected city |
 | U-06 | Search and filter | By movie name, language, genre, format (2D/3D), and special show filters (SF-08). | Filters combine correctly |
 | U-07 | Movie details | Poster, trailer link, cast, duration, certificate (U, U/A, A), languages, rating and reviews. | Page shows all fields from DB |
@@ -173,7 +173,7 @@ Put these in a settings collection so admin can change them later (except where 
 | --- | --- | --- | --- |
 | O-01 | Register as owner | Name, email, phone, business name, password. Status Pending until admin approves (ROLE-03). Email on approval/rejection. | Pending owner cannot add theatres |
 | O-02 | Owner dashboard | Box office register style (UI-30): flip-clock cards (tickets sold today, revenue today, seats filled %), today's entries table, show timing insights (SF-01), food sales. | Numbers match DB; update live |
-| O-03 | Theatres | Add/edit own theatres: name, city, address, map link, photos, GSTIN, amenities (wheelchair access, parking). Each new theatre is Pending (ROLE-04). | Theatre visible to users only after approval |
+| O-03 | Theatres | Add/edit own theatres: name, city (picked from the fixed city list in settings, seeded; no free text), address, map link, photos, GSTIN, amenities (wheelchair access, parking). Each new theatre is Pending (ROLE-04). | Theatre visible to users only after approval |
 | O-04 | Screens and seat layout | For each screen: name, format (2D/3D), cleaning break (BR-09), accessibility flags (wheelchair-friendly). Grid editor: rows × columns; each cell = seat, aisle (gap) or blocked. Seat types with class names: Balcony / First class / Second class (UI-22). Wheelchair spaces marked. | Layout saved and shown the same on the user seat map |
 | O-05 | Shows | Pick a movie from the admin's list, screen, date, start time, language, format, subtitles yes/no, special tags (parent-and-baby), price per seat class. End time from BR-10. No overlap on the same screen. Option: create the same show for several dates. | Overlaps are refused with a clear message |
 | O-06 | Cancel show | Reason required. Triggers BR-06 for all bookings (flow 9.6). Not after start (BR-07). | All users refunded and emailed |
@@ -527,10 +527,10 @@ booking-app/
 2. Create `CLAUDE.md` and `docs/progress.md`.
 3. Create `client` (Vite + React) and `server` (Express) with the folder structure above.
 4. Add Tailwind with the Talkies theme (UI-01 to UI-05) and the three Google Fonts.
-5. Connect MongoDB (Docker on the laptop for development; Atlas comes in Phase 12); add `.env.example`.
+5. Connect MongoDB (Docker on the laptop for development as a single-node replica set; Atlas comes in Phase 12); add `.env.example`.
 6. Write `docs/database.md` (all collections, fields, indexes) and `docs/api.md` (all endpoints) from this file. **Developer reviews them before Phase 1.**
 7. Add the seed script skeleton (`npm run seed`).
-8. Add test setup (Vitest + Supertest + mongodb-memory-server).
+8. Add test setup (Vitest + Supertest + mongodb-memory-server replica set).
 
 ### 15.3 Build phases
 
@@ -567,7 +567,7 @@ Finish and test each phase before the next. After each phase: update `progress.m
 
 ### 15.5 Seed data (`npm run seed`)
 
-Test data only, clearly marked as sample: 3 cities, 2 theatres per city, 2 screens each with seat layouts, 6 movies (4 now showing, 2 coming soon), shows for the next 7 days, food items per theatre, 2 coupons, and one login for each role (User, Owner, Gate Staff, Admin). Print the test logins in the console after seeding.
+Test data only, clearly marked as sample: the fixed city list in settings (U-04, O-03), 3 cities with theatres, 2 theatres per city, 2 screens each with seat layouts, 6 movies (4 now showing, 2 coming soon), shows for the next 7 days, food items per theatre, 2 coupons, and one login for each role (User, Owner, Gate Staff, Admin). Print the test logins in the console after seeding.
 
 ---
 
@@ -765,7 +765,9 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | Theatres | Many theatres in many cities |
 | Roles | User, Theatre Owner, Gate Staff, Admin |
 | Login | Email + password only |
-| Database | Docker MongoDB for development; MongoDB Atlas free tier for deployment (Phase 12), only `MONGODB_URI` changes |
+| Database | Docker MongoDB (single-node replica set) for development; MongoDB Atlas free tier for deployment (Phase 12, already a replica set), only `MONGODB_URI` changes. Booking confirm uses a transaction. |
+| Cities | Fixed city list in settings (seeded). Owners pick a theatre city from it; users see only cities with approved theatres |
+| Owner bank details | Separate `bankaccounts` collection, encrypted (SEC-12), owner only |
 | Payment | Mock Razorpay-style service; real Razorpay later |
 | Email | Postmark free plan |
 | Images | Cloudinary free plan |
