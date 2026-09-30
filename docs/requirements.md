@@ -62,7 +62,7 @@ This file is the single source of truth for the project. Claude CLI (Claude Code
 | Database | MongoDB + Mongoose. Must run as a replica set (transactions are needed to confirm a booking). Development: MongoDB in Docker on the developer's laptop as a single-node replica set (`rs0`). Deployment (Phase 12): MongoDB Atlas free tier. Only `MONGODB_URI` in `.env` changes; the code stays the same. |
 | Real-time | Socket.io (live seat map, live dashboards) |
 | Validation | Zod (backend, and forms on the frontend) |
-| Auth | JWT access token + refresh token (httpOnly cookie), bcrypt |
+| Auth | JWT access token (`jsonwebtoken`) + refresh token (random value, stored hashed, in an httpOnly cookie read with `cookie-parser`), bcrypt |
 | Email | Postmark (free plan) via the `postmark` npm package; console log when no key is set |
 | Images | Cloudinary (free plan) + multer for uploads |
 | QR | `qrcode` (create) + `html5-qrcode` (scan with phone camera) |
@@ -448,7 +448,7 @@ Emails use the vintage style too: cream background, maroon header "Talkies" in a
 | SEC-04 | Roles | ROLE-01 on every API |
 | SEC-05 | Ownership | ROLE-02 on every owner and staff API |
 | SEC-06 | Input | Validate all input with Zod; block NoSQL injection (no raw `$` keys from users) |
-| SEC-07 | Secrets | Only in `.env` (JWT secrets, QR secret, Postmark key, Cloudinary keys, bank data encryption key). `.env.example` with empty values in git; `.env` never in git |
+| SEC-07 | Secrets | Only in `.env` (JWT access token secret, QR secret, Postmark key, Cloudinary keys, bank data encryption key). `.env.example` with empty values in git; `.env` never in git |
 | SEC-08 | Headers | helmet, CORS allow-list, HTTPS in production |
 | SEC-09 | QR | QR holds a signed token (booking ID + signature with a secret), not plain data |
 | SEC-10 | Price | Backend always recalculates prices; never trust amounts from the browser |

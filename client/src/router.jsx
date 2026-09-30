@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
 import HomePage from './pages/public/HomePage.jsx'
+import LoginPage from './pages/public/LoginPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
@@ -12,6 +13,8 @@ const router = createBrowserRouter([
   { path: '/signup', element: <SignupPage /> },
   { path: '/check-email', element: <CheckEmailPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
+  // U-02 login
+  { path: '/login', element: <LoginPage /> },
   { path: '*', element: <NotFoundPage /> },
 ])
 

@@ -35,3 +35,12 @@ export const verifyEmailSchema = z.object({
 export const resendVerifySchema = z.object({
   email: emailField,
 })
+
+// Login: no password rules here, only "not empty" (the password is checked against the hash)
+export const loginSchema = z.object({
+  email: emailField,
+  password: z
+    .string({ error: 'Please enter your password.' })
+    .min(1, { error: 'Please enter your password.' })
+    .max(200, { error: 'The email or password is not correct.' }),
+})

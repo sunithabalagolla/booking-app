@@ -23,6 +23,12 @@ export const signupSchema = z.object({
   password: passwordField,
 })
 
+// Login: only "not empty" for the password (it is checked on the server)
+export const loginSchema = z.object({
+  email: emailField,
+  password: z.string().min(1, { error: 'Please enter your password.' }),
+})
+
 // Zod result → { field: 'first message' }
 export function fieldErrors(zodError) {
   const errors = {}

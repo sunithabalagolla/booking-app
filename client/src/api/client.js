@@ -1,3 +1,5 @@
+import { useAuthStore } from '../store/authStore.js'
+
 // Small fetch helper for all API calls.
 // Errors from the server come in one shape (docs/api.md 1.5); they are thrown as ApiError.
 
@@ -11,21 +13,29 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch(path, { method = 'GET', body } = {}) {
+const SESSION_EXPIRED_MESSAGE = 'Interval over! Please log in again to continue the show.'
+
+// One HTTP call. Adds the access token when there is one.
+async function request(path, { method = 'GET', body } = {}) {
+  const token = useAuthStore.getState().accessToken
+  const headers = {}
+  if (body) headers['Content-Type'] = 'application/json'
+  if (token) headers.Authorization = `Bearer ${token}`
+
   let res
   try {
     res = await fetch(`/api${path}`, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      headers,
       body: body ? JSON.stringify(body) : undefined,
-      credentials: 'include',
+      credentials: 'include', // sends the refresh cookie to /api/auth
     })
   } catch {
     // No internet (UI-36 message)
     throw new ApiError({ status: 0, code: 'NETWORK_ERROR', message: 'Power cut! Waiting for the generator… Please check your internet and try again.' })
   }
 
-  const data = await res.json().catch(() => ({}))
+  const data = res.status === 204 ? {} : await res.json().catch(() => ({}))
   if (!res.ok) {
     const error = data.error ?? {}
     throw new ApiError({
@@ -37,4 +47,48 @@ export async function apiFetch(path, { method = 'GET', body } = {}) {
     })
   }
   return data
+}
+
+// Gets a new access token with the refresh cookie (U-02).
+// Many calls at the same time share ONE refresh, because every refresh
+// token works only once (rotation).
+// Returns null when it worked, or the ApiError when it did not.
+let refreshing = null
+export function refreshSession() {
+  refreshing ??= request('/auth/refresh', { method: 'POST' })
+    .then((data) => {
+      useAuthStore.getState().setSession(data)
+      return null
+    })
+    .catch((error) => error)
+    .finally(() => {
+      refreshing = null
+    })
+  return refreshing
+}
+
+// App start: log in again silently if the refresh cookie is still good
+export async function restoreSession() {
+  const error = await refreshSession()
+  if (error) useAuthStore.getState().clearSession()
+}
+
+// Every API call goes through here. When the access token has expired, it
+// refreshes once and repeats the call. If that fails, the user is logged out
+// with the UI-36 "Interval over!" message.
+export async function apiFetch(path, options = {}) {
+  try {
+    return await request(path, options)
+  } catch (error) {
+    if (error.code !== 'TOKEN_EXPIRED') throw error
+
+    const refreshError = await refreshSession()
+    if (!refreshError) return request(path, options)
+
+    if (refreshError.code !== 'NETWORK_ERROR') {
+      useAuthStore.getState().clearSession({ expired: true })
+      throw new ApiError({ status: 401, code: 'SESSION_EXPIRED', message: SESSION_EXPIRED_MESSAGE })
+    }
+    throw refreshError
+  }
 }

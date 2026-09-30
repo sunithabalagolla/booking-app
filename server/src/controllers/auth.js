@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { BCRYPT_ROUNDS } from '../config/auth.js'
 import { AuthToken } from '../models/AuthToken.js'
 import { User } from '../models/User.js'
 import { sendEmail } from '../services/email/index.js'
@@ -6,7 +7,6 @@ import { verifyEmailTemplate } from '../services/email/templates.js'
 import { AppError } from '../utils/AppError.js'
 import { createToken, hashToken } from '../utils/tokens.js'
 
-const BCRYPT_ROUNDS = 12
 export const VERIFY_LINK_HOURS = 24 // U-01
 
 const clientUrl = () => process.env.CLIENT_URL || 'http://localhost:5173'

@@ -3,23 +3,22 @@
 ## Last session
 
 - Date: 2026-09-30 (second session)
-- Done: **U-01 sign up + verify email** (first task of Phase 1).
-  - Server foundations for all later tasks: request ID (`X-Request-Id`), `AppError` + error middleware (one error shape, api.md 1.5; `/api` 404 now uses it), Zod `validate()` middleware (refuses `$` / `.` keys, SEC-06), rate limits in one file `server/src/config/rateLimits.js` (SEC-03).
-  - Models `User` (database.md 5.1, all fields) and `AuthToken` (5.2, TTL index).
-  - Email service `services/email/`: console email now (no `POSTMARK_API_KEY`), Postmark when the key is set. E-01 template in the vintage style (user text is HTML-escaped).
-  - `POST /api/auth/signup` (bcrypt 12 rounds, 409 `EMAIL_TAKEN`, 5 per hour per IP), `/verify-email` (works once, 24 h; opening it twice says "already verified"), `/resend-verify` (always 200, old link stops working, max 3 per hour per email).
-  - Client: Vite proxy `/api` → 5000, TanStack Query, `api/client.js` fetch helper (`ApiError`), pages `/signup`, `/check-email`, `/verify-email` with small UI parts `PaperCard`, `TextField` (labels + linked errors, NF-03), `Button`, `ResendVerify`.
-  - New packages (all Section 2): server `zod` 4.6.5, `bcrypt` 6.0.0, `postmark` 5.1.0, `express-rate-limit` 8.7.0; client `zod`, `@tanstack/react-query` 5.104.0. `.env.example`: `CLIENT_URL`, `EMAIL_FROM`.
-  - New folders `server/src/validation/` and `client/src/validation/` (Zod schemas; same password rule on both sides – keep them the same). `server/src/utils/` for `AppError` and tokens.
-  - Password max 72 characters (bcrypt uses only the first 72 bytes).
-  - Tests: **38 pass** (client 9, server 29; new `auth.signup.test.js` with 17 tests). Also checked by hand with the real apps: sign up → console email → link verifies; form errors, `EMAIL_TAKEN` message, broken link page, Night show theme.
+- Done: **U-01 sign up + verify email** and **U-02 login / logout + tokens**.
+- U-02 details:
+  - New packages (added to requirements Section 2): `jsonwebtoken` 9.0.3, `cookie-parser` 1.4.7.
+  - Refresh token = random value stored hashed (no JWT), so `JWT_REFRESH_SECRET` was removed from `.env.example` and `.env`; SEC-07 updated. A random dev `JWT_ACCESS_SECRET` was put in your `.env`. The server refuses to start without it (min 32 characters).
+  - `config/auth.js`: access token 15 min, refresh 7 days (BR-19), cookie `talkies_rt` (httpOnly, sameSite strict, path `/api/auth`, secure in production), bcrypt rounds. **The lifetimes move to the settings collection with A-05 (Phase 2).**
+  - `controllers/session.js`: `POST /api/auth/login` (same 401 for wrong email / wrong password, dummy hash so both take the same time; 403 not verified / blocked only after a correct password), `/refresh` (rotation, atomic), `/logout`. BR-17 in `rateLimits.js`: only wrong logins (401) count, 5 per 15 min per email + IP.
+  - `middleware/auth.js` `requireAuth` (401 `UNAUTHORIZED` / `TOKEN_EXPIRED`, loads the user every request, blocked → 403). `GET /api/me`. `utils/publicUser.js`.
+  - Client: `store/authStore.js` (token in memory only), `apiFetch` refreshes once on `TOKEN_EXPIRED` (one shared refresh), "Interval over!" when it fails, `AuthManager` restores the login on page load, `/login` page, "Log in" button on the Email verified page, links between sign up and login, `AuthStatus` ("Logged in as … · Log out") on the test Home page.
+  - Tests: **61 pass** (client 16: theme 9 + token refresh 7; server 45: new `auth.session.test.js` with 16 tests, T-01 part). Checked by hand: verify link → Log in → wrong password message → login → reload (still logged in) → log out → reload (still logged out).
 - Earlier today: Phase 0 (tasks 0.6 to 0.11) done.
 
 ## Next step
 
-- **U-02 Login / logout + tokens** (BR-17, BR-19, SEC-02): login blocks unverified and blocked users, access token + refresh cookie with rotation, logout. Add the login page and point the "Email verified" button to it.
+- **U-03 Forgot password** (E-02, reset link 30 min): forgot / reset endpoints, pages, "Forgot password?" link on the login page. After reset: all devices logged out.
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
-- Later (Postmark, your choice when): create the Postmark account, set `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
+- Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 - Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
@@ -28,6 +27,7 @@
 
 ## Notes for later
 
+- Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
 
 ## Open questions
@@ -68,7 +68,7 @@
 
 ## Phase 1 – Auth and roles
 - [x] U-01 Sign up + verify email (with resend, max 3 per hour)
-- [ ] U-02 Login / logout + tokens
+- [x] U-02 Login / logout + tokens
 - [ ] U-03 Forgot password
 - [ ] O-01 Owner register (Pending)
 - [ ] S-01 Staff login

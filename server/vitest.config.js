@@ -6,6 +6,8 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     // Starts one in-memory MongoDB replica set for the whole test run
     globalSetup: ['./tests/globalSetup.js'],
+    // Test-only settings (like the JWT secret) before each test file
+    setupFiles: ['./tests/setupEnv.js'],
     // All test files share one test database, so run them one after another
     fileParallelism: false,
     // The first run downloads the MongoDB program, so give it time

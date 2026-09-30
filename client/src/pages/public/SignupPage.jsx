@@ -74,6 +74,13 @@ export default function SignupPage() {
           {signup.isPending ? 'Creating your account…' : 'Create account'}
         </Button>
       </form>
+
+      <p className="mt-6 text-sm">
+        Already have an account?{' '}
+        <Link to="/login" className="font-bold text-maroon underline">
+          Log in
+        </Link>
+      </p>
     </PaperCard>
   )
 }

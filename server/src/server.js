@@ -1,7 +1,16 @@
 import app from './app.js'
+import { getAccessSecret } from './config/auth.js'
 import { connectDB } from './config/db.js'
 
 const PORT = process.env.PORT || 5000
+
+// Stop at once if the login token secret is missing or too short (SEC-07)
+try {
+  getAccessSecret()
+} catch (error) {
+  console.error(error.message)
+  process.exit(1)
+}
 
 // Connect to the database first, then start the server.
 // If the database cannot be reached, stop with a clear message.

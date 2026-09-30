@@ -42,9 +42,8 @@ export default function VerifyEmailPage() {
             <span className="stamp text-xl text-green">Verified</span>
           </p>
           <p role="status">{verify.data.message}</p>
-          {/* Login page comes with U-02 */}
-          <Link to="/" className="inline-block min-h-11 rounded-btn bg-maroon px-5 py-2 font-type text-cream">
-            Go to home
+          <Link to="/login" className="inline-block min-h-11 rounded-btn bg-maroon px-5 py-2 font-type text-cream">
+            Log in
           </Link>
         </div>
       </PaperCard>
