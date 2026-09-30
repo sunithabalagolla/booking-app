@@ -38,9 +38,9 @@ Project: **Talkies** – movie ticket booking app (MERN) with a vintage 70s–80
 ## Commands
 
 - Install: `npm install` (root, client and server)
-- Run both: `npm run dev`
-- Seed test data: `npm run seed`
-- Tests: `npm test`
+- Run both (works now, project root): `npm run dev`: client + server together with `concurrently`
+- Seed test data (works now, project root): `npm run seed`. Clear first: `npm run seed -- --reset`. Refuses a non-local `MONGODB_URI` (e.g. Atlas) unless `-- --yes`. Test login password comes from `SEED_PASSWORD` in `.env`
+- Tests: `npm test` (not yet, task 0.11)
 
 Client only (works now, run inside `client/`): `npm run dev` (http://localhost:5173), `npm run build`, `npm run lint`
 Server only (works now, run inside `server/`): `npm run dev` (watch mode, http://localhost:5000), `npm start`. Check: http://localhost:5000/api/health

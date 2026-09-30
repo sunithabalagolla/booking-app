@@ -1,0 +1,13 @@
+{
+  "name": "talkies",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Talkies - movie ticket booking app (MERN)",
+  "scripts": {
+    "dev": "concurrently --names client,server --prefix-colors yellow,cyan --kill-others-on-fail \"npm --prefix client run dev\" \"npm --prefix server run dev\"",
+    "seed": "npm --prefix server run seed --"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

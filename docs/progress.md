@@ -9,13 +9,14 @@
 - Review answers (all 8 questions) written in `database.md` Section 6 + `requirements.md` (BR-03, BR-11, BR-16, BR-20, U-01, A-06, A-11, S-02, 11.3, GST-02, Section 17). New `database.md` Section 2a: prices include GST, how GST is calculated back.
 - Task 0.8: wrote `docs/api.md` (rules, error format, rate limits, all endpoints by role, Socket.io events). Requirements: Gate Staff can also use the food pickup screen (Section 3, O-11); "Resend verify email" max 3 per hour (U-01, SEC-03).
 - Task 0.9 review done. Decisions written in `api.md` Section 13 and `requirements.md` (O-01, O-05, SF-04, SEC-03, Section 17); waitlist offer hold also in `database.md` (5.10, 5.17).
+- Task 0.10: seed script skeleton. `server/src/seed/index.js` runs the steps in `seed/steps/index.js` (empty for now; steps added phase by phase), `--reset` drops all collections, refuses a non-local `MONGODB_URI` unless `--yes`. `seed/sample.js`: `isSample: true` marker + `SEED_PASSWORD` from `.env`. Root `package.json`: `npm run dev` (client + server with `concurrently` 10.0.5, dev dependency) and `npm run seed`. Checked: seed, reset, Atlas-like URI refused, both apps start with `npm run dev`.
 - Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
 
 ## Next step
 
-- Phase 0, task 0.10: seed script skeleton (`npm run seed`).
+- Phase 0, task 0.11: test setup (Vitest + Supertest + `MongoMemoryReplSet`), `npm test` from the root. First tests: `getAutoTheme` (UI-02) and `isLocalUri` (seed safety).
+- Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins, Phase 1).
 - Phase 1: change the `/api` 404 answer in `server/src/app.js` to the error shape in `api.md` 1.5.
-- Also soon: root `package.json` with `concurrently` so `npm run dev` runs client + server together.
 - Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
@@ -53,7 +54,7 @@
 - [x] 0.7 Write `docs/database.md` (collections, fields, indexes)
 - [x] 0.8 Write `docs/api.md` (all endpoints)
 - [x] 0.9 Developer reviews database.md and api.md
-- [ ] 0.10 Seed script skeleton (`npm run seed`)
+- [x] 0.10 Seed script skeleton (`npm run seed`)
 - [ ] 0.11 Test setup (Vitest + Supertest + mongodb-memory-server, use `MongoMemoryReplSet` for transactions)
 
 ## Phase 1 – Auth and roles
