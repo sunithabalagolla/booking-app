@@ -112,7 +112,7 @@ One collection for all 4 roles (Section 3). Role-specific data is in the `owner`
 | `passwordHash` | String | yes | bcrypt (SEC-01). Password rule BR-18 is checked before hashing. Never sent to the browser |
 | `role` | String | yes | `user` · `owner` · `staff` · `admin` |
 | `phone` | String | owner: yes | O-01, U-25 |
-| `emailVerified` | Boolean | yes | Default `false`. Login works only when `true` (U-01). Staff and seeded admin: `true` |
+| `emailVerified` | Boolean | yes | Default `false`. Login works only when `true` (U-01; owners too, O-01). Staff and seeded admin: `true` |
 | `status` | String | yes | `active` · `blocked`. Blocked = cannot log in (A-07, A-03, O-09). Default `active` |
 | `owner.businessName` | String | owner: yes | O-01 |
 | `owner.approvalStatus` | String | owner: yes | `pending` · `approved` · `rejected` (ROLE-03). Default `pending` |
@@ -349,7 +349,8 @@ See **Section 3** for the full locking rules.
 | `showId` | ObjectId → shows | yes | |
 | `seatId` | String | yes | e.g. `F4`, from the show layout |
 | `status` | String | yes | `held` · `booked` |
-| `bookingId` | ObjectId → bookings | yes | The booking that holds / owns this seat |
+| `bookingId` | ObjectId → bookings | yes, except waitlist offer | The booking that holds / owns this seat |
+| `waitlistId` | ObjectId → waitlist | waitlist offer: yes | SF-04: seat held only for the offered person (no booking yet). `expiresAt` = `offerExpiresAt`. When that person holds seats, this document becomes their booking hold |
 | `userId` | ObjectId → users | yes | |
 | `expiresAt` | Date | held: yes | now + `holdMinutes` (BR-01). **Removed** (`$unset`) when the seat becomes `booked` |
 
@@ -357,6 +358,7 @@ See **Section 3** for the full locking rules.
 - `{ showId: 1, seatId: 1 }` **unique**: the lock (only one user can take a seat)
 - `{ expiresAt: 1 }` **TTL**, `expireAfterSeconds: 0`: only documents that have `expiresAt` (held seats) are deleted, about every 60 s. **Always also check `expiresAt > now` in code**
 - `{ bookingId: 1 }`
+- `{ waitlistId: 1 }` (sparse)
 
 - Seat freed (cancel, timeout, payment given up) = its document is deleted.
 
@@ -505,6 +507,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `showId` / `userId` | ObjectId | yes | |
 | `status` | String | yes | `waiting` · `offered` · `booked` · `expired` · `left` |
 | `offeredAt` / `offerExpiresAt` | Date | | `offerExpiresAt` = `offeredAt` + BR-13. JOB-03 moves on to the next person |
+| `seatIds` | [String] | offered: yes | The freed seats held for this person in `showseats` (with `waitlistId`) |
 
 - Order = `createdAt` (first come, first served).
 

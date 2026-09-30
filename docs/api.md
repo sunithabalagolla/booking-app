@@ -68,19 +68,19 @@ All errors have the same shape:
 - Query: `?page=1&limit=20` (max `100`). Response: `{ "items": [...], "page": 1, "limit": 20, "total": 134 }`.
 
 ### 1.7 Rate limits (SEC-03)
-`express-rate-limit`. Fixed values come from the requirements; the others are *(suggested)*, see Section 13.
+`express-rate-limit`. **All numbers live in one config file: `server/src/config/rateLimits.js`.** Values marked *(start)* are start values agreed in the review (not in the requirements); they can be changed in that file.
 
 | Endpoint | Limit | Key |
 | --- | --- | --- |
 | `POST /auth/login` | 5 wrong logins / 15 min (BR-17) | email + IP |
 | `POST /auth/resend-verify` | 3 / hour (U-01) | email |
-| `POST /auth/signup`, `POST /auth/owner-signup` | 5 / hour *(suggested)* | IP |
-| `POST /auth/forgot-password` | 3 / hour *(suggested)* | email |
-| Seat hold, food, coupon | 30 / 10 min *(suggested)* | user |
-| Payment (create order, pay, verify) | 10 / 10 min *(suggested)* | user |
-| Ticket transfer, issues, reviews | 10 / hour *(suggested)* | user |
-| Gate scan, food pickup | 60 / min *(suggested)* | staff / owner |
-| Everything else | 300 / 15 min *(suggested)* | IP |
+| `POST /auth/signup`, `POST /auth/owner-signup` | 5 / hour *(start)* | IP |
+| `POST /auth/forgot-password` | 3 / hour *(start)* | email |
+| Seat hold, food, coupon | 30 / 10 min *(start)* | user |
+| Payment (create order, pay, verify) | 10 / 10 min *(start)* | user |
+| Ticket transfer, issues, reviews | 10 / hour *(start)* | user |
+| Gate scan, food pickup | 60 / min *(start)* | staff / owner |
+| Everything else | 300 / 15 min *(start)* | IP |
 
 ---
 
@@ -99,7 +99,7 @@ All errors have the same shape:
 | POST | `/signup` | Guest | `name, email, password` | `201`. Password BR-18. Sends E-01 (verify link, 24 h). `409 EMAIL_TAKEN` if the email exists. U-01 |
 | POST | `/verify-email` | Guest | `token` | `200` → `emailVerified: true`. Used / expired link → `400 RULE_BROKEN` with a "Resend" hint |
 | POST | `/resend-verify` | Guest | `email` | Always `200` (does not tell if the email exists). Deletes old verify links, sends a new E-01. Max 3 / hour (U-01, SEC-03) |
-| POST | `/owner-signup` | Guest | `name, email, phone, businessName, password` | `201`. Owner with `approvalStatus: pending` (O-01, ROLE-03). Email verify: see Section 13 |
+| POST | `/owner-signup` | Guest | `name, email, phone, businessName, password` | `201`. Owner with `approvalStatus: pending` (O-01, ROLE-03). Sends E-01: owners must verify the email before login, same as users (resend works too) |
 | POST | `/login` | Guest | `email, password` | `200 { accessToken, user }` + sets `talkies_rt` cookie. `401 INVALID_LOGIN`, `403 EMAIL_NOT_VERIFIED`, `403 ACCOUNT_BLOCKED`. Same login for all 4 roles (S-01). Pending owners can log in (they see a "waiting for approval" page) |
 | POST | `/refresh` | Guest (cookie) | — | `200 { accessToken }` + new cookie. No / bad cookie → `401` |
 | POST | `/logout` | Guest (cookie) | — | `204`. Deletes the refresh token and clears the cookie |
@@ -171,7 +171,9 @@ Login is needed from seat selection on (9.2).
 | --- | --- | --- | --- | --- |
 | POST | `/api/shows/:id/waitlist` | User | — | SF-04. Only when the show is Housefull. Max 1 per user per show → `409 ALREADY_EXISTS` |
 | DELETE | `/api/shows/:id/waitlist` | User | — | Leave the waitlist |
-| GET | `/api/me/waitlist` | User | — | My entries with status (`waiting` · `offered` + `offerExpiresAt`) |
+| GET | `/api/me/waitlist` | User | — | My entries with status (`waiting` · `offered` + `offerExpiresAt` + the held `seatIds`) |
+
+**Waitlist offer (SF-04):** a freed seat is held **only for the offered person** until `offerExpiresAt` (a `showseats` hold with `waitlistId`, see database.md 5.10). Other users see it as held. The offered person books with the normal `POST /api/bookings/hold`: their offered seats are allowed, and the offer hold becomes the booking hold. No booking in 10 minutes → JOB-03 holds the seat for the next person (E-07).
 | POST | `/api/movies/:id/reviews` | User | `rating` (1–5), `text?` | U-23, BR-24: only with an "Entered" ticket for this movie, else `403`. One per movie → `409 ALREADY_EXISTS` |
 | PATCH | `/api/reviews/:id` | User (own) | `rating?, text?` | Edit my review |
 | POST | `/api/issues` | User | `message, bookingId?` | U-27. `bookingId` must be the user's |
@@ -199,7 +201,7 @@ All paths below start with `/api/owner`. **Who = Owner (approved)** and **own** 
 | PATCH · DELETE | `/food/:id` | same fields | Old bookings keep their copy |
 | GET | `/shows` | `theatreId?, screenId?, from?, to?`, page | |
 | POST | `/shows` | `movieId, screenId, dates[]` (IST days), `startTime` (`HH:mm` IST), `language, format, subtitles, tags?, prices: [{ seatClass, pricePaise }]` | O-05. One show per date, all or none (transaction). End time BR-10, label BR-22. Overlap → `409 SHOW_OVERLAP` with `details.dates`. Theatre not approved → `400 RULE_BROKEN` (ROLE-04). Movie `inactive` → `400` |
-| PATCH | `/shows/:id` | same fields (not `dates`) | Only while the show has no bookings, see Section 13 |
+| PATCH | `/shows/:id` | same fields (not `dates`) | Only while the show has **no** bookings (O-05), else `409 IN_USE` "cancel the show instead". Deal settings use `PUT /shows/:id/deal` and can always change |
 | POST | `/shows/:id/cancel` | `reason` | O-06, flow 9.6. After start → `400 RULE_BROKEN` (BR-07). Refunds run in JOB-04, E-05 to every user |
 | PUT | `/shows/:id/deal` | `enabled, percent` | O-12, BR-14 (max `dealMaxPercent`) |
 | PUT | `/theatres/:id/deal` | `enabled, percent` | O-12 "for all shows" of the theatre (future shows) |
@@ -299,9 +301,11 @@ Same server and port as the API. The client sends the access token in `auth: { t
 
 ---
 
-## 13. Questions for the developer review (task 0.9)
+## 13. Decisions from the developer review (task 0.9, 2026-09-30)
 
-1. **Owner email verify (O-01)**: must owners also verify their email before login, like users (U-01)? Suggested: yes, same flow.
-2. **Rate limit numbers**: the values marked *(suggested)* in 1.7 are not in the requirements. OK as a start?
-3. **Editing a show after bookings exist**: suggested: a show can be edited only while it has **no** bookings (deal settings can always change). With bookings, the owner cancels the show instead (O-06, full refund).
-4. **Waitlist offer (SF-04, Phase 9)**: during the 10 minutes, are the freed seats kept only for the person who got the offer, or can anybody book them? This can wait until Phase 9.
+| Question | Decision |
+| --- | --- |
+| Owner email verify (O-01) | Yes: owners must verify the email before login, same as users |
+| Rate limit numbers | OK as start values; all in one config file `server/src/config/rateLimits.js` |
+| Editing a show after bookings | Not allowed, except deal settings. To change, cancel the show (full refund, O-06) |
+| Waitlist offer (SF-04) | The freed seat is held only for the offered person for 10 minutes (hold with `expiresAt`) |
