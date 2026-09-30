@@ -2,26 +2,33 @@
 
 ## Last session
 
-- Date: 2026-09-30
-- Done: committed 0.6. Task 0.7: wrote `docs/database.md` (22 collections, fields, indexes, transactions, seat locking rules).
-- Docker MongoDB is now a single-node replica set `rs0` (needed for transactions). Container recreated, same volume. `MONGODB_URI` now ends with `?replicaSet=rs0` (`.env` and `.env.example`). Checked: a transaction works, server connects, `/api/health` 200. `CLAUDE.md` commands updated.
-- Requirements updated: fixed city list in settings (seeded), owners pick from it (O-03), users see only cities with approved theatres (U-04); separate `bankaccounts` collection; replica set + `MongoMemoryReplSet` for tests (Section 2, 15.2, 15.5, 17).
-- Review answers (all 8 questions) written in `database.md` Section 6 + `requirements.md` (BR-03, BR-11, BR-16, BR-20, U-01, A-06, A-11, S-02, 11.3, GST-02, Section 17). New `database.md` Section 2a: prices include GST, how GST is calculated back.
-- Task 0.8: wrote `docs/api.md` (rules, error format, rate limits, all endpoints by role, Socket.io events). Requirements: Gate Staff can also use the food pickup screen (Section 3, O-11); "Resend verify email" max 3 per hour (U-01, SEC-03).
-- Task 0.9 review done. Decisions written in `api.md` Section 13 and `requirements.md` (O-01, O-05, SF-04, SEC-03, Section 17); waitlist offer hold also in `database.md` (5.10, 5.17).
-- Task 0.10: seed script skeleton. `server/src/seed/index.js` runs the steps in `seed/steps/index.js` (empty for now; steps added phase by phase), `--reset` drops all collections, refuses a non-local `MONGODB_URI` unless `--yes`. `seed/sample.js`: `isSample: true` marker + `SEED_PASSWORD` from `.env`. Root `package.json`: `npm run dev` (client + server with `concurrently` 10.0.5, dev dependency) and `npm run seed`. Checked: seed, reset, Atlas-like URI refused, both apps start with `npm run dev`.
-- Task 0.11: test setup. Vitest 5.0.2 (client + server), Supertest 7.3.0, mongodb-memory-server 11.3.0 (dev dependencies). `npm test` from the root runs both. Server: one in-memory `MongoMemoryReplSet` (MongoDB 8.3.11) per run, test files one after another. Tests: client 9 (UI-02 `getAutoTheme`, `resolveTheme`, `loadThemeChoice`), server 12 (health + 404, seed safety `isLocalUri`, transaction commit / abort). **All 21 pass.** **Phase 0 done.**
-- Seat checks must always check `expiresAt > now` (TTL deletes only about every 60 s). Written in `database.md` Section 3.
+- Date: 2026-09-30 (second session)
+- Done: **U-01 sign up + verify email** (first task of Phase 1).
+  - Server foundations for all later tasks: request ID (`X-Request-Id`), `AppError` + error middleware (one error shape, api.md 1.5; `/api` 404 now uses it), Zod `validate()` middleware (refuses `$` / `.` keys, SEC-06), rate limits in one file `server/src/config/rateLimits.js` (SEC-03).
+  - Models `User` (database.md 5.1, all fields) and `AuthToken` (5.2, TTL index).
+  - Email service `services/email/`: console email now (no `POSTMARK_API_KEY`), Postmark when the key is set. E-01 template in the vintage style (user text is HTML-escaped).
+  - `POST /api/auth/signup` (bcrypt 12 rounds, 409 `EMAIL_TAKEN`, 5 per hour per IP), `/verify-email` (works once, 24 h; opening it twice says "already verified"), `/resend-verify` (always 200, old link stops working, max 3 per hour per email).
+  - Client: Vite proxy `/api` → 5000, TanStack Query, `api/client.js` fetch helper (`ApiError`), pages `/signup`, `/check-email`, `/verify-email` with small UI parts `PaperCard`, `TextField` (labels + linked errors, NF-03), `Button`, `ResendVerify`.
+  - New packages (all Section 2): server `zod` 4.6.5, `bcrypt` 6.0.0, `postmark` 5.1.0, `express-rate-limit` 8.7.0; client `zod`, `@tanstack/react-query` 5.104.0. `.env.example`: `CLIENT_URL`, `EMAIL_FROM`.
+  - New folders `server/src/validation/` and `client/src/validation/` (Zod schemas; same password rule on both sides – keep them the same). `server/src/utils/` for `AppError` and tokens.
+  - Password max 72 characters (bcrypt uses only the first 72 bytes).
+  - Tests: **38 pass** (client 9, server 29; new `auth.signup.test.js` with 17 tests). Also checked by hand with the real apps: sign up → console email → link verifies; form errors, `EMAIL_TAKEN` message, broken link page, Night show theme.
+- Earlier today: Phase 0 (tasks 0.6 to 0.11) done.
 
 ## Next step
 
-- **Phase 1 – Auth and roles**, first task: U-01 sign up + verify email (with resend, max 3 per hour). Start with the `users` + `authtokens` models, the error shape (`api.md` 1.5, also fixes the `/api` 404 answer) and the rate limit config file (`server/src/config/rateLimits.js`).
-- Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins, Phase 1).
+- **U-02 Login / logout + tokens** (BR-17, BR-19, SEC-02): login blocks unverified and blocked users, access token + refresh cookie with rotation, logout. Add the login page and point the "Email verified" button to it.
+- Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
+- Later (Postmark, your choice when): create the Postmark account, set `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 - Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
 
 - (none yet)
+
+## Notes for later
+
+- Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
 
 ## Open questions
 
@@ -60,7 +67,7 @@
 **Phase 0 done (2026-09-30).**
 
 ## Phase 1 – Auth and roles
-- [ ] U-01 Sign up + verify email
+- [x] U-01 Sign up + verify email (with resend, max 3 per hour)
 - [ ] U-02 Login / logout + tokens
 - [ ] U-03 Forgot password
 - [ ] O-01 Owner register (Pending)

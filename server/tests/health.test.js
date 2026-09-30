@@ -12,5 +12,7 @@ describe('GET /api/health', () => {
   it('answers 404 for an unknown /api path', async () => {
     const res = await request(app).get('/api/no-such-path')
     expect(res.status).toBe(404)
+    expect(res.body.error.code).toBe('NOT_FOUND')
+    expect(res.body.error.requestId).toBe(res.headers['x-request-id'])
   })
 })

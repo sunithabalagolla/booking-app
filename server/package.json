@@ -10,8 +10,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1",
-    "mongoose": "^9.10.2"
+    "express-rate-limit": "^8.7.0",
+    "mongoose": "^9.10.2",
+    "postmark": "^5.1.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.3.0",
