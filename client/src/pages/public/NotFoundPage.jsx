@@ -1,11 +1,14 @@
-import { Link } from 'react-router'
+import ButtonLink from '../../components/ui/ButtonLink.jsx'
+import PaperCard from '../../components/ui/PaperCard.jsx'
 
-// Placeholder until the vintage 404 page (UI-36) is built in Phase 10
+// 404 with the UI-36 message. The full vintage error page comes in Phase 10.
 export default function NotFoundPage() {
   return (
-    <main>
-      <h1>Page not found</h1>
-      <Link to="/">Go to home</Link>
-    </main>
+    <PaperCard title="Page not found">
+      <div className="space-y-4">
+        <p>This reel is missing from the projector room.</p>
+        <ButtonLink to="/">Go to home</ButtonLink>
+      </div>
+    </PaperCard>
   )
 }

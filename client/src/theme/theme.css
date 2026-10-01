@@ -52,6 +52,23 @@
   animation-duration: var(--theme-fade, 500ms);
 }
 
+/* UI-30 ledger paper: thin blue-grey lines every 32 px + red margin line on the left.
+   Night show: dark paper, softer lines. Lines are light enough to keep 4.5:1 text contrast. */
+@utility ledger {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  background-image:
+    linear-gradient(to right, transparent 32px, #b23a3a 32px, #b23a3a 34px, transparent 34px),
+    repeating-linear-gradient(to bottom, transparent 0 31px, #9fb3c8 31px 32px);
+  &:where([data-theme="night"] *) {
+    background-color: var(--color-stage);
+    color: var(--color-cream);
+    background-image:
+      linear-gradient(to right, transparent 32px, #8e3a3a 32px, #8e3a3a 34px, transparent 34px),
+      repeating-linear-gradient(to bottom, transparent 0 31px, #3a4a5a 31px 32px);
+  }
+}
+
 /* UI-05 dotted tear line on tickets */
 @utility tear-line {
   border-top: 2px dotted var(--color-ink);

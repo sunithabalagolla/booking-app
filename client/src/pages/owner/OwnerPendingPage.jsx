@@ -1,13 +1,11 @@
-import { useLogout } from '../../api/auth.js'
-import Button from '../../components/ui/Button.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
+import Stamp from '../../components/ui/Stamp.jsx'
 import { useAuthStore } from '../../store/authStore.js'
 
 // O-01: a logged-in owner who is not approved yet (ROLE-03) waits here.
 // Rejected owners see the admin's reason (A-03). Only they can open it (RoleRoute).
 export default function OwnerPendingPage() {
   const user = useAuthStore((s) => s.user)
-  const logout = useLogout()
 
   const rejected = user.owner?.approvalStatus === 'rejected'
 
@@ -16,9 +14,9 @@ export default function OwnerPendingPage() {
       <div className="space-y-4">
         <p className="py-2">
           {/* UI-30 stamp colours: Pending = dark mustard, Rejected = maroon */}
-          <span className={`stamp text-xl ${rejected ? 'text-maroon' : 'text-mustard'}`}>
+          <Stamp tone={rejected ? 'maroon' : 'mustard'} className="text-xl">
             {rejected ? 'Rejected' : 'Pending'}
-          </span>
+          </Stamp>
         </p>
         <p>
           <strong>{user.owner?.businessName}</strong>
@@ -38,9 +36,6 @@ export default function OwnerPendingPage() {
             an email.
           </p>
         )}
-        <Button variant="secondary" onClick={() => logout.mutate()} disabled={logout.isPending}>
-          Log out
-        </Button>
       </div>
     </PaperCard>
   )

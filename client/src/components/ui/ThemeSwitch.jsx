@@ -27,7 +27,8 @@ function MoonIcon() {
   )
 }
 
-export default function ThemeSwitch() {
+// `onDark`: cream outline + gold icon, for the dark sidebar and staff bar
+export default function ThemeSwitch({ onDark = false }) {
   const choice = useThemeStore((state) => state.choice)
   const theme = useThemeStore((state) => state.theme)
   const setChoice = useThemeStore((state) => state.setChoice)
@@ -75,7 +76,9 @@ export default function ThemeSwitch() {
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((isOpen) => !isOpen)}
-        className="flex h-11 w-11 items-center justify-center rounded-btn border border-ink text-ink dark:border-cream dark:text-gold"
+        className={`flex h-11 w-11 items-center justify-center rounded-btn border ${
+          onDark ? 'border-cream text-gold' : 'border-ink text-ink dark:border-cream dark:text-gold'
+        }`}
       >
         {theme === 'night' ? <MoonIcon /> : <SunIcon />}
       </button>

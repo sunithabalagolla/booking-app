@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, and **ROLE-01 to ROLE-06**.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06** and the **basic vintage layout**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -28,13 +28,20 @@
   - Server: `middleware/role.js` `requireRole(...)` (wrong role → `403 FORBIDDEN`) and `requireApprovedOwner` (ROLE-03, pending / rejected → `403 OWNER_NOT_APPROVED`). Route groups `/api/owner`, `/api/staff`, `/api/admin` with login + role set once (empty until their endpoints come). `middleware/ownership.js` (ROLE-02): `ownedFilter(user)` and `findOwned(Model, id, user)` → `404` when not own. Not used by a real collection yet (theatres come with O-03).
   - ROLE-04: to-do on O-05 (below). ROLE-05 / ROLE-06: tests prove sign up cannot make staff or admin; seed makes the admin.
   - Client: `RoleRoute` page guard + `roleRedirect` / `roleKey` / `PUBLIC` in `authStore.js`. Guest → login; wrong role → quietly to its own home. After login: approved owner → `/owner`, admin → `/admin` (new placeholder "Box office register – comes in Phase 8", ledger paper look, Log out), staff → `/staff/scan`, pending owner → `/owner/pending`, user → where they came from. Staff on public pages (Home) → back to the scanner; owners and admins can browse. Account pages (login, sign up, verify, reset) stay open to all, so email links always work.
+  - Checked by the developer in the browser (2026-10-01): all role redirects work.
   - Tests: **131 pass** (client 32: `authRoutes.test.js` 13; server 99: new `roles.test.js` 26). Lint + build OK. Not checked by hand in the browser yet.
+- Basic vintage layout details (your decisions 2026-10-01):
+  - 3 layouts in `client/src/components/layout/`: `SiteLayout` (public + account pages: header with logo, account area and theme switch; footer with tear line, "For theatre owners" link and © Talkies; "Skip to content" link), `DashboardLayout` (UI-30: ink brown sidebar with logo, role menu, theme switch, Log out; ledger paper main area; top bar on tablet / phone), `StaffLayout` (no header / footer; small wooden bar with logo, theme switch, Log out). Router uses them as layout routes.
+  - Header account area: guest → Log in / Sign up; logged in → name, own page link (owner "My register", pending owner "My owner account", admin "Admin register", staff "Gate scanner"), Log out. The old `AuthStatus` line is gone.
+  - New UI parts: `ButtonLink`, `Card` (optional `footer` under a tear line), `Stamp` (green / mustard / maroon), `buttonStyles.js` (variants primary / secondary / light). `PaperCard` no longer shows its own logo. New CSS utility `ledger` (Day + Night show). `ThemeSwitch` has `onDark` for dark bars.
+  - 404 page now uses the UI-36 text ("This reel is missing from the projector room." + Go to home); the full vintage page stays in Phase 10. Test Home page shows the new buttons, card and stamps.
+  - Tests: **138 pass** (client 39: new `navigation.test.js` 7; server 99). Lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **Basic vintage layout** (next in Phase 1): header, footer (with the "For theatre owners" link), buttons, cards. Then T-01 tests to finish Phase 1.
-- Try by hand once: log in as each seed login (`user@ / owner@ / staff@ / admin@talkies.test`) → each lands on its own page; staff opening `/` goes back to the scanner; user opening `/admin` goes to Home.
+- **Theme to profile** (small task, your decision): save the theme choice with `PATCH /api/me/prefs` when logged in; profile choice wins over localStorage (UI-02). Then T-01 tests to finish Phase 1.
+- Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -52,6 +59,8 @@
 - **Seeded Gate Staff has no theatres yet** (`staff.theatreIds: []`). ROLE-05 says one or more; theatres only exist from Phase 2 (O-03). When the theatres seed step is added, link `staff@talkies.test` to the sample owner's theatres.
 - Owner blocked → their Gate Staff cannot log in (ROLE-05, A-07). Check it at login, refresh and in `requireAuth`. Build with A-07 (Phase 8).
 
+- Component tests (React parts on screen) need `@testing-library/react` + `jsdom` (not in Section 2). For now only helper functions are tested. **Decide in Phase 4** (seat map) (your decision 2026-10-01).
+
 ## Open questions
 
 - [ ] Commission % starting value
@@ -67,7 +76,7 @@
 - [x] Add `theme` field (auto / day / night) to the users collection in `docs/database.md` (task 0.7)
 - [x] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8): `PATCH /api/me/prefs`
 - [x] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
-- [ ] Move `ThemeSwitch` from the test Home page into the real header (Phase 1, basic vintage layout)
+- [x] Move `ThemeSwitch` from the test Home page into the real header (basic vintage layout, 2026-10-01; also in the dashboard sidebar and staff bar)
 - [ ] Save the choice in the user profile when logged in; profile choice wins over localStorage (Phase 1 login + U-25)
 - [ ] Theme choice in Profile (U-25 / UI-29)
 - [ ] Reduce motion setting in Profile also turns off the theme fade (UI-41, Phase 10). Until then it follows the phone setting
@@ -94,9 +103,11 @@
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
 - [x] O-01 Owner register (Pending, phone rule, waiting for approval page)
 - [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles; tested in the browser by the developer 2026-10-01)
-- [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 is built with O-05)
-- [ ] Basic vintage layout: header, footer, buttons, cards
-  - [ ] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
+- [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 is built with O-05; tested in the browser by the developer 2026-10-01)
+- [x] Basic vintage layout: header, footer, buttons, cards (SiteLayout, DashboardLayout, StaffLayout)
+  - [x] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
+  - [ ] Bottom navigation (UI-15: Home, Ticket album, Profile): add when Ticket album (U-18, Phase 6) and Profile (U-25) exist (your decision 2026-10-01)
+- [ ] UI-02 theme choice saved in the profile when logged in (`PATCH /api/me/prefs`)
 - [ ] T-01 tests
 
 ## Phase 2 – Admin + owner setup

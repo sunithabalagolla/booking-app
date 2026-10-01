@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { useResetPassword } from '../../api/auth.js'
 import Button from '../../components/ui/Button.jsx'
+import ButtonLink from '../../components/ui/ButtonLink.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import TextField from '../../components/ui/TextField.jsx'
 import { fieldErrors, resetPasswordSchema } from '../../validation/auth.js'
-
-const buttonLink = 'inline-block min-h-11 rounded-btn bg-maroon px-5 py-2 font-type text-cream'
 
 // U-03: the link in the reset email opens this page: /reset-password?token=...
 export default function ResetPasswordPage() {
@@ -37,9 +36,7 @@ export default function ResetPasswordPage() {
           <p role="alert">
             The link has expired (it works for 30 minutes), was already used, or was replaced by a newer one.
           </p>
-          <Link to="/forgot-password" className={buttonLink}>
-            Get a new link
-          </Link>
+          <ButtonLink to="/forgot-password">Get a new link</ButtonLink>
         </div>
       </PaperCard>
     )
@@ -51,9 +48,7 @@ export default function ResetPasswordPage() {
         <div className="space-y-4">
           <p role="status">{reset.data.message}</p>
           <p>For safety, you are logged out on all devices.</p>
-          <Link to="/login" className={buttonLink}>
-            Log in
-          </Link>
+          <ButtonLink to="/login">Log in</ButtonLink>
         </div>
       </PaperCard>
     )

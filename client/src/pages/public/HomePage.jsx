@@ -1,7 +1,8 @@
 // Placeholder until U-05 (Home page) is built in Phase 3.
 // For now it shows the Talkies theme (UI-01 to UI-05) so we can check it.
-import AuthStatus from '../../components/ui/AuthStatus.jsx'
-import ThemeSwitch from '../../components/ui/ThemeSwitch.jsx'
+import Button from '../../components/ui/Button.jsx'
+import Card from '../../components/ui/Card.jsx'
+import Stamp from '../../components/ui/Stamp.jsx'
 
 const colours = [
   { name: 'Paper cream', className: 'bg-cream', dark: false },
@@ -16,15 +17,9 @@ const colours = [
 
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-3xl space-y-8 p-4">
-      {/* U-02 login status; moves into the real header later in Phase 1 */}
-      <AuthStatus />
-      <div className="flex items-start justify-between gap-4">
-        {/* Maroon is too dark on the Night show background, so headings turn gold */}
-        <h1 className="font-heading text-4xl text-maroon dark:text-gold">Talkies – coming soon</h1>
-        {/* UI-02 switch lives here until the real header is built in Phase 1 */}
-        <ThemeSwitch />
-      </div>
+    <div className="mx-auto max-w-3xl space-y-8 py-6">
+      {/* Maroon is too dark on the Night show background, so headings turn gold */}
+      <h1 className="font-heading text-4xl text-maroon dark:text-gold">Talkies – coming soon</h1>
 
       <section className="space-y-2">
         <h2 className="font-type text-xl">Colours (UI-01)</h2>
@@ -49,18 +44,23 @@ export default function HomePage() {
 
       <section className="space-y-4">
         <h2 className="font-type text-xl">Shapes (UI-05)</h2>
-        <button type="button" className="rounded-btn bg-maroon px-5 py-3 text-cream">
-          Book tickets
-        </button>
-        <div className="rounded-card border border-ink bg-cream-light p-4 text-ink">
-          <p className="font-type">Card with 8 px corners</p>
-          <div className="tear-line my-3" />
-          <p>Below the tear line</p>
+        <div className="flex flex-wrap gap-3">
+          <Button>Book tickets</Button>
+          <Button variant="secondary">Secondary</Button>
         </div>
-        <p className="py-4">
-          <span className="stamp text-2xl text-maroon dark:text-gold">Housefull</span>
+        <Card footer={<p>Below the tear line</p>}>
+          <p className="font-type">Card with 8 px corners</p>
+        </Card>
+        <p className="flex flex-wrap gap-8 py-4">
+          <Stamp className="text-2xl dark:text-gold">Housefull</Stamp>
+          <Stamp tone="green" className="text-2xl">
+            Approved
+          </Stamp>
+          <Stamp tone="mustard" className="text-2xl">
+            Pending
+          </Stamp>
         </p>
       </section>
-    </main>
+    </div>
   )
 }

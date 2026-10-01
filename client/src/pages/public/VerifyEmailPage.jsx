@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { useVerifyEmail } from '../../api/auth.js'
+import ButtonLink from '../../components/ui/ButtonLink.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import ResendVerify from '../../components/ui/ResendVerify.jsx'
+import Stamp from '../../components/ui/Stamp.jsx'
 
 // U-01: the link in the verify email opens this page: /verify-email?token=...
 export default function VerifyEmailPage() {
@@ -39,12 +41,12 @@ export default function VerifyEmailPage() {
       <PaperCard title="Email verified">
         <div className="space-y-4">
           <p className="py-2">
-            <span className="stamp text-xl text-green">Verified</span>
+            <Stamp tone="green" className="text-xl">
+              Verified
+            </Stamp>
           </p>
           <p role="status">{verify.data.message}</p>
-          <Link to="/login" className="inline-block min-h-11 rounded-btn bg-maroon px-5 py-2 font-type text-cream">
-            Log in
-          </Link>
+          <ButtonLink to="/login">Log in</ButtonLink>
         </div>
       </PaperCard>
     )
