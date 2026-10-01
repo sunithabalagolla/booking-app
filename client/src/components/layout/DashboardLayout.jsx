@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router'
+import { usePendingOwnerCount } from '../../api/adminOwners.js'
 import { useLogout } from '../../api/auth.js'
 import { useAuthStore } from '../../store/authStore.js'
 import Button from '../ui/Button.jsx'
@@ -13,6 +14,9 @@ export default function DashboardLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useLogout()
   const menu = dashboardMenuFor(user)
+  // A-03: how many owners wait for approval (admin only)
+  const pendingOwners = usePendingOwnerCount(user?.role === 'admin').data ?? 0
+  const counts = { pendingOwners }
 
   return (
     <div className="min-h-screen md:flex">
@@ -33,6 +37,11 @@ export default function DashboardLayout() {
                   }
                 >
                   {item.label}
+                  {item.count && counts[item.count] > 0 && (
+                    <span className="ml-2 rounded-btn bg-gold px-2 text-sm text-ink" aria-label={`${counts[item.count]} waiting`}>
+                      {counts[item.count]}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             ))}

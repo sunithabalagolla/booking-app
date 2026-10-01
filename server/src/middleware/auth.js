@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken'
 import { User } from '../models/User.js'
+import { blockedReason, BLOCKED_MESSAGES } from '../utils/accountBlock.js'
 import { AppError } from '../utils/AppError.js'
 import { verifyAccessToken } from '../utils/tokens.js'
 
 // Needs a valid access token: "Authorization: Bearer <token>" (api.md 1.2).
-// Loads the user from the database on every request, so a blocked user is
-// stopped at once, even with a token that has not expired yet.
+// Loads the user from the database on every request, so a blocked user (or the
+// Gate Staff of a blocked owner) is stopped at once, even with a token that has not expired yet.
 // Role checks (ROLE-01) are added in their own task.
 export async function requireAuth(req, res, next) {
   const match = /^Bearer (\S+)$/.exec(req.get('authorization') ?? '')
@@ -28,8 +29,10 @@ export async function requireAuth(req, res, next) {
   if (!user || user.deletedAt) {
     throw new AppError(401, 'UNAUTHORIZED', 'Please log in to continue.')
   }
-  if (user.status === 'blocked') {
-    throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked. Please contact support.')
+  // Blocked, or Gate Staff of a blocked owner (A-03, ROLE-05): stopped at once
+  const blocked = await blockedReason(user)
+  if (blocked) {
+    throw new AppError(403, 'ACCOUNT_BLOCKED', BLOCKED_MESSAGES[blocked])
   }
   // Token made before the last password change (e.g. reset on another device): refuse it.
   // `iat` is in whole seconds, so compare in whole seconds; a token made in the same

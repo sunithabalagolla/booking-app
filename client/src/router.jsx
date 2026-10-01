@@ -6,6 +6,7 @@ import RoleRoute from './components/RoleRoute.jsx'
 import AdminHomePage from './pages/admin/AdminHomePage.jsx'
 import AdminMovieFormPage from './pages/admin/AdminMovieFormPage.jsx'
 import AdminMoviesPage from './pages/admin/AdminMoviesPage.jsx'
+import AdminOwnersPage from './pages/admin/AdminOwnersPage.jsx'
 import AdminSettingsPage from './pages/admin/AdminSettingsPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
@@ -54,6 +55,8 @@ const router = createBrowserRouter([
     children: [
       { path: '/owner', element: guard(['owner'], <OwnerHomePage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
+      // A-03 owner approvals
+      { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },
       // A-02 movies
       { path: '/admin/movies', element: guard(['admin'], <AdminMoviesPage />) },
       { path: '/admin/movies/new', element: guard(['admin'], <AdminMovieFormPage />) },

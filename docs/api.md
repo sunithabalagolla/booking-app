@@ -245,9 +245,9 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 | POST | `/movies` | `title, posterUrl, trailerUrl?, cast?, genres, languages, durationMinutes, certificate, releaseDate, status` | `201 { movie }`. `genres` / `languages`: at least 1 from the fixed lists. `durationMinutes` 30–300. `certificate` `U` · `UA` · `A`. `releaseDate` = IST day `YYYY-MM-DD`. `trailerUrl` https only (`''` = none). `cast` max 30: `{ name, photoUrl? }` |
 | PATCH | `/movies/:id` | same fields, all optional (at least one) | Status `inactive` hides it from users and owners. `trailerUrl: ''` removes the trailer |
 | DELETE | `/movies/:id` | — | Only if no shows and no bookings, else `409 IN_USE` "make it inactive" |
-| GET | `/owners` | `approvalStatus?, q?`, page | A-03 |
-| POST | `/owners/:id/approve` | — | (audit) E-09 |
-| POST | `/owners/:id/reject` | `reason` | (audit) E-09 |
+| GET | `/owners` | `approvalStatus?, q?`, page | A-03. `q` = start of name, email or business name (any case). Pending: oldest first; others newest first. Items: `id, name, email, phone, businessName, approvalStatus, rejectReason, decidedAt, decidedBy { id, name }, emailVerified, status, createdAt` |
+| POST | `/owners/:id/approve` | — | (audit `owner.approve`) E-09. From `pending` or `rejected`; email must be verified (`400 RULE_BROKEN`, `reason: email_not_verified`). Already approved → `400 RULE_BROKEN`, `reason: already_decided`. One atomic step: two admins at once → one wins |
+| POST | `/owners/:id/reject` | `reason` (5–500) | (audit `owner.reject` with the reason) E-09 with the reason. Only from `pending`; an approved owner is blocked instead |
 | GET | `/theatres` | `status?, cityCode?`, page | A-04 |
 | POST | `/theatres/:id/approve` | — | (audit) E-09 |
 | POST | `/theatres/:id/reject` | `reason` | (audit) E-09 |
@@ -257,7 +257,7 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 | POST | `/coupons` | `code, discountType, value, minAmountPaise?, maxDiscountPaise?, startAt, endAt, totalLimit?, perUserLimit?, cityCodes?, theatreIds?` | `409 ALREADY_EXISTS` for a used code |
 | PATCH | `/coupons/:id` | same fields (not `code`) | |
 | GET | `/users` | `q?, role?, status?`, page | A-07 (all roles) |
-| POST | `/users/:id/block` · `/users/:id/unblock` | `reason?` | (audit) Blocked = cannot log in, logged out at once. Also for owners (A-03) |
+| POST | `/users/:id/block` · `/users/:id/unblock` | `reason?` | (audit `user.block` / `user.unblock`, reason in details) Blocked = cannot log in, logged out at once (refresh tokens deleted). **Built for owners with A-03**; other roles → `400 RULE_BROKEN` (`reason: owners_only`) until A-07. A blocked owner's Gate Staff are stopped too (login, refresh, every request; their refresh tokens deleted) |
 | POST | `/admins` | `name, email, password` | (audit) ROLE-06 |
 | GET | `/bookings` | `number?, email?, theatreId?, date?`, page | A-08 |
 | GET | `/bookings/:id` | — | With payments and refunds |

@@ -3,6 +3,7 @@ import { BCRYPT_ROUNDS, REFRESH_COOKIE, refreshCookieOptions } from '../config/a
 import { AuthToken } from '../models/AuthToken.js'
 import { getSettings } from '../models/Settings.js'
 import { User } from '../models/User.js'
+import { blockedReason, BLOCKED_MESSAGES } from '../utils/accountBlock.js'
 import { AppError } from '../utils/AppError.js'
 import { publicUser } from '../utils/publicUser.js'
 import { createToken, hashToken, signAccessToken } from '../utils/tokens.js'
@@ -48,8 +49,10 @@ export async function login(req, res) {
   if (!user.emailVerified) {
     throw new AppError(403, 'EMAIL_NOT_VERIFIED', 'Please verify your email first. We can send you a new link.')
   }
-  if (user.status === 'blocked') {
-    throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked. Please contact support.')
+  // Blocked, or Gate Staff of a blocked owner (A-03, ROLE-05)
+  const blocked = await blockedReason(user)
+  if (blocked) {
+    throw new AppError(403, 'ACCOUNT_BLOCKED', BLOCKED_MESSAGES[blocked])
   }
 
   const accessToken = await startSession(res, user)
@@ -72,7 +75,7 @@ export async function refresh(req, res) {
   })
   const user = token && (await User.findById(token.userId))
 
-  if (!user || user.deletedAt || user.status === 'blocked' || !user.emailVerified) {
+  if (!user || user.deletedAt || !user.emailVerified || (await blockedReason(user))) {
     clearRefreshCookie(res)
     throw new AppError(401, 'UNAUTHORIZED', 'Interval over! Please log in again to continue the show.')
   }

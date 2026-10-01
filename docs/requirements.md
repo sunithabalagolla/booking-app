@@ -93,7 +93,7 @@ There are 4 roles. A visitor who is not logged in is a **guest** (not a role): a
 - `ROLE-02` Owner and Gate Staff APIs also check ownership: the theatre must belong to that owner / staff.
 - `ROLE-03` Owner account starts as **Pending**; only after Admin approval can the owner add theatres.
 - `ROLE-04` Each new theatre starts as **Pending**; only after Admin approval can it have live shows.
-- `ROLE-05` Gate Staff accounts are created only by the owner, linked to one or more of the owner's theatres. If the owner is blocked, their Gate Staff also cannot log in (built with A-07).
+- `ROLE-05` Gate Staff accounts are created only by the owner, linked to one or more of the owner's theatres. If the owner is blocked, their Gate Staff also cannot log in (checked at login, refresh and every request; built with A-03 owner blocking).
 - `ROLE-06` Admin accounts are created only by the seed script or by another admin.
 
 ---
@@ -194,7 +194,7 @@ Put these in a settings collection so admin can change them later (except where 
 | --- | --- | --- | --- |
 | A-01 | Admin dashboard | Register style (UI-30) for the whole platform: tickets today, revenue, commission earned, top movies, top theatres, cities. | — |
 | A-02 | Movies | Add / edit / mark inactive: title, poster, trailer link, cast, genres, languages, duration, certificate, release date, status (Coming soon / Now showing / Inactive). A movie with shows or bookings cannot be deleted, only made inactive. Languages and genres come from fixed lists (one config file, `server/src/config/movieOptions.js`): languages Hindi, Tamil, Telugu, Malayalam, Kannada, Bengali, Marathi, Gujarati, Punjabi, English; genres Action, Comedy, Drama, Romance, Thriller, Horror, Family, Animation, Crime, Fantasy, Musical, Historical, Sci-Fi, Mystery. | Owners can pick active movies |
-| A-03 | Owner approvals | See Pending owners; approve / reject with reason; block owners. | Emails sent on decision |
+| A-03 | Owner approvals | See Pending owners; approve / reject with reason; block owners. Approve from Pending or Rejected (only after the owner verified the email); reject only from Pending; an approved owner is blocked, not rejected. Owners who did not verify the email yet are shown with a mark. Approvals, rejections, blocks and unblocks are in the audit log. | Emails sent on decision |
 | A-04 | Theatre approvals | See Pending theatres; approve / reject with reason. | — |
 | A-05 | Platform settings | All BR values that can change: commission %, convenience fee, GST rates, hold time, cancellation cutoff and refund %, etc. Every change is saved in the audit log. | New values used in new bookings only |
 | A-06 | Coupons | Create codes (tickets only, BR-16): % or flat off, min amount (of the tickets), max discount, start/end date, total usage limit, per-user limit, cities or theatres. | — |

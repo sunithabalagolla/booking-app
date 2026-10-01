@@ -72,3 +72,33 @@ This link works for ${minutes} minutes and only once. After the reset, you are l
 If you did not ask for this, you can ignore this email. Your password stays the same.`
   return { subject, html, text }
 }
+
+// E-09: owner approved or rejected (A-03)
+export function ownerDecisionTemplate({ name, businessName, approved, reason, link }) {
+  const subject = approved ? 'Talkies – your owner account is approved' : 'Talkies – your owner account was not approved'
+  const html = approved
+    ? layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Good news! Your owner account for <strong>${escapeHtml(businessName)}</strong> is approved.</p>
+    <p>You can log in and add your theatres now. Each new theatre is checked by our team before it goes live.</p>
+    ${button(link, 'Log in')}`)
+    : layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Sorry, your owner account for <strong>${escapeHtml(businessName)}</strong> was not approved.</p>
+    <p><strong>Reason:</strong> ${escapeHtml(reason)}</p>
+    <p>If you have questions, please reply to this email.</p>`)
+  const text = approved
+    ? `Namaste ${name},
+
+Good news! Your owner account for ${businessName} is approved.
+You can log in and add your theatres now. Each new theatre is checked by our team before it goes live.
+
+Log in: ${link}`
+    : `Namaste ${name},
+
+Sorry, your owner account for ${businessName} was not approved.
+Reason: ${reason}
+
+If you have questions, please reply to this email.`
+  return { subject, html, text }
+}
