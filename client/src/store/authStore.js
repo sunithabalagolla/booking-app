@@ -8,6 +8,14 @@ export function needsApproval(user) {
   return user?.role === 'owner' && user.owner?.approvalStatus !== 'approved'
 }
 
+// Where a user goes after login. `from` = the page they came from.
+// Staff always open the scanner (S-01); pending / rejected owners wait (O-01).
+export function homePathFor(user, from = '/') {
+  if (user?.role === 'staff') return '/staff/scan'
+  if (needsApproval(user)) return '/owner/pending'
+  return from
+}
+
 export const useAuthStore = create((set) => ({
   // 'loading' until the first silent refresh is done, then 'guest' or 'user'
   status: 'loading',

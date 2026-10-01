@@ -8,6 +8,7 @@ import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
+import StaffScanPage from './pages/staff/StaffScanPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 
 // All app routes live here. More pages are added phase by phase.
@@ -25,6 +26,8 @@ const router = createBrowserRouter([
   // O-01 owner register + waiting for approval
   { path: '/owner/signup', element: <OwnerSignupPage /> },
   { path: '/owner/pending', element: <OwnerPendingPage /> },
+  // S-01 staff open straight to the scanner
+  { path: '/staff/scan', element: <StaffScanPage /> },
   { path: '*', element: <NotFoundPage /> },
 ])
 

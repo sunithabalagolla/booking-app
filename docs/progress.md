@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix and **O-01 owner register**.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register** and **S-01 staff login** + seed test logins.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -17,13 +17,18 @@
   - Phone rule (added to requirements O-01, api.md, database.md): Indian mobile, 10 digits starting 6–9, optional `+91`, saved as 10 digits. Business name max 120.
   - Client: `/owner/signup` page, "Own a theatre? Register as a theatre owner" link on the sign up page, "Check your email" page has owner text, `/owner/pending` page (Pending stamp in dark mustard, Rejected stamp in maroon with the reason, Log out). After login a pending / rejected owner goes to `/owner/pending` (`needsApproval` in `authStore.js`). Approved owners go to Home until the owner dashboard exists. New colour token `mustard` (#8A5A00, UI-30).
   - Tests: **90 pass** (client 22: new `validation/owner.test.js` 3; server 68: new `auth.owner.test.js` 8). Client lint + build OK. Not checked by hand in the browser yet.
+- S-01 details:
+  - Staff use the same login (no new endpoint). Client: `homePathFor(user, from)` in `authStore.js` decides where to go after login: staff → `/staff/scan` always, pending / rejected owner → `/owner/pending`, others → where they came from. `/staff/scan` placeholder page (ticket window frame, no intro, Log out); the real scanner is S-02 (Phase 7).
+  - Seed step `users` (`server/src/seed/steps/users.js`, your decision): User, Owner (approved), Gate Staff, Admin, all with `SEED_PASSWORD`, emails `user@ / owner@ / staff@ / admin@talkies.test`. Upsert by email, so the seed can run again. Prints the logins (not the password). Ran it once on Docker: OK.
+  - `isSample: Boolean` added to the User model (the 0.10 seed design marks sample data with it; Mongoose dropped it before). database.md: "Sample data" rule.
+  - New rule (your decision, in requirements ROLE-05 + A-07): if an owner is blocked, their Gate Staff also cannot log in. **Build it with A-07.**
+  - Tests: **98 pass** (client 25: `store/authRoutes.test.js` 6 (was `validation/owner.test.js`); server 73: new `auth.staff.test.js` 3, `seed.users.test.js` 2). Lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **S-01 Staff login** (next in Phase 1).
-- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
-- Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
+- **ROLE-01 to ROLE-06** role + ownership middleware (next in Phase 1).
+- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page), and S-01 (`npm run seed`, log in as `staff@talkies.test` → Gate scanner page).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -36,6 +41,9 @@
 
 - Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
+
+- **Seeded Gate Staff has no theatres yet** (`staff.theatreIds: []`). ROLE-05 says one or more; theatres only exist from Phase 2 (O-03). When the theatres seed step is added, link `staff@talkies.test` to the sample owner's theatres.
+- Owner blocked → their Gate Staff cannot log in (ROLE-05, A-07). Check it at login, refresh and in `requireAuth`. Build with A-07 (Phase 8).
 
 ## Open questions
 
@@ -78,7 +86,7 @@
 - [x] U-02 Login / logout + tokens
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
 - [x] O-01 Owner register (Pending, phone rule, waiting for approval page)
-- [ ] S-01 Staff login
+- [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles)
 - [ ] ROLE-01 to ROLE-06 role + ownership middleware
 - [ ] Basic vintage layout: header, footer, buttons, cards
   - [ ] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
@@ -142,7 +150,7 @@
 - [ ] A-01 Admin dashboard
 - [ ] O-13 + A-10 Reports
 - [ ] O-14 + A-09 Payouts, JOB-06
-- [ ] A-07 Users
+- [ ] A-07 Users (+ blocked owner also stops their Gate Staff, ROLE-05)
 - [ ] A-08 All bookings
 - [ ] A-14 Audit log
 

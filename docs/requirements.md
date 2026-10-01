@@ -93,7 +93,7 @@ There are 4 roles. A visitor who is not logged in is a **guest** (not a role): a
 - `ROLE-02` Owner and Gate Staff APIs also check ownership: the theatre must belong to that owner / staff.
 - `ROLE-03` Owner account starts as **Pending**; only after Admin approval can the owner add theatres.
 - `ROLE-04` Each new theatre starts as **Pending**; only after Admin approval can it have live shows.
-- `ROLE-05` Gate Staff accounts are created only by the owner, linked to one or more of the owner's theatres.
+- `ROLE-05` Gate Staff accounts are created only by the owner, linked to one or more of the owner's theatres. If the owner is blocked, their Gate Staff also cannot log in (built with A-07).
 - `ROLE-06` Admin accounts are created only by the seed script or by another admin.
 
 ---
@@ -198,7 +198,7 @@ Put these in a settings collection so admin can change them later (except where 
 | A-04 | Theatre approvals | See Pending theatres; approve / reject with reason. | — |
 | A-05 | Platform settings | All BR values that can change: commission %, convenience fee, GST rates, hold time, cancellation cutoff and refund %, etc. Every change is saved in the audit log. | New values used in new bookings only |
 | A-06 | Coupons | Create codes (tickets only, BR-16): % or flat off, min amount (of the tickets), max discount, start/end date, total usage limit, per-user limit, cities or theatres. | — |
-| A-07 | Users | View, search, block / unblock users. | Blocked users cannot log in |
+| A-07 | Users | View, search, block / unblock users. Blocking an owner also stops their Gate Staff from logging in (ROLE-05). | Blocked users cannot log in |
 | A-08 | All bookings | Search by booking number, user email, theatre, date; see payments and refunds. | — |
 | A-09 | Payouts | See all owners' payouts; mark Processing / Paid (mock). | Status updates visible to the owner |
 | A-10 | Reports | Platform sales, commission, GST, per city / theatre / movie; export Excel and PDF. | — |

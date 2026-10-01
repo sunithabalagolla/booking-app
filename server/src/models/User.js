@@ -63,6 +63,7 @@ const userSchema = new Schema(
       },
     ],
     deletedAt: Date, // U-26
+    isSample: Boolean, // seeded test data (15.5)
   },
   {
     timestamps: true,

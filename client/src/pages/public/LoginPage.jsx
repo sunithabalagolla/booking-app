@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import ResendVerify from '../../components/ui/ResendVerify.jsx'
 import TextField from '../../components/ui/TextField.jsx'
-import { needsApproval, useAuthStore } from '../../store/authStore.js'
+import { homePathFor, useAuthStore } from '../../store/authStore.js'
 import { fieldErrors, loginSchema } from '../../validation/auth.js'
 
 // U-02 Login: email + password. Same page for all 4 roles (S-01).
@@ -22,8 +22,8 @@ export default function LoginPage() {
   // Go back to the page the user came from, or Home
   const from = location.state?.from ?? '/'
 
-  // Where to go after login: a pending / rejected owner waits on /owner/pending (O-01)
-  const target = (u) => (needsApproval(u) ? '/owner/pending' : from)
+  // Where to go after login (staff → scanner, pending owner → waiting page)
+  const target = (u) => homePathFor(u, from)
 
   if (status === 'user' && !login.isSuccess) return <Navigate to={target(user)} replace />
 

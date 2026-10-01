@@ -9,6 +9,7 @@ MongoDB + Mongoose. This file lists every collection, its fields and its indexes
 ## 1. Rules for all collections
 
 - **Timestamps**: every collection has `createdAt` and `updatedAt` (Mongoose `timestamps: true`). They are not repeated in the tables below.
+- **Sample data**: documents made by the seed script have `isSample: true` (15.5). Real documents do not have the field.
 - **Time**: all dates are stored in UTC. They are shown in IST (Asia/Kolkata) (BR-21, NF-07). Things that depend on the local day or hour (show labels BR-22, "next 7 days", payout weeks) are calculated in IST.
 - **Money**: all amounts are whole numbers in **paise** (₹30 = `3000`). Field names end with `Paise`. This avoids rounding errors. Percent values are plain numbers (`75` = 75%).
 - **IDs**: `_id` is an ObjectId. A field that points to another collection ends with `Id` (for example `theatreId` → `theatres`).

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { needsApproval } from '../store/authStore.js'
-import { fieldErrors, ownerSignupSchema } from './auth.js'
+import { fieldErrors, ownerSignupSchema } from '../validation/auth.js'
+import { homePathFor, needsApproval } from './authStore.js'
 
 const good = { name: 'Ravi', email: 'ravi@example.com', phone: '9876543210', businessName: 'Ravi Talkies', password: 'matinee123' }
 
@@ -26,5 +26,20 @@ describe('needsApproval (O-01)', () => {
     expect(needsApproval({ role: 'owner', owner: { approvalStatus: 'approved' } })).toBe(false)
     expect(needsApproval({ role: 'user' })).toBe(false)
     expect(needsApproval(null)).toBe(false)
+  })
+})
+
+describe('homePathFor (S-01, O-01)', () => {
+  it('sends staff to the scanner, even when they came from another page', () => {
+    expect(homePathFor({ role: 'staff' }, '/movies/1')).toBe('/staff/scan')
+  })
+
+  it('sends a pending owner to the waiting page', () => {
+    expect(homePathFor({ role: 'owner', owner: { approvalStatus: 'pending' } }, '/x')).toBe('/owner/pending')
+  })
+
+  it('sends everyone else back to where they came from', () => {
+    expect(homePathFor({ role: 'user' }, '/movies/1')).toBe('/movies/1')
+    expect(homePathFor({ role: 'owner', owner: { approvalStatus: 'approved' } })).toBe('/')
   })
 })
