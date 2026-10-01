@@ -1,18 +1,13 @@
-import { Navigate } from 'react-router'
 import { useLogout } from '../../api/auth.js'
 import Button from '../../components/ui/Button.jsx'
 import { useAuthStore } from '../../store/authStore.js'
 
 // S-01: staff open straight here after login. No intro animation, ever (UI-10).
 // The real scanner (S-02 to S-05, UI-31) comes in Phase 7; this is the frame for it.
+// Only staff can open it (RoleRoute in router.jsx).
 export default function StaffScanPage() {
-  const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useLogout()
-
-  if (status === 'loading') return null
-  if (status === 'guest') return <Navigate to="/login" replace />
-  if (user.role !== 'staff') return <Navigate to="/" replace />
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 p-4">

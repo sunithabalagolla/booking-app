@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register** and **S-01 staff login** + seed test logins.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, and **ROLE-01 to ROLE-06**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -22,13 +22,20 @@
   - Seed step `users` (`server/src/seed/steps/users.js`, your decision): User, Owner (approved), Gate Staff, Admin, all with `SEED_PASSWORD`, emails `user@ / owner@ / staff@ / admin@talkies.test`. Upsert by email, so the seed can run again. Prints the logins (not the password). Ran it once on Docker: OK.
   - `isSample: Boolean` added to the User model (the 0.10 seed design marks sample data with it; Mongoose dropped it before). database.md: "Sample data" rule.
   - New rule (your decision, in requirements ROLE-05 + A-07): if an owner is blocked, their Gate Staff also cannot log in. **Build it with A-07.**
+  - Checked by the developer in the browser (2026-10-01): works.
   - Tests: **98 pass** (client 25: `store/authRoutes.test.js` 6 (was `validation/owner.test.js`); server 73: new `auth.staff.test.js` 3, `seed.users.test.js` 2). Lint + build OK. Not checked by hand in the browser yet.
+- ROLE-01 to ROLE-06 details (your decisions 2026-10-01):
+  - Server: `middleware/role.js` `requireRole(...)` (wrong role → `403 FORBIDDEN`) and `requireApprovedOwner` (ROLE-03, pending / rejected → `403 OWNER_NOT_APPROVED`). Route groups `/api/owner`, `/api/staff`, `/api/admin` with login + role set once (empty until their endpoints come). `middleware/ownership.js` (ROLE-02): `ownedFilter(user)` and `findOwned(Model, id, user)` → `404` when not own. Not used by a real collection yet (theatres come with O-03).
+  - ROLE-04: to-do on O-05 (below). ROLE-05 / ROLE-06: tests prove sign up cannot make staff or admin; seed makes the admin.
+  - Client: `RoleRoute` page guard + `roleRedirect` / `roleKey` / `PUBLIC` in `authStore.js`. Guest → login; wrong role → quietly to its own home. After login: approved owner → `/owner`, admin → `/admin` (new placeholder "Box office register – comes in Phase 8", ledger paper look, Log out), staff → `/staff/scan`, pending owner → `/owner/pending`, user → where they came from. Staff on public pages (Home) → back to the scanner; owners and admins can browse. Account pages (login, sign up, verify, reset) stay open to all, so email links always work.
+  - Tests: **131 pass** (client 32: `authRoutes.test.js` 13; server 99: new `roles.test.js` 26). Lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **ROLE-01 to ROLE-06** role + ownership middleware (next in Phase 1).
-- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page), and S-01 (`npm run seed`, log in as `staff@talkies.test` → Gate scanner page).
+- **Basic vintage layout** (next in Phase 1): header, footer (with the "For theatre owners" link), buttons, cards. Then T-01 tests to finish Phase 1.
+- Try by hand once: log in as each seed login (`user@ / owner@ / staff@ / admin@talkies.test`) → each lands on its own page; staff opening `/` goes back to the scanner; user opening `/admin` goes to Home.
+- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -86,8 +93,8 @@
 - [x] U-02 Login / logout + tokens
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
 - [x] O-01 Owner register (Pending, phone rule, waiting for approval page)
-- [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles)
-- [ ] ROLE-01 to ROLE-06 role + ownership middleware
+- [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles; tested in the browser by the developer 2026-10-01)
+- [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 is built with O-05)
 - [ ] Basic vintage layout: header, footer, buttons, cards
   - [ ] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
 - [ ] T-01 tests
@@ -101,6 +108,7 @@
 - [ ] O-04 Screens + seat layout editor
 - [ ] O-07 Canteen items
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
+  - [ ] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, test it). Use `findOwned` for the screen / theatre
 - [ ] T-08 test
 
 ## Phase 3 – User browsing

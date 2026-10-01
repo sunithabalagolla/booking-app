@@ -36,6 +36,7 @@ The **"Who"** column in the tables:
 - The path prefix sets the role check once for the whole group: `/api/owner/*` → Owner, `/api/staff/*` → Staff, `/api/admin/*` → Admin.
 - **Own** in the notes = ownership check (ROLE-02): the theatre / screen / show / booking must belong to this owner, or be one of this staff's theatres, or be this user's booking. When it does not → `404 NOT_FOUND` (we do not tell others that the item exists).
 - Wrong role → `403 FORBIDDEN` (T-01).
+- Code: `middleware/role.js` (`requireRole(...)`, `requireApprovedOwner`) and `middleware/ownership.js` (`ownedFilter(user)`, `findOwned(Model, id, user)` → `404 NOT_FOUND` when not own). The groups are set in `routes/owner.js` (approval check after the "Owner (any)" routes), `routes/staff.js`, `routes/admin.js`.
 
 ### 1.4 Input (SEC-06, SEC-10)
 - Every body, query and param is checked with a Zod schema. Unknown fields are dropped. Keys with `$` or `.` → `400`.

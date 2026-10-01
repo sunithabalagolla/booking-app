@@ -3,8 +3,11 @@ import express from 'express'
 import mongoose from 'mongoose'
 import { errorHandler, notFound } from './middleware/errors.js'
 import { requestId } from './middleware/requestId.js'
+import adminRoutes from './routes/admin.js'
 import authRoutes from './routes/auth.js'
 import meRoutes from './routes/me.js'
+import ownerRoutes from './routes/owner.js'
+import staffRoutes from './routes/staff.js'
 
 // Builds the Express app. It does not start listening here, so tests
 // (Supertest) can import the app without opening a port.
@@ -24,6 +27,10 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/me', meRoutes)
+// Role groups: each checks login + role once for all its paths (ROLE-01)
+app.use('/api/owner', ownerRoutes)
+app.use('/api/staff', staffRoutes)
+app.use('/api/admin', adminRoutes)
 
 // Any other /api path: not found. Then all errors in one shape (api.md 1.5).
 app.use('/api', notFound)

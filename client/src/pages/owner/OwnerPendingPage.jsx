@@ -1,20 +1,13 @@
-import { Navigate } from 'react-router'
 import { useLogout } from '../../api/auth.js'
 import Button from '../../components/ui/Button.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
-import { needsApproval, useAuthStore } from '../../store/authStore.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 // O-01: a logged-in owner who is not approved yet (ROLE-03) waits here.
-// Rejected owners see the admin's reason (A-03).
+// Rejected owners see the admin's reason (A-03). Only they can open it (RoleRoute).
 export default function OwnerPendingPage() {
-  const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useLogout()
-
-  if (status === 'loading') return null
-  if (status === 'guest') return <Navigate to="/login" state={{ from: '/owner/pending' }} replace />
-  // Not an owner, or already approved: nothing to wait for
-  if (!needsApproval(user)) return <Navigate to="/" replace />
 
   const rejected = user.owner?.approvalStatus === 'rejected'
 
