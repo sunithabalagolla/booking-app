@@ -117,7 +117,7 @@ All errors have the same shape:
 | --- | --- | --- | --- | --- |
 | GET | `/me` | Any | — | `user` (includes badges, U-24) |
 | PATCH | `/me` | Any | `name?, phone?` | U-25 |
-| PATCH | `/me/prefs` | Any | `theme?` (`auto` · `day` · `night`), `sound?`, `reduceMotion?` | UI-02, UI-40, UI-41. Profile choice wins over localStorage |
+| PATCH | `/me/prefs` | Any | `theme?` (`auto` · `day` · `night`), `sound?`, `reduceMotion?` | UI-02, UI-40, UI-41. At least one field. Saves only the sent fields; answers `{ user }`. `user.prefs.theme` is `null` until chosen; at login `null` → the client saves the device choice, otherwise the profile wins |
 | POST | `/me/password` | Any | `currentPassword, newPassword` | Logs out other devices |
 | DELETE | `/me` | User | `password` | U-26: personal data removed, invoices kept without name / email. Logs out |
 

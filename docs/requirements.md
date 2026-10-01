@@ -591,12 +591,13 @@ Approved preview (private link, only for the developer to look at): https://clau
 | UI-01 | Stage dark | #1E140E | Intro background, dark mode base |
 | UI-01 | Bottle green (Night show) | #7FB89F | Green stamps / text on the Night show page (8.0:1 on stage dark) |
 | UI-01 | Dark mustard (Night show) | #E8B25C | Pending stamps on the Night show page (9.4:1 on stage dark). Day show: #8A5A00 (UI-30) |
+| UI-01 | Dark mustard (light cards) | #7D5100 | Pending stamps on light cream cards (4.9:1 on #E8D9B5; #8A5A00 is only 4.2:1 there) |
 
 - UI-02 Theme switch: 3 options — **Auto** (default), **Day show**, **Night show**.
   - Day show = paper cream background, ink brown text. Night show = stage dark / ink brown background, cream text, same accents.
   - Auto follows the device's local time: 6:00 AM–6:59 PM = Day show, 7:00 PM–5:59 AM = Night show. Check every minute and switch by itself.
   - Switch in the header (sun/moon icon) and in Profile. Tapping the icon opens a small menu: Auto / Day show / Night show, with a tick on the current choice.
-  - Save the choice: localStorage for guests, user profile when logged in. When logged in, the profile choice wins.
+  - Save the choice: localStorage for guests, user profile when logged in. A new profile starts with no theme (empty = not chosen yet). At login: if the profile theme is empty, keep the device choice and save it to the profile; if the profile has a choice, the profile wins. If saving fails, the new look stays and no message is shown.
   - Theme change uses a 0.5 s fade; instant when reduce motion is on.
   - Same for all roles.
 - UI-03 Fonts (Google Fonts): **Rye** (headings, "Admit one", stamps, Housefull), **Special Elite** (typewriter: movie titles, labels), **Courier Prime** (body text, numbers, prices, tables). Fallbacks: Georgia (Rye), Courier New / monospace (others).
@@ -682,7 +683,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 - Main area: ruled ledger paper (thin blue-grey lines every 32 px) with a red margin line on the left.
 - Title "Box office register" (Rye maroon), theatre name and date (Special Elite), main action button (e.g. "+ New show").
 - Flip-clock number cards (UI-37).
-- Tables look like register pages with column lines; numbers in Courier Prime; status as tilted rubber stamps: Paid / Approved (green), Pending (dark mustard #8A5A00), Cancelled / Rejected (maroon).
+- Tables look like register pages with column lines; numbers in Courier Prime; status as tilted rubber stamps: Paid / Approved (green), Pending (dark mustard #8A5A00; #7D5100 on light cream cards; #E8B25C on the Night show page), Cancelled / Rejected (maroon).
 - Charts hand-drawn with Rough.js (ink brown and maroon, gold for highlight), drawn in once on load.
 
 **UI-47 "Behind the scenes" page** (public, link in the footer): designed like an old cinema blueprint: blue paper, white lines, typewriter labels (Special Elite). Shows the architecture diagram, the tech stack (Section 2) and how seat locking works (9.3). Built in Phase 10.

@@ -15,6 +15,7 @@
   --color-cream-light: #E8D9B5;  /* light cream */
   --color-stage: #1E140E;        /* stage dark */
   --color-mustard: #8A5A00;      /* dark mustard: Pending stamps (UI-30) */
+  --color-mustard-card: #7D5100; /* mustard on light cards: 4.9:1 on light cream */
   --color-green-night: #7FB89F;  /* bottle green for Night show: 8.0:1 on stage dark */
   --color-mustard-night: #E8B25C; /* mustard for Night show: 9.4:1 on stage dark */
 
@@ -63,7 +64,7 @@
     --outline: var(--color-ink);
     --outline-hover: var(--color-cream);
     --tone-green: var(--color-green);
-    --tone-mustard: var(--color-mustard);
+    --tone-mustard: var(--color-mustard-card);
   }
 }
 

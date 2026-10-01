@@ -122,7 +122,7 @@ One collection for all 4 roles (Section 3). Role-specific data is in the `owner`
 | `owner.decidedBy` / `owner.decidedAt` | ObjectId → users / Date | | Admin who approved / rejected |
 | `staff.ownerId` | ObjectId → users | staff: yes | The owner who created this staff login (ROLE-05) |
 | `staff.theatreIds` | [ObjectId → theatres] | staff: yes | One or more theatres of that owner (ROLE-05). Used by the S-03 check |
-| `prefs.theme` | String | yes | `auto` · `day` · `night`. Default `auto` (UI-02). When logged in, this wins over localStorage |
+| `prefs.theme` | String | | `auto` · `day` · `night` or `null`. Default `null` = not chosen yet (UI-02). At login: `null` → the device choice is kept and saved here; a choice here wins over localStorage |
 | `prefs.sound` | Boolean | yes | Default `false` (UI-40) |
 | `prefs.reduceMotion` | Boolean | yes | Default `false` (UI-41). The phone setting is also followed |
 | `enteredCount` | Number | yes | Default `0`. +1 on each "Entered" scan (S-04). Used for badges |

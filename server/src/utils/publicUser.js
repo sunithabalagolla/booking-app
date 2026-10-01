@@ -8,7 +8,7 @@ export function publicUser(user) {
     role: user.role,
     phone: user.phone ?? null,
     prefs: {
-      theme: user.prefs?.theme ?? 'auto',
+      theme: user.prefs?.theme ?? null, // null = not chosen yet (UI-02)
       sound: user.prefs?.sound ?? false,
       reduceMotion: user.prefs?.reduceMotion ?? false,
     },

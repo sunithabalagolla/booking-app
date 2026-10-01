@@ -4,7 +4,7 @@ import { getAutoTheme, loadThemeChoice, resolveTheme, saveThemeChoice } from '..
 // UI-02 theme state, shared by the header switch and Profile.
 // choice = what the user picked ('auto' / 'day' / 'night')
 // theme  = what is shown now ('day' / 'night')
-// Later (U-25): when logged in, the choice comes from the user profile and wins.
+// Logged in: the profile rules are in theme/themeSync.js (UI-02).
 const startChoice = loadThemeChoice()
 
 export const useThemeStore = create((set) => ({

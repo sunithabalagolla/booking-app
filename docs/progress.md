@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout** and 3 fixes from your browser check.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout**, 3 fixes from your browser check, the card mustard colour and **theme saved in the profile (UI-02)**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -42,18 +42,25 @@
   3. Guest page load showed a red 401 from `/api/auth/refresh`. Now a "was logged in" hint (`talkies_was_logged_in` = `'1'` in localStorage, no token) is set at login and removed at logout / failed refresh; without it the app start makes no refresh call. Note: people logged in before this change get logged out once.
   - Checked by Claude in Chrome on your dev server: Night show colours measured as above; guest reload makes no `/api/auth/refresh` call, no console errors.
   - Tests: **140 pass** (client 41: restoreSession 3 + login hint 1; server 99).
+- Mustard on light cards (your decision): `#7D5100` (4.9:1 on light cream) inside cards; `#8A5A00` stays on the page; `#E8B25C` on the Night show page. requirements UI-01 + UI-30 updated.
+- Theme saved in the profile (UI-02, your decisions 2026-10-01):
+  - Server: `PATCH /api/me/prefs` (`theme?`, `sound?`, `reduceMotion?`, at least one; saves only the sent fields; answers `{ user }`; any role). `prefs.theme` now starts `null` (= not chosen yet) for new accounts; `publicUser` sends `null`.
+  - Client: `theme/themeSync.js`. At login (and when a reload restores the login): profile theme `null` → keep the device choice and save it to the profile; profile has a choice → it wins (also saved in localStorage). Changing the theme while logged in saves to the profile; if that fails, the look stays and there is only a console note. `api/me.js` `savePrefs`.
+  - requirements UI-02, database.md (`prefs.theme`), api.md updated.
+  - **Note:** accounts made before today have `prefs.theme: 'auto'` saved, so for them the profile wins (Auto). To try the "first login keeps the device choice" rule, use a new sign up, or `npm run seed -- --reset` (seed logins then start with `null`).
+  - Tests: **153 pass** (client 48: new `themeSync.test.js` 7; server 105: new `me.prefs.test.js` 6). Lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **Theme to profile** (small task, your decision): save the theme choice with `PATCH /api/me/prefs` when logged in; profile choice wins over localStorage (UI-02). Then T-01 tests to finish Phase 1.
+- **T-01 tests** to finish Phase 1 (login, token refresh, role and ownership checks: check what is still missing), then the Phase 1 check: all 4 roles log in and see only their pages.
+- Try theme to profile by hand: new sign up → pick Night show as guest → log in (stays Night, saved) → log out, pick Day → log in (profile Night wins).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
 
-- Day show mustard `#8A5A00` (UI-30, Pending stamp) on light cream `#E8D9B5` (cards) is only **4.24:1**, under 4.5:1 (NF-03). Seen on the owner "Waiting for approval" page. On paper cream `#F3E9D2` it is 4.91:1. Needs your choice: a slightly darker mustard for cards, or a larger / bold stamp. Not changed yet.
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
 ## Notes for later
@@ -84,7 +91,7 @@
 - [x] Add saving the theme choice to the profile API in `docs/api.md` (task 0.8): `PATCH /api/me/prefs`
 - [x] Tests for `getAutoTheme`: 5:59 AM → Night, 6:00 AM → Day, 6:59 PM → Day, 7:00 PM → Night (task 0.11)
 - [x] Move `ThemeSwitch` from the test Home page into the real header (basic vintage layout, 2026-10-01; also in the dashboard sidebar and staff bar)
-- [ ] Save the choice in the user profile when logged in; profile choice wins over localStorage (Phase 1 login + U-25)
+- [x] Save the choice in the user profile when logged in; profile choice wins over localStorage, empty profile keeps the device choice (2026-10-01)
 - [ ] Theme choice in Profile (U-25 / UI-29)
 - [ ] Reduce motion setting in Profile also turns off the theme fade (UI-41, Phase 10). Until then it follows the phone setting
 
@@ -114,7 +121,7 @@
 - [x] Basic vintage layout: header, footer, buttons, cards (SiteLayout, DashboardLayout, StaffLayout)
   - [x] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
   - [ ] Bottom navigation (UI-15: Home, Ticket album, Profile): add when Ticket album (U-18, Phase 6) and Profile (U-25) exist (your decision 2026-10-01)
-- [ ] UI-02 theme choice saved in the profile when logged in (`PATCH /api/me/prefs`)
+- [x] UI-02 theme choice saved in the profile when logged in (`PATCH /api/me/prefs`, empty profile keeps the device choice)
 - [ ] T-01 tests
 
 ## Phase 2 – Admin + owner setup

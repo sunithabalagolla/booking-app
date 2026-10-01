@@ -49,7 +49,8 @@ const userSchema = new Schema(
 
     // UI-02, UI-40, UI-41
     prefs: {
-      theme: { type: String, enum: THEMES, default: 'auto' },
+      // null = not chosen yet: at login the device choice is kept and saved here (UI-02)
+      theme: { type: String, enum: [...THEMES, null], default: null },
       sound: { type: Boolean, default: false },
       reduceMotion: { type: Boolean, default: false },
     },

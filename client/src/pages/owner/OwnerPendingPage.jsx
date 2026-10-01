@@ -13,7 +13,7 @@ export default function OwnerPendingPage() {
     <PaperCard title={rejected ? 'Owner account not approved' : 'Waiting for approval'}>
       <div className="space-y-4">
         <p className="py-2">
-          {/* UI-30 stamp colours: Pending = dark mustard, Rejected = maroon */}
+          {/* UI-30 stamp colours: Pending = dark mustard (card version), Rejected = maroon */}
           <Stamp tone={rejected ? 'maroon' : 'mustard'} className="text-xl">
             {rejected ? 'Rejected' : 'Pending'}
           </Stamp>

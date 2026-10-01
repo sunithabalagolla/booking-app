@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useThemeStore } from '../../store/themeStore.js'
+import { chooseTheme } from '../../theme/themeSync.js'
 
 // UI-02 theme switch: sun/moon icon; tap opens a small menu
 // Auto / Day show / Night show, with a tick on the current choice.
@@ -31,7 +32,6 @@ function MoonIcon() {
 export default function ThemeSwitch({ onDark = false }) {
   const choice = useThemeStore((state) => state.choice)
   const theme = useThemeStore((state) => state.theme)
-  const setChoice = useThemeStore((state) => state.setChoice)
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef(null)
   const buttonRef = useRef(null)
@@ -58,7 +58,7 @@ export default function ThemeSwitch({ onDark = false }) {
   }, [open])
 
   function pick(value) {
-    setChoice(value)
+    chooseTheme(value) // logged in: also saved in the profile
     setOpen(false)
     buttonRef.current.focus()
   }
