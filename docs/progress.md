@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout**, 3 fixes from your browser check, the card mustard colour and **theme saved in the profile (UI-02)**.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout**, 3 fixes from your browser check, the card mustard colour, **theme saved in the profile (UI-02)**, **T-01 tests**, the general rate limit (SEC-03) and **helmet + CORS (SEC-08)**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -49,14 +49,24 @@
   - requirements UI-02, database.md (`prefs.theme`), api.md updated.
   - **Note:** accounts made before today have `prefs.theme: 'auto'` saved, so for them the profile wins (Auto). To try the "first login keeps the device choice" rule, use a new sign up, or `npm run seed -- --reset` (seed logins then start with `null`).
   - Tests: **153 pass** (client 48: new `themeSync.test.js` 7; server 105: new `me.prefs.test.js` 6). Lint + build OK. Not checked by hand in the browser yet.
+- Finish Phase 1 (your decisions 2026-10-01):
+  - T-01: new `server/tests/t01.test.js` (7): each of the 4 roles logs in → `/api/me` → own API group passes, the others 403; pending owner refused everywhere; owner set to rejected after login is stopped on the next call; blocked admin stopped at once; 3 refreshes at the same moment with the same cookie → exactly one wins. Together with `auth.session.test.js`, `roles.test.js`, `auth.staff.test.js`. **Ownership on real endpoints is added with O-03.**
+  - SEC-03: general limit 300 per 15 min per IP on all `/api` calls except `/api/health` (`generalLimiter` in `rateLimits.js`).
+  - SEC-08 (your request, earlier than planned): `helmet` 8.3.0 and `cors` 2.8.6 (both in Section 2). CORS allow-list from `CLIENT_URL` (one URL or several with commas), cookies allowed; other sites get no CORS headers (no 500). `server/src/config/security.js`. HTTPS in production stays for Phase 12.
+  - New `server/tests/security.test.js` (6): helmet headers, CORS allow / pre-check / refuse, general limit + health not limited.
+  - Checked on your running dev server: `/api/health` 200 with the new headers, also through the Vite proxy.
+  - U-03 and O-01: checked by the developer in the browser, both work.
+  - Tests: **166 pass** (client 48; server 118).
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **T-01 tests** to finish Phase 1 (login, token refresh, role and ownership checks: check what is still missing), then the Phase 1 check: all 4 roles log in and see only their pages.
+- **Phase 1 check by hand (you)**, then I mark Phase 1 done:
+  - Theme in profile (below).
+  - Final role pass: each seed login (`user@ / owner@ / staff@ / admin@talkies.test`) lands on its own page and cannot open the others (`/owner`, `/admin`, `/staff/scan`, `/owner/pending`).
+- After that: **Phase 2**, starting with A-02 Movies.
 - Try theme to profile by hand: new sign up → pick Night show as guest → log in (stays Night, saved) → log out, pick Day → log in (profile Night wins).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
-- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -114,15 +124,18 @@
 ## Phase 1 – Auth and roles
 - [x] U-01 Sign up + verify email (with resend, max 3 per hour)
 - [x] U-02 Login / logout + tokens
-- [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
-- [x] O-01 Owner register (Pending, phone rule, waiting for approval page)
+- [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email; tested in the browser by the developer 2026-10-01)
+- [x] O-01 Owner register (Pending, phone rule, waiting for approval page; tested in the browser by the developer 2026-10-01)
 - [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles; tested in the browser by the developer 2026-10-01)
 - [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 is built with O-05; tested in the browser by the developer 2026-10-01)
 - [x] Basic vintage layout: header, footer, buttons, cards (SiteLayout, DashboardLayout, StaffLayout)
   - [x] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
   - [ ] Bottom navigation (UI-15: Home, Ticket album, Profile): add when Ticket album (U-18, Phase 6) and Profile (U-25) exist (your decision 2026-10-01)
 - [x] UI-02 theme choice saved in the profile when logged in (`PATCH /api/me/prefs`, empty profile keeps the device choice)
-- [ ] T-01 tests
+- [x] T-01 tests (login, refresh incl. race, role checks, DB decides not the token). Ownership on real endpoints: added with O-03
+- [x] SEC-03 general limit 300 / 15 min per IP (not `/api/health`)
+- [x] SEC-08 helmet + CORS allow-list from `CLIENT_URL` (HTTPS in production: Phase 12)
+- [ ] Phase 1 check by hand: theme in profile + final role pass (developer)
 
 ## Phase 2 – Admin + owner setup
 - [ ] A-02 Movies
@@ -130,6 +143,7 @@
 - [ ] A-04 Theatre approvals
 - [ ] A-05 Platform settings
 - [ ] O-03 Theatres
+  - [ ] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404, staff only their theatres)
 - [ ] O-04 Screens + seat layout editor
 - [ ] O-07 Canteen items
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)

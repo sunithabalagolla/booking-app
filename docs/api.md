@@ -81,7 +81,7 @@ All errors have the same shape:
 | Payment (create order, pay, verify) | 10 / 10 min *(start)* | user |
 | Ticket transfer, issues, reviews | 10 / hour *(start)* | user |
 | Gate scan, food pickup | 60 / min *(start)* | staff / owner |
-| Everything else | 300 / 15 min *(start)* | IP |
+| Everything else | 300 / 15 min *(start)*, all `/api` calls except `/api/health` | IP |
 
 ---
 

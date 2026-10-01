@@ -11,6 +11,7 @@ export const LIMITS = {
   resendVerify: { windowMs: HOUR, limit: 3 }, // per email (U-01)
   login: { windowMs: 15 * MINUTE, limit: 5 }, // wrong logins per email + IP (BR-17)
   forgotPassword: { windowMs: HOUR, limit: 3 }, // per email (start value, U-03)
+  general: { windowMs: 15 * MINUTE, limit: 300 }, // every /api call per IP, except /api/health (start value)
 }
 
 // Every limiter keeps its own store; tests clear them with resetRateLimits()
@@ -34,6 +35,9 @@ function makeLimiter({ windowMs, limit }, extra = {}) {
 
 // The email in the body, lowercased, so the limit follows the account
 const emailOf = (req) => String(req.body?.email ?? '').trim().toLowerCase()
+
+// "Everything else" (api.md 1.7): all /api calls per IP. Mounted after /api/health.
+export const generalLimiter = makeLimiter(LIMITS.general)
 
 export const signupLimiter = makeLimiter(LIMITS.signup)
 
