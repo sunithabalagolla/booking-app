@@ -8,6 +8,9 @@ export const BCRYPT_ROUNDS = 12
 export const ACCESS_TOKEN_MINUTES = 15
 export const REFRESH_TOKEN_DAYS = 7
 
+// Password reset link life (U-03, settings resetLinkMinutes in database.md)
+export const RESET_LINK_MINUTES = 30
+
 // Refresh token cookie: httpOnly (page scripts cannot read it), sent only to /api/auth
 export const REFRESH_COOKIE = 'talkies_rt'
 

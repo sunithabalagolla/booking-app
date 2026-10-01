@@ -10,6 +10,7 @@ export const LIMITS = {
   signup: { windowMs: HOUR, limit: 5 }, // per IP (start value)
   resendVerify: { windowMs: HOUR, limit: 3 }, // per email (U-01)
   login: { windowMs: 15 * MINUTE, limit: 5 }, // wrong logins per email + IP (BR-17)
+  forgotPassword: { windowMs: HOUR, limit: 3 }, // per email (start value, U-03)
 }
 
 // Every limiter keeps its own store; tests clear them with resetRateLimits()
@@ -38,6 +39,10 @@ export const signupLimiter = makeLimiter(LIMITS.signup)
 
 export const resendVerifyLimiter = makeLimiter(LIMITS.resendVerify, {
   keyGenerator: (req) => `email:${emailOf(req)}`,
+})
+
+export const forgotPasswordLimiter = makeLimiter(LIMITS.forgotPassword, {
+  keyGenerator: (req) => `forgot:${emailOf(req)}`,
 })
 
 // BR-17: only WRONG logins (401) count. A correct login, or a correct password

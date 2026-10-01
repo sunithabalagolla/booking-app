@@ -104,7 +104,7 @@ All errors have the same shape:
 | POST | `/refresh` | Guest (cookie) | — | `200 { accessToken }` + new cookie. No / bad cookie → `401` |
 | POST | `/logout` | Guest (cookie) | — | `204`. Deletes the refresh token and clears the cookie |
 | POST | `/forgot-password` | Guest | `email` | Always `200`. Sends E-02 (reset link, 30 min) if the account exists |
-| POST | `/reset-password` | Guest | `token, password` | `200`. Logs out all devices (deletes all refresh tokens) |
+| POST | `/reset-password` | Guest | `token, password` | `200`. Logs out all devices (deletes all refresh tokens) and marks the email as verified. `400 RULE_BROKEN` with `reason: link_expired / link_invalid`. All 4 roles |
 
 `user` in responses = `{ id, name, email, role, phone, prefs, badges, enteredCount, owner: { businessName, approvalStatus, rejectReason }, staff: { theatreIds } }` (only the parts for that role; never `passwordHash`).
 

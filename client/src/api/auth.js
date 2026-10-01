@@ -42,3 +42,16 @@ export function useLogout() {
     },
   })
 }
+
+// U-03
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email) => apiFetch('/auth/forgot-password', { method: 'POST', body: { email } }),
+  })
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (body) => apiFetch('/auth/reset-password', { method: 'POST', body }),
+  })
+}

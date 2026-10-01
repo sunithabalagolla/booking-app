@@ -50,3 +50,25 @@ Verify my email: ${link}
 This link works for ${hours} hours. If you did not sign up, you can ignore this email.`
   return { subject, html, text }
 }
+
+// E-02: password reset link (U-03)
+export function resetPasswordTemplate({ name, link, minutes }) {
+  const subject = 'Talkies – reset your password'
+  const html = layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>We got a request to reset your Talkies password. Press the button to choose a new one.</p>
+    ${button(link, 'Choose a new password')}
+    <p>This link works for ${minutes} minutes and only once. After the reset, you are logged out on all devices.</p>
+    <p>If you did not ask for this, you can ignore this email. Your password stays the same.</p>
+    <p style="font-size:13px;">If the button does not work, open this link:<br>${escapeHtml(link)}</p>`)
+  const text = `Namaste ${name},
+
+We got a request to reset your Talkies password.
+
+Choose a new password: ${link}
+
+This link works for ${minutes} minutes and only once. After the reset, you are logged out on all devices.
+
+If you did not ask for this, you can ignore this email. Your password stays the same.`
+  return { subject, html, text }
+}

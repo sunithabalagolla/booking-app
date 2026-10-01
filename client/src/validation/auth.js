@@ -29,6 +29,22 @@ export const loginSchema = z.object({
   password: z.string().min(1, { error: 'Please enter your password.' }),
 })
 
+// U-03 forgot / reset password
+export const forgotPasswordSchema = z.object({
+  email: emailField,
+})
+
+// New password twice, so a typing mistake does not lock the user out
+export const resetPasswordSchema = z
+  .object({
+    password: passwordField,
+    confirm: z.string(),
+  })
+  .refine((data) => data.password === data.confirm, {
+    error: 'The two passwords are not the same.',
+    path: ['confirm'],
+  })
+
 // Zod result → { field: 'first message' }
 export function fieldErrors(zodError) {
   const errors = {}

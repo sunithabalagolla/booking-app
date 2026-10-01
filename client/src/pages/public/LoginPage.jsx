@@ -87,8 +87,17 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* "Forgot password" link comes with U-03 */}
+      {/* U-03: take the typed email along, so the user does not type it again */}
       <p className="mt-6 text-sm">
+        <Link
+          to="/forgot-password"
+          state={{ email: form.email.trim().toLowerCase() }}
+          className="font-bold text-maroon underline"
+        >
+          Forgot password?
+        </Link>
+      </p>
+      <p className="mt-2 text-sm">
         New here?{' '}
         <Link to="/signup" className="font-bold text-maroon underline">
           Sign up

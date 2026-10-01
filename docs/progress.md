@@ -2,21 +2,21 @@
 
 ## Last session
 
-- Date: 2026-09-30 (second session)
-- Done: **U-01 sign up + verify email** and **U-02 login / logout + tokens**.
-- U-02 details:
-  - New packages (added to requirements Section 2): `jsonwebtoken` 9.0.3, `cookie-parser` 1.4.7.
-  - Refresh token = random value stored hashed (no JWT), so `JWT_REFRESH_SECRET` was removed from `.env.example` and `.env`; SEC-07 updated. A random dev `JWT_ACCESS_SECRET` was put in your `.env`. The server refuses to start without it (min 32 characters).
-  - `config/auth.js`: access token 15 min, refresh 7 days (BR-19), cookie `talkies_rt` (httpOnly, sameSite strict, path `/api/auth`, secure in production), bcrypt rounds. **The lifetimes move to the settings collection with A-05 (Phase 2).**
-  - `controllers/session.js`: `POST /api/auth/login` (same 401 for wrong email / wrong password, dummy hash so both take the same time; 403 not verified / blocked only after a correct password), `/refresh` (rotation, atomic), `/logout`. BR-17 in `rateLimits.js`: only wrong logins (401) count, 5 per 15 min per email + IP.
-  - `middleware/auth.js` `requireAuth` (401 `UNAUTHORIZED` / `TOKEN_EXPIRED`, loads the user every request, blocked → 403). `GET /api/me`. `utils/publicUser.js`.
-  - Client: `store/authStore.js` (token in memory only), `apiFetch` refreshes once on `TOKEN_EXPIRED` (one shared refresh), "Interval over!" when it fails, `AuthManager` restores the login on page load, `/login` page, "Log in" button on the Email verified page, links between sign up and login, `AuthStatus` ("Logged in as … · Log out") on the test Home page.
-  - Tests: **61 pass** (client 16: theme 9 + token refresh 7; server 45: new `auth.session.test.js` with 16 tests, T-01 part). Checked by hand: verify link → Log in → wrong password message → login → reload (still logged in) → log out → reload (still logged out).
-- Earlier today: Phase 0 (tasks 0.6 to 0.11) done.
+- Date: 2026-10-01
+- Done: **`/api/health` database status** (separate commit) and **U-03 forgot / reset password**.
+- Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
+- U-03 details:
+  - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
+  - After a reset: all refresh tokens of the user deleted (all devices logged out). The reset also marks the email as verified (your decision). Works for all 4 roles (your decision). Blocked / deleted account → link refused.
+  - E-02 template `resetPasswordTemplate` (vintage email style).
+  - Client: "Forgot password?" link on the login page (takes the typed email along), `/forgot-password` page, `/reset-password` page (new password twice, "Get a new link" when the link does not work, "Log in" after success).
+  - Tests: **78 pass** (client 19: new `validation/auth.test.js` 3; server 59: health 3, new `auth.reset.test.js` 13). Client lint + build OK. Not checked by hand in the browser yet.
+- Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **U-03 Forgot password** (E-02, reset link 30 min): forgot / reset endpoints, pages, "Forgot password?" link on the login page. After reset: all devices logged out.
+- **O-01 Owner register** (Pending status, verify email like U-01, `POST /api/auth/owner-signup`).
+- Try U-03 by hand once: Log in page → Forgot password? → copy the link from the server console → new password → log in.
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -30,6 +30,8 @@
 
 - Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
+
+- After a password reset, an access token that was already given out still works until it runs out (max 15 min, BR-19). Refresh tokens are deleted at once. If needed later: add a `passwordChangedAt` field and refuse older access tokens in `requireAuth` (ask first, it is a new database field).
 
 ## Open questions
 
@@ -70,7 +72,7 @@
 ## Phase 1 – Auth and roles
 - [x] U-01 Sign up + verify email (with resend, max 3 per hour)
 - [x] U-02 Login / logout + tokens
-- [ ] U-03 Forgot password
+- [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
 - [ ] O-01 Owner register (Pending)
 - [ ] S-01 Staff login
 - [ ] ROLE-01 to ROLE-06 role + ownership middleware

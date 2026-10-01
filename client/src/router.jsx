@@ -1,8 +1,10 @@
 import { createBrowserRouter } from 'react-router'
 import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
+import ForgotPasswordPage from './pages/public/ForgotPasswordPage.jsx'
 import HomePage from './pages/public/HomePage.jsx'
 import LoginPage from './pages/public/LoginPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
+import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 
@@ -15,6 +17,9 @@ const router = createBrowserRouter([
   { path: '/verify-email', element: <VerifyEmailPage /> },
   // U-02 login
   { path: '/login', element: <LoginPage /> },
+  // U-03 forgot / reset password
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   { path: '*', element: <NotFoundPage /> },
 ])
 

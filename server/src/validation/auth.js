@@ -36,6 +36,16 @@ export const resendVerifySchema = z.object({
   email: emailField,
 })
 
+// U-03 forgot / reset password
+export const forgotPasswordSchema = z.object({
+  email: emailField,
+})
+
+export const resetPasswordSchema = z.object({
+  token: z.string({ error: 'The link is not complete.' }).min(10, { error: 'The link is not complete.' }).max(200),
+  password: passwordField,
+})
+
 // Login: no password rules here, only "not empty" (the password is checked against the hash)
 export const loginSchema = z.object({
   email: emailField,

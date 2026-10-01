@@ -152,6 +152,7 @@ Email verify links, password reset links and refresh tokens (U-01, U-02, U-03).
 | `usedAt` | Date | | Verify and reset links work only once |
 
 - Resend verify email (U-01): deletes the user's old `verify_email` tokens and makes a new one, so the old link stops working. Max 3 per hour (SEC-03).
+- Forgot password (U-03): deletes the user's old `reset_password` tokens and makes a new one (30 min). A successful reset deletes all `refresh` and `reset_password` tokens of the user (all devices logged out) and sets `emailVerified: true`.
 
 **Indexes**
 - `{ tokenHash: 1 }` unique
