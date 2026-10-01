@@ -57,15 +57,12 @@
   - Checked on your running dev server: `/api/health` 200 with the new headers, also through the Vite proxy.
   - U-03 and O-01: checked by the developer in the browser, both work.
   - Tests: **166 pass** (client 48; server 118).
+  - Theme in profile + final role pass (all 4 seed logins): checked by the developer in the browser, both work. **Phase 1 done.**
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **Phase 1 check by hand (you)**, then I mark Phase 1 done:
-  - Theme in profile (below).
-  - Final role pass: each seed login (`user@ / owner@ / staff@ / admin@talkies.test`) lands on its own page and cannot open the others (`/owner`, `/admin`, `/staff/scan`, `/owner/pending`).
-- After that: **Phase 2**, starting with A-02 Movies.
-- Try theme to profile by hand: new sign up → pick Night show as guest → log in (stays Night, saved) → log out, pick Day → log in (profile Night wins).
+- **Phase 2**, starting with **A-02 Movies** (plan first).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -121,7 +118,7 @@
 
 **Phase 0 done (2026-09-30).**
 
-## Phase 1 – Auth and roles
+## Phase 1 – Auth and roles ✅ done
 - [x] U-01 Sign up + verify email (with resend, max 3 per hour)
 - [x] U-02 Login / logout + tokens
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email; tested in the browser by the developer 2026-10-01)
@@ -135,7 +132,9 @@
 - [x] T-01 tests (login, refresh incl. race, role checks, DB decides not the token). Ownership on real endpoints: added with O-03
 - [x] SEC-03 general limit 300 / 15 min per IP (not `/api/health`)
 - [x] SEC-08 helmet + CORS allow-list from `CLIENT_URL` (HTTPS in production: Phase 12)
-- [ ] Phase 1 check by hand: theme in profile + final role pass (developer)
+- [x] Phase 1 check by hand: theme in profile + final role pass for all 4 seed logins (developer, 2026-10-01: both work)
+
+**Phase 1 done (2026-10-01).** All 4 roles log in and see only their pages.
 
 ## Phase 2 – Admin + owner setup
 - [ ] A-02 Movies
