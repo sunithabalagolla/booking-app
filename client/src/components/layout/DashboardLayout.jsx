@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router'
 import { usePendingOwnerCount } from '../../api/adminOwners.js'
+import { usePendingTheatreCount } from '../../api/adminTheatres.js'
 import { useLogout } from '../../api/auth.js'
 import { useAuthStore } from '../../store/authStore.js'
 import Button from '../ui/Button.jsx'
@@ -14,9 +15,11 @@ export default function DashboardLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useLogout()
   const menu = dashboardMenuFor(user)
-  // A-03: how many owners wait for approval (admin only)
-  const pendingOwners = usePendingOwnerCount(user?.role === 'admin').data ?? 0
-  const counts = { pendingOwners }
+  // A-03 / A-04: how many owners and theatres wait for approval (admin only)
+  const isAdmin = user?.role === 'admin'
+  const pendingOwners = usePendingOwnerCount(isAdmin).data ?? 0
+  const pendingTheatres = usePendingTheatreCount(isAdmin).data ?? 0
+  const counts = { pendingOwners, pendingTheatres }
 
   return (
     <div className="min-h-screen md:flex">

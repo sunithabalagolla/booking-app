@@ -249,9 +249,9 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 | GET | `/owners` | `approvalStatus?, q?`, page | A-03. `q` = start of name, email or business name (any case). Pending: oldest first; others newest first. Items: `id, name, email, phone, businessName, approvalStatus, rejectReason, decidedAt, decidedBy { id, name }, emailVerified, status, createdAt` |
 | POST | `/owners/:id/approve` | — | (audit `owner.approve`) E-09. From `pending` or `rejected`; email must be verified (`400 RULE_BROKEN`, `reason: email_not_verified`). Already approved → `400 RULE_BROKEN`, `reason: already_decided`. One atomic step: two admins at once → one wins |
 | POST | `/owners/:id/reject` | `reason` (5–500) | (audit `owner.reject` with the reason) E-09 with the reason. Only from `pending`; an approved owner is blocked instead |
-| GET | `/theatres` | `status?, cityCode?`, page | A-04 |
-| POST | `/theatres/:id/approve` | — | (audit) E-09 |
-| POST | `/theatres/:id/reject` | `reason` | (audit) E-09 |
+| GET | `/theatres` | `status?, cityCode?`, page | A-04. Pending: oldest first; others newest first. Each: the owner theatre fields + `owner { id, name, businessName, email, phone, status }, decidedAt, decidedBy { id, name }` |
+| POST | `/theatres/:id/approve` | — | (audit `theatre.approve`) E-09 to the owner. From `pending` or `rejected`. Owner blocked → `400 RULE_BROKEN` (`reason: owner_blocked`). Already approved → `400 RULE_BROKEN` (`already_decided`). Two admins at once → one wins |
+| POST | `/theatres/:id/reject` | `reason` (5–500) | (audit `theatre.reject` with the reason) E-09 with the reason. Only from `pending` |
 | GET | `/settings` | — | A-05: `{ settings }`, the whole `settings` document |
 | PATCH | `/settings` | any changeable field (nested: `gst: { ticketPercent }`, `platform: { gstin }`) | (audit, old + new values of the changed fields only, one transaction). Answers `{ settings, changed: [paths] }`. Used by new bookings only; token lifetimes, reset link time and upload size apply to new logins / links / uploads. `cities` sent → `400` (seeded list). Ranges: hold / waitlist 1–60 min · max seats 1–20 · fee 0–50000 paise · cutoffs, check-in, deal start 0–1440 min · percentages 0–100 (2 decimals) · deal max 0–90 · cleaning 0–120 min · access token 5–60 min · refresh 1–30 days · reset link 10–120 min · upload 1–10 MB · poster 400–2000 px · GSTIN 15 characters |
 | GET | `/coupons` | page | A-06 |

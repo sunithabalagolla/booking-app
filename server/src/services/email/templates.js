@@ -102,3 +102,35 @@ Reason: ${reason}
 If you have questions, please reply to this email.`
   return { subject, html, text }
 }
+
+// E-09: theatre approved or rejected (A-04). Sent to the owner.
+export function theatreDecisionTemplate({ name, theatreName, approved, reason, link }) {
+  const subject = approved ? `Talkies – ${theatreName} is approved` : `Talkies – ${theatreName} was not approved`
+  const html = approved
+    ? layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Good news! Your theatre <strong>${escapeHtml(theatreName)}</strong> is approved.</p>
+    <p>You can add screens and shows now.</p>
+    ${button(link, 'Open my theatre')}`)
+    : layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Sorry, your theatre <strong>${escapeHtml(theatreName)}</strong> was not approved.</p>
+    <p><strong>Reason:</strong> ${escapeHtml(reason)}</p>
+    <p>You can fix the details and save the theatre again. It then goes back to our team.</p>
+    ${button(link, 'Edit my theatre')}`)
+  const text = approved
+    ? `Namaste ${name},
+
+Good news! Your theatre ${theatreName} is approved. You can add screens and shows now.
+
+Open my theatre: ${link}`
+    : `Namaste ${name},
+
+Sorry, your theatre ${theatreName} was not approved.
+Reason: ${reason}
+
+You can fix the details and save the theatre again. It then goes back to our team.
+
+Edit my theatre: ${link}`
+  return { subject, html, text }
+}

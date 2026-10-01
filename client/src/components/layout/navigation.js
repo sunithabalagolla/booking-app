@@ -43,6 +43,7 @@ export function dashboardMenuFor(user) {
       return [
         { to: '/admin', label: 'Box office register' },
         { to: '/admin/owners', label: 'Owners', count: 'pendingOwners' }, // A-03 (count = waiting)
+        { to: '/admin/theatres', label: 'Theatres', count: 'pendingTheatres' }, // A-04
         { to: '/admin/movies', label: 'Movies' }, // A-02
         { to: '/admin/settings', label: 'Settings' }, // A-05
       ]

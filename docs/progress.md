@@ -58,13 +58,18 @@
   - U-03 and O-01: checked by the developer in the browser, both work.
   - Tests: **166 pass** (client 48; server 118).
   - Theme in profile + final role pass (all 4 seed logins): checked by the developer in the browser, both work. **Phase 1 done.**
+- **A-04 Theatre approvals** (your decisions 2026-10-01):
+  - `GET /api/admin/theatres` (status tabs, city filter; pending oldest first; with owner details), `POST /api/admin/theatres/:id/approve` (from pending or rejected; not while the owner is blocked → `owner_blocked`) and `/reject` (reason 5–500, only from pending). Atomic + audit (`theatre.approve` / `theatre.reject`) in one transaction; two admins at once → one wins. E-09 to the owner (`theatreDecisionTemplate`, with a link to the theatre).
+  - Client: admin sidebar "Theatres" with a gold count of waiting theatres; `/admin/theatres` register table (theatre with address, "Open map", photo thumbnails, amenities; city + state + GSTIN; owner details; sent date; status stamp; Approve / Reject with reason box; "Owner blocked" stamp and no Approve).
+  - requirements A-04, api.md updated.
+  - Tests: **281 pass** (client 78: theatre buttons 3; server 203: admin theatres 11). Lint + build OK. Not checked by hand in the browser yet.
 - **O-03 Theatres** (your decisions 2026-10-01):
   - `Theatre` model (database.md 5.7). Owner endpoints (approved owners, own only): `GET /api/owner/cities` (new, for the form; api.md updated), `GET / POST /api/owner/theatres`, `GET / PATCH /api/owner/theatres/:id`. No delete.
   - Rules: new = Pending (ROLE-04); city from settings; GSTIN must start with the city's GST state code (`server/src/config/gstStates.js` + client copy, a test checks they match); max 6 photos; map link https. After approval city + GSTIN locked (`400 RULE_BROKEN`, `locked_after_approval`); editing a rejected theatre → Pending again. requirements O-03, database.md, api.md updated.
   - T-01 ownership on real endpoints: another owner's theatre → 404 for GET and PATCH; own list only.
   - Client: owner sidebar "Theatres"; `/owner/theatres` register table (city, address, amenities, status stamp + reject reason; empty text "No theatres yet…"); `/owner/theatres/new` and `/:id` form (city drop-down with state, GSTIN hint + state check, locked fields after approval, amenities, up to 6 photos with Remove).
   - Seed step `theatres`: 6 approved sample theatres for `owner@talkies.test` (2 each in Hyderabad, Chennai, Bengaluru; made-up GSTINs with the right state code). `staff@talkies.test` linked to the 2 Hyderabad theatres (the "no theatres yet" gap is closed; a reseed keeps the link). Ran on Docker.
-  - Tests: **267 pass** (client 75: GST codes 2, theatre form 5; server 192: owner theatres 14, seed theatres 3). Lint + build OK. Not checked by hand in the browser yet.
+  - Tests: **267 pass** (client 75: GST codes 2, theatre form 5; server 192: owner theatres 14, seed theatres 3). Lint + build OK. Checked by the developer in the browser (2026-10-01): works.
 - **A-03 Owner approvals** (your decisions 2026-10-01):
   - `GET /api/admin/owners` (tabs by status, search start of name / email / business, pending oldest first), `POST /api/admin/owners/:id/approve` (from pending or rejected, email must be verified) and `/reject` (reason 5–500, only from pending). Atomic + audit entry in one transaction; two admins at once → one wins. E-09 email (`ownerDecisionTemplate`, vintage style) after the decision.
   - Owner block / unblock now (your decision): `POST /api/admin/users/:id/block` · `/unblock` (owners only until A-07), audit `user.block` / `user.unblock` with the optional reason. Blocking deletes the refresh tokens of the owner and their Gate Staff.
@@ -94,8 +99,8 @@
 
 ## Next step
 
-- **A-04 Theatre approvals** (plan first), then O-04, O-07, O-05 + T-08.
-- Try O-03 by hand: log in as `owner@talkies.test` → sidebar "Theatres" → the 6 approved sample theatres → open one: city and GSTIN are locked, change the name → saved. "+ Add theatre": Hyderabad + a GSTIN starting with 33 → message "needs … 36"; with 36… → added as Pending; upload 1–2 photos, remove one. Also Night show.
+- **O-04 Screens + seat layout editor** (plan first), then O-07, O-05 + T-08.
+- Try A-04 by hand: as `owner@talkies.test` add a theatre (Pending) → as admin "Theatres" (sidebar count 1) → open map / photos → Reject with a reason (owner sees it, console shows E-09) → owner edits it (Pending again) → admin Approve. Block that owner in "Owners" → the theatre row shows "Owner blocked" and no Approve; unblock again.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -174,9 +179,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] A-05 Platform settings (admin page, audit log, public values, 10 cities, TEST values in the seed; tested in the browser by the developer 2026-10-01)
   - [x] Moved token lifetimes, reset link minutes, `uploadMaxMb` / `posterMaxWidthPx` into settings
 - [x] A-03 Owner approvals (list, approve / reject + E-09, block / unblock owners + their staff, audit; tested in the browser by the developer 2026-10-01)
-- [x] O-03 Theatres (list / add / edit, GSTIN state check, locked city + GSTIN after approval, 6 sample theatres)
+- [x] O-03 Theatres (list / add / edit, GSTIN state check, locked city + GSTIN after approval, 6 sample theatres; tested in the browser by the developer 2026-10-01)
   - [x] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404). Staff "only their theatres" is tested with the scanner (S-03, T-07)
-- [ ] A-04 Theatre approvals
+- [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit)
 - [ ] O-04 Screens + seat layout editor
 - [ ] O-07 Canteen items
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
