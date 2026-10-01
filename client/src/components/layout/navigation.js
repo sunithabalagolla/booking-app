@@ -40,6 +40,7 @@ export function dashboardMenuFor(user) {
       return [
         { to: '/admin', label: 'Box office register' },
         { to: '/admin/movies', label: 'Movies' }, // A-02
+        { to: '/admin/settings', label: 'Settings' }, // A-05
       ]
     default:
       return []

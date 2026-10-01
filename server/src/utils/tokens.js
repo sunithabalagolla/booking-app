@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto'
 import jwt from 'jsonwebtoken'
-import { ACCESS_TOKEN_MINUTES, getAccessSecret } from '../config/auth.js'
+import { getAccessSecret } from '../config/auth.js'
 
 // SHA-256 of a token, as stored in the authtokens collection
 export function hashToken(token) {
@@ -13,11 +13,12 @@ export function createToken() {
   return { token, tokenHash: hashToken(token) }
 }
 
-// Access token (BR-19): a JWT with only the user ID and role, valid 15 minutes
-export function signAccessToken(user) {
+// Access token (BR-19): a JWT with only the user ID and role.
+// `minutes` = accessTokenMinutes from settings (default 15).
+export function signAccessToken(user, minutes) {
   return jwt.sign({ role: user.role }, getAccessSecret(), {
     subject: String(user._id),
-    expiresIn: `${ACCESS_TOKEN_MINUTES}m`,
+    expiresIn: `${minutes}m`,
     algorithm: 'HS256',
   })
 }

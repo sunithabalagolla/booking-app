@@ -201,7 +201,6 @@ Owner bank details for payouts (O-14). A separate collection, so that no normal 
 | `dealStartMinutes` | Number | 30 | BR-14 |
 | `dealMaxPercent` | Number | 50 | BR-14 |
 | `transferCutoffMinutes` | Number | 30 | BR-15 |
-| `loginMaxAttempts` / `loginWindowMinutes` | Number | 5 / 15 | BR-17 |
 | `accessTokenMinutes` / `refreshTokenDays` | Number | 15 / 7 | BR-19 |
 | `resetLinkMinutes` | Number | 30 | U-03 |
 | `gst.ticketPercent` / `gst.foodPercent` / `gst.convenienceFeePercent` | Number | *empty* | BR-20. **Open question** (confirm with a CA) |
@@ -209,9 +208,11 @@ Owner bank details for payouts (O-14). A separate collection, so that no normal 
 | `platform.companyName` / `.gstin` / `.address` | String | *empty* | 11.3 (platform on the invoice) |
 | `uploadMaxMb` | Number | 2 | SEC-11 |
 | `posterMaxWidthPx` | Number | 800 | NF-08 |
-| `cities` | [{ `code`, `name`, `state` }] | seeded | **Fixed city list** (O-03, U-04). Set by the seed script; there is no admin screen for it (not in the requirements). `code` e.g. `hyderabad`, `state` is the theatre's GST state (all invoice lines use CGST + SGST of this state) |
+| `cities` | [{ `code`, `name`, `state` }] | seeded | **Fixed city list** (O-03, U-04): 10 cities (Hyderabad, Chennai, Bengaluru, Mumbai, Pune, Delhi, Kolkata, Kochi, Ahmedabad, Jaipur), decided 2026-10-01. Set by the seed script; there is no admin screen for it (not in the requirements). `code` e.g. `hyderabad`, `state` is the theatre's GST state (all invoice lines use CGST + SGST of this state) |
 
 - Fixed rules that are **not** in settings (they never change, so they live in code): show labels BR-22, badge counts BR-23, time zone BR-21, payout day BR-12, coupon rule BR-16, review rule BR-24.
+- BR-17 (wrong-login limit, 5 per 15 min) is **not** in settings: like all rate limits it lives in `server/src/config/rateLimits.js` (SEC-03; decided 2026-10-01).
+- The seed script fills **TEST** values for commission, GST, HSN / SAC codes (`TEST-TICKET`, `TEST-FOOD`, `TEST-FEE`) and the platform company ("Talkies Sample Pvt Ltd (TEST)") only where they are still empty. The admin page shows a warning while TEST values are there. Replace them after asking a CA.
 - Bookings cannot be created while `commissionPercent` or the GST values are empty (the seed script fills test values).
 
 ---
@@ -591,8 +592,8 @@ Read only. The app only inserts; it never updates or deletes.
 | --- | --- | --- | --- |
 | `actorId` / `actorRole` | ObjectId / String | yes | Who |
 | `action` | String | yes | e.g. `owner.approve`, `theatre.reject`, `show.cancel`, `settings.update`, `payout.mark_paid` |
-| `targetType` / `targetId` | String / ObjectId | yes | What |
-| `details` | Object | | e.g. `{ before, after }` for settings, reason |
+| `targetType` / `targetId` | String / ObjectId **or** String | yes | What. `targetId` is text where the target has a text ID, e.g. `'platform'` for settings |
+| `details` | Object | | e.g. `{ before, after }` for settings (only the changed fields, by path like `gst.ticketPercent`), reason |
 | `ip` | String | | |
 
 **Indexes**: `{ createdAt: -1 }` · `{ actorId: 1, createdAt: -1 }` · `{ targetType: 1, targetId: 1 }`

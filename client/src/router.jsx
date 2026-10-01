@@ -6,6 +6,7 @@ import RoleRoute from './components/RoleRoute.jsx'
 import AdminHomePage from './pages/admin/AdminHomePage.jsx'
 import AdminMovieFormPage from './pages/admin/AdminMovieFormPage.jsx'
 import AdminMoviesPage from './pages/admin/AdminMoviesPage.jsx'
+import AdminSettingsPage from './pages/admin/AdminSettingsPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
@@ -57,6 +58,8 @@ const router = createBrowserRouter([
       { path: '/admin/movies', element: guard(['admin'], <AdminMoviesPage />) },
       { path: '/admin/movies/new', element: guard(['admin'], <AdminMovieFormPage />) },
       { path: '/admin/movies/:id', element: guard(['admin'], <AdminMovieFormPage />) },
+      // A-05 platform settings
+      { path: '/admin/settings', element: guard(['admin'], <AdminSettingsPage />) },
     ],
   },
   // S-01 staff open straight to the scanner

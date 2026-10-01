@@ -11,6 +11,7 @@ import adminRoutes from './routes/admin.js'
 import authRoutes from './routes/auth.js'
 import meRoutes from './routes/me.js'
 import ownerRoutes from './routes/owner.js'
+import settingsRoutes from './routes/settings.js'
 import staffRoutes from './routes/staff.js'
 import uploadRoutes from './routes/uploads.js'
 
@@ -37,6 +38,7 @@ app.use('/api', generalLimiter)
 
 app.use('/api/auth', authRoutes)
 app.use('/api/me', meRoutes)
+app.use('/api/settings', settingsRoutes) // A-05 public values
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)

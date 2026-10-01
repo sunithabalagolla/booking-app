@@ -58,6 +58,15 @@
   - U-03 and O-01: checked by the developer in the browser, both work.
   - Tests: **166 pass** (client 48; server 118).
   - Theme in profile + final role pass (all 4 seed logins): checked by the developer in the browser, both work. **Phase 1 done.**
+- **A-05 Platform settings** (your decisions 2026-10-01):
+  - `Settings` model (one document `'platform'`, defaults from database.md 5.4; made with defaults if missing). `getSettings()`.
+  - `AuditLog` model + `writeAudit()` (A-14, SEC-13; insert only). `targetId` is an ObjectId or text (`'platform'`).
+  - `GET / PATCH /api/admin/settings`: only changed fields are saved, one audit entry with old + new values, in one transaction. Agreed ranges; `cities` cannot be changed (400). `GET /api/settings/public`: the 6 values from api.md + `uploadMaxMb` (for the browser upload check; api.md updated).
+  - Now read from settings: access / refresh token life (login + refresh), reset link minutes, upload max MB (multer limit per request), poster max width (Cloudinary). `config/auth.js` / `config/uploads.js` constants removed.
+  - BR-17 stays in `rateLimits.js`: `loginMaxAttempts` / `loginWindowMinutes` removed from database.md.
+  - Seed step `settings` (runs first): 10 cities with GST state; TEST values only where empty (commission 10 %, GST 18 / 5 / 18 %, `TEST-*` HSN codes, "Talkies Sample Pvt Ltd (TEST)"). Ran on Docker.
+  - Client: sidebar "Settings", `/admin/settings` with 8 groups (fee in rupees, saved as paise; hint with unit + rule ID; "Not set yet: needed before bookings open"); TEST warning; read-only city list; sends only changed fields. Image upload check now uses the `uploadMaxMb` setting.
+  - Tests: **225 pass** (client 64: settings form 6; server 161: settings 14). Lint + build OK. Not checked by hand in the browser yet.
 - **Phase 2 started: A-02 Movies** (your decisions 2026-10-01):
   - New packages (Section 2): `multer` 2.4.0, `cloudinary` 2.11.0.
   - Uploads `POST /api/uploads` (approved owner / admin; `kind` poster · cast · theatre · food; jpg / png / webp checked from the first bytes; max 2 MB). Cloudinary when the 3 keys are in `.env` (posters max 800 px wide); **no keys in development → saved in `server/uploads/`** (git-ignored, no resize), served at `/api/uploads/files/<name>`. Production without keys → server refuses to start. `services/upload/index.js`, `config/uploads.js`.
@@ -66,13 +75,13 @@
   - Client: sidebar "Movies", `/admin/movies` register table (poster, title, cert., languages, release, status stamp; search, status filter, pages), `/admin/movies/new` and `/admin/movies/:id` form (poster upload with preview, languages / genres checkboxes, cast with optional photos, delete with "Yes, delete" step; "make it inactive" text when in use). New UI parts: `SelectField`, `CheckboxGroup`, `ImageUpload`. Error text now follows the surface (`--tone-alert`: maroon on light, gold on the Night show page).
   - Seed step `movies`: 6 made-up sample movies (4 now showing incl. one "A", 2 coming soon) with vintage SVG posters drawn by code (`seed/posters.js`). Ran on Docker; looked at all 6 posters in Chrome (fixed the title overlapping the circle).
   - Fix found by a new test: 4xx errors from Express helpers (e.g. a missing upload file) were answered as 500; now 404 / 400 with our own message.
-  - Tests: **205 pass** (client 58: movie lists 5, movie form 5; server 147: admin movies 13, uploads 10, seed movies 3, IST time 4). Lint + build OK. The admin pages are not checked by hand in the browser yet.
+  - Tests: **205 pass** (client 58: movie lists 5, movie form 5; server 147: admin movies 13, uploads 10, seed movies 3, IST time 4). Lint + build OK. Checked by the developer in the browser (2026-10-01): works.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **A-05 Platform settings** (plan first), then A-03, O-03, A-04, O-04, O-07, O-05 + T-08.
-- Try A-02 by hand: log in as `admin@talkies.test` → sidebar "Movies" → the 6 sample movies with posters → search / status filter → "+ Add movie" (upload a jpg / png poster, pick languages / genres) → edit → delete (and "Make it inactive" text for a movie in use comes when shows exist). Also Night show.
+- **A-03 Owner approvals** (plan first), then O-03, A-04, O-04, O-07, O-05 + T-08.
+- Try A-05 by hand: admin → sidebar "Settings" → TEST warning shows → change a value (e.g. hold time 12) → "Saved 1 setting" → reload keeps it; a wrong value (hold time 61) shows the message under the field; the city list shows 10 cities. Also Night show.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -149,9 +158,9 @@
 
 ## Phase 2 – Admin + owner setup
 Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A-03 → O-03 → A-04 (needs theatres) → O-04 → O-07 → O-05 + T-08.
-- [x] A-02 Movies (admin list / add / edit / delete, uploads, fixed lists, 6 sample movies)
-- [ ] A-05 Platform settings
-  - [ ] Move token lifetimes (`config/auth.js`), reset link minutes, `uploadMaxMb` / `posterMaxWidthPx` (`config/uploads.js`) into settings
+- [x] A-02 Movies (admin list / add / edit / delete, uploads, fixed lists, 6 sample movies; tested in the browser by the developer 2026-10-01)
+- [x] A-05 Platform settings (admin page, audit log, public values, 10 cities, TEST values in the seed)
+  - [x] Moved token lifetimes, reset link minutes, `uploadMaxMb` / `posterMaxWidthPx` into settings
 - [ ] A-03 Owner approvals
 - [ ] O-03 Theatres
   - [ ] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404, staff only their theatres)

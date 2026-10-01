@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
-import { BCRYPT_ROUNDS, RESET_LINK_MINUTES } from '../config/auth.js'
+import { BCRYPT_ROUNDS } from '../config/auth.js'
 import { AuthToken } from '../models/AuthToken.js'
+import { getSettings } from '../models/Settings.js'
 import { User } from '../models/User.js'
 import { sendEmail } from '../services/email/index.js'
 import { resetPasswordTemplate } from '../services/email/templates.js'
@@ -18,6 +19,7 @@ export async function forgotPassword(req, res) {
   const user = await User.findOne({ email, status: 'active', deletedAt: null })
 
   if (user) {
+    const { resetLinkMinutes } = await getSettings() // A-05 (default 30)
     // Only the newest link works
     await AuthToken.deleteMany({ userId: user._id, type: 'reset_password' })
     const { token, tokenHash } = createToken()
@@ -25,11 +27,11 @@ export async function forgotPassword(req, res) {
       userId: user._id,
       type: 'reset_password',
       tokenHash,
-      expiresAt: new Date(Date.now() + RESET_LINK_MINUTES * 60 * 1000),
+      expiresAt: new Date(Date.now() + resetLinkMinutes * 60 * 1000),
     })
 
     const link = `${clientUrl()}/reset-password?token=${encodeURIComponent(token)}`
-    const message = resetPasswordTemplate({ name: user.name, link, minutes: RESET_LINK_MINUTES })
+    const message = resetPasswordTemplate({ name: user.name, link, minutes: resetLinkMinutes })
     try {
       await sendEmail({ to: user.email, ...message })
     } catch (error) {

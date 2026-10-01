@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
-import { BCRYPT_ROUNDS, REFRESH_COOKIE, REFRESH_TOKEN_DAYS, refreshCookieOptions } from '../config/auth.js'
+import { BCRYPT_ROUNDS, REFRESH_COOKIE, refreshCookieOptions } from '../config/auth.js'
 import { AuthToken } from '../models/AuthToken.js'
+import { getSettings } from '../models/Settings.js'
 import { User } from '../models/User.js'
 import { AppError } from '../utils/AppError.js'
 import { publicUser } from '../utils/publicUser.js'
@@ -13,24 +14,24 @@ import { createToken, hashToken, signAccessToken } from '../utils/tokens.js'
 let dummyHash
 const getDummyHash = async () => (dummyHash ??= await bcrypt.hash('not-a-real-password-0', BCRYPT_ROUNDS))
 
-// Makes a new refresh token (stored hashed) + cookie, and returns a new access token
+// Makes a new refresh token (stored hashed) + cookie, and returns a new access token.
+// Lifetimes from settings (BR-19, A-05): a change applies to new logins / refreshes.
 async function startSession(res, user) {
+  const { accessTokenMinutes, refreshTokenDays } = await getSettings()
   const { token, tokenHash } = createToken()
   await AuthToken.create({
     userId: user._id,
     type: 'refresh',
     tokenHash,
-    expiresAt: new Date(Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000),
+    expiresAt: new Date(Date.now() + refreshTokenDays * 24 * 60 * 60 * 1000),
   })
-  res.cookie(REFRESH_COOKIE, token, refreshCookieOptions())
-  return signAccessToken(user)
+  res.cookie(REFRESH_COOKIE, token, refreshCookieOptions(refreshTokenDays))
+  return signAccessToken(user, accessTokenMinutes)
 }
 
 function clearRefreshCookie(res) {
   // clearCookie needs the same options as when the cookie was set (but no maxAge)
-  const options = { ...refreshCookieOptions() }
-  delete options.maxAge
-  res.clearCookie(REFRESH_COOKIE, options)
+  res.clearCookie(REFRESH_COOKIE, refreshCookieOptions())
 }
 
 // POST /api/auth/login. Same login for all 4 roles (S-01).

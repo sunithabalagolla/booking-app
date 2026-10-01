@@ -16,6 +16,7 @@
 //   Order matters: settings → users → movies → theatres → screens → food → shows → coupons.
 
 import movies from './movies.js'
+import settings from './settings.js'
 import users from './users.js'
 
-export const steps = [users, movies]
+export const steps = [settings, users, movies]

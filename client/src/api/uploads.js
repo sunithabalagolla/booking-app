@@ -1,14 +1,14 @@
 import { apiFetch } from './client.js'
 
 // SEC-11 image upload (api.md Section 11). The server checks again.
-export const UPLOAD_MAX_MB = 2
+// The max size is a platform setting (A-05 uploadMaxMb, from /api/settings/public).
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 // Quick check before sending, so the user sees the problem at once.
 // Returns an error message or null.
-export function checkImageFile(file) {
+export function checkImageFile(file, maxMb) {
   if (!IMAGE_TYPES.includes(file.type)) return 'Only jpg, png or webp images are allowed.'
-  if (file.size > UPLOAD_MAX_MB * 1024 * 1024) return `The image is too big. Max ${UPLOAD_MAX_MB} MB.`
+  if (file.size > maxMb * 1024 * 1024) return `The image is too big. Max ${maxMb} MB.`
   return null
 }
 

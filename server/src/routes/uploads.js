@@ -1,26 +1,29 @@
 import express, { Router } from 'express'
 import multer from 'multer'
 import { z } from 'zod'
-import { UPLOAD_KINDS, UPLOAD_MAX_MB, uploadsDir } from '../config/uploads.js'
+import { UPLOAD_KINDS, uploadsDir } from '../config/uploads.js'
 import { requireAuth } from '../middleware/auth.js'
 import { requireApprovedOwner, requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
+import { getSettings } from '../models/Settings.js'
 import { detectImageType, storeImage } from '../services/upload/index.js'
 import { AppError } from '../utils/AppError.js'
 
 // /api/uploads (api.md Section 11, SEC-11, NF-08)
 const router = Router()
 
-// Keep the file in memory (max 2 MB), check it, then send it to Cloudinary / the folder
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: UPLOAD_MAX_MB * 1024 * 1024, files: 1 },
-}).single('file')
+// Keep the file in memory (max uploadMaxMb from settings, A-05), check it,
+// then send it to Cloudinary / the folder
+async function receiveFile(req, res, next) {
+  const { uploadMaxMb } = await getSettings()
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: uploadMaxMb * 1024 * 1024, files: 1 },
+  }).single('file')
 
-function receiveFile(req, res, next) {
   upload(req, res, (error) => {
     if (error?.code === 'LIMIT_FILE_SIZE') {
-      return next(new AppError(400, 'VALIDATION_ERROR', `The image is too big. Max ${UPLOAD_MAX_MB} MB.`, { file: 'too_big' }))
+      return next(new AppError(400, 'VALIDATION_ERROR', `The image is too big. Max ${uploadMaxMb} MB.`, { file: 'too_big' }))
     }
     if (error) return next(new AppError(400, 'VALIDATION_ERROR', 'Please send one image in the "file" field.'))
     next()

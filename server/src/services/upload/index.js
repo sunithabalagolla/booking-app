@@ -2,10 +2,11 @@ import { randomBytes } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { v2 as cloudinary } from 'cloudinary'
-import { LOCAL_FILES_PATH, POSTER_MAX_WIDTH_PX, uploadsDir } from '../../config/uploads.js'
+import { LOCAL_FILES_PATH, uploadsDir } from '../../config/uploads.js'
+import { getSettings } from '../../models/Settings.js'
 
 // Saves images (NF-08). The database keeps only the URL.
-// - Cloudinary keys in .env → Cloudinary (posters resized to max 800 px wide there).
+// - Cloudinary keys in .env → Cloudinary (posters resized to max posterMaxWidthPx there).
 // - No keys, development → a local folder (no resizing), like emails go to the
 //   console without a Postmark key.
 // - No keys, production → the server refuses to start (assertUploadConfig).
@@ -29,7 +30,8 @@ export function detectImageType(buffer) {
   return null
 }
 
-function uploadToCloudinary(buffer, { kind, name }) {
+async function uploadToCloudinary(buffer, { kind, name }) {
+  const { posterMaxWidthPx } = await getSettings() // NF-08, A-05
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -40,8 +42,8 @@ function uploadToCloudinary(buffer, { kind, name }) {
     folder: `talkies/${kind}`,
     resource_type: 'image',
     ...(name ? { public_id: name, overwrite: true } : {}),
-    // NF-08: posters max 800 px wide (never made bigger)
-    ...(kind === 'poster' ? { transformation: [{ width: POSTER_MAX_WIDTH_PX, crop: 'limit' }] } : {}),
+    // NF-08: posters max posterMaxWidthPx wide (default 800; never made bigger)
+    ...(kind === 'poster' ? { transformation: [{ width: posterMaxWidthPx, crop: 'limit' }] } : {}),
   }
   return new Promise((resolve, reject) => {
     cloudinary.uploader

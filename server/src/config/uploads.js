@@ -1,10 +1,8 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// Image upload settings (SEC-11, NF-08). Fixed here for now; they move to the
-// settings collection with A-05 (uploadMaxMb, posterMaxWidthPx in database.md).
-export const UPLOAD_MAX_MB = 2
-export const POSTER_MAX_WIDTH_PX = 800
+// Image upload settings (SEC-11, NF-08). Max size and poster width are in the
+// settings collection (A-05: uploadMaxMb, posterMaxWidthPx).
 export const UPLOAD_KINDS = ['poster', 'cast', 'theatre', 'food']
 
 // Development only (no Cloudinary keys): files are saved here and served at

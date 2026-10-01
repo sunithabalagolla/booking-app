@@ -128,7 +128,7 @@ All errors have the same shape:
 | Method | Path | Who | Query | Result / notes |
 | --- | --- | --- | --- | --- |
 | GET | `/api/cities` | Guest | — | `[{ code, name }]`: only cities with approved theatres (U-04) |
-| GET | `/api/settings/public` | Guest | — | Values the UI needs: `holdMinutes, maxSeatsPerBooking, convenienceFeePaise, cancelCutoffMinutes, userRefundTicketPercent, transferCutoffMinutes` |
+| GET | `/api/settings/public` | Guest | — | Values the UI needs: `holdMinutes, maxSeatsPerBooking, convenienceFeePaise, cancelCutoffMinutes, userRefundTicketPercent, transferCutoffMinutes, uploadMaxMb` (`uploadMaxMb` for the upload check in the browser, added with A-05) |
 | GET | `/api/banners` | Guest | `city, kind?` (`banner` · `ticker`) | Active now, for that city + no-city ones (A-11, UI-26) |
 | GET | `/api/movies` | Guest | `city, status?` (`now_showing` · `coming_soon`), `q?, language?, genre?, format?` (`2D` · `3D`), `subtitles?, wheelchair?, parentBaby?`, page | U-05, U-06, SF-08. Filters combine (AND). `now_showing` + `city` = movies with a scheduled show in that city in the next 7 days. Format and SF-08 filters look at those shows |
 | GET | `/api/movies/:id` | Guest | — | All movie fields (U-07). `inactive` → `404` |
@@ -251,8 +251,8 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 | GET | `/theatres` | `status?, cityCode?`, page | A-04 |
 | POST | `/theatres/:id/approve` | — | (audit) E-09 |
 | POST | `/theatres/:id/reject` | `reason` | (audit) E-09 |
-| GET | `/settings` | — | A-05: the whole `settings` document |
-| PATCH | `/settings` | any changeable field | (audit, old + new values). Used by new bookings only. `cities` cannot be changed here (seeded list) |
+| GET | `/settings` | — | A-05: `{ settings }`, the whole `settings` document |
+| PATCH | `/settings` | any changeable field (nested: `gst: { ticketPercent }`, `platform: { gstin }`) | (audit, old + new values of the changed fields only, one transaction). Answers `{ settings, changed: [paths] }`. Used by new bookings only; token lifetimes, reset link time and upload size apply to new logins / links / uploads. `cities` sent → `400` (seeded list). Ranges: hold / waitlist 1–60 min · max seats 1–20 · fee 0–50000 paise · cutoffs, check-in, deal start 0–1440 min · percentages 0–100 (2 decimals) · deal max 0–90 · cleaning 0–120 min · access token 5–60 min · refresh 1–30 days · reset link 10–120 min · upload 1–10 MB · poster 400–2000 px · GSTIN 15 characters |
 | GET | `/coupons` | page | A-06 |
 | POST | `/coupons` | `code, discountType, value, minAmountPaise?, maxDiscountPaise?, startAt, endAt, totalLimit?, perUserLimit?, cityCodes?, theatreIds?` | `409 ALREADY_EXISTS` for a used code |
 | PATCH | `/coupons/:id` | same fields (not `code`) | |

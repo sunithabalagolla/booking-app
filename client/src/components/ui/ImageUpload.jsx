@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { usePublicSettings } from '../../api/settings.js'
 import { checkImageFile, uploadImage } from '../../api/uploads.js'
 import { buttonClass } from './buttonStyles.js'
 
@@ -10,13 +11,14 @@ export default function ImageUpload({ label, kind, value, onChange, error, previ
   const [busy, setBusy] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const shownError = uploadError ?? error
+  const maxMb = usePublicSettings().data?.uploadMaxMb ?? 2 // A-05 setting; the server checks again
 
   async function pick(event) {
     const file = event.target.files?.[0]
     event.target.value = '' // the same file can be picked again later
     if (!file) return
 
-    const problem = checkImageFile(file)
+    const problem = checkImageFile(file, maxMb)
     if (problem) {
       setUploadError(problem)
       return
@@ -67,7 +69,7 @@ export default function ImageUpload({ label, kind, value, onChange, error, previ
           )}
         </div>
       </div>
-      <p className="text-sm">jpg, png or webp, max 2 MB.</p>
+      <p className="text-sm">jpg, png or webp, max {maxMb} MB.</p>
       {shownError && (
         <p id={errorId} role="alert" className="text-sm font-bold text-(--tone-alert)">
           {shownError}
