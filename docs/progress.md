@@ -19,13 +19,14 @@
 - **U-03 Forgot password** (E-02, reset link 30 min): forgot / reset endpoints, pages, "Forgot password?" link on the login page. After reset: all devices logged out.
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
-- Not done (you can decide later): `/api/health` showing database status.
 
 ## Known bugs
 
 - (none yet)
 
 ## Notes for later
+
+- `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
 - Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).

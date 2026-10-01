@@ -1,5 +1,6 @@
 import cookieParser from 'cookie-parser'
 import express from 'express'
+import mongoose from 'mongoose'
 import { errorHandler, notFound } from './middleware/errors.js'
 import { requestId } from './middleware/requestId.js'
 import authRoutes from './routes/auth.js'
@@ -13,9 +14,12 @@ app.use(requestId)
 app.use(express.json({ limit: '100kb' }))
 app.use(cookieParser()) // reads the refresh token cookie (U-02)
 
-// Simple check that the server is running
+// Check that the server is running and the database is connected.
+// 503 when MongoDB is not connected, so a monitor can see the problem.
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' })
+  const connected = mongoose.connection.readyState === 1 // 1 = connected
+  if (!connected) return res.status(503).json({ status: 'error', db: 'disconnected' })
+  res.json({ status: 'ok', db: 'connected' })
 })
 
 app.use('/api/auth', authRoutes)

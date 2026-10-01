@@ -88,7 +88,7 @@ All errors have the same shape:
 
 | Method | Path | Who | What |
 | --- | --- | --- | --- |
-| GET | `/api/health` | Guest | `{ status: 'ok' }` (exists now) |
+| GET | `/api/health` | Guest | `200 { status: 'ok', db: 'connected' }`. `503 { status: 'error', db: 'disconnected' }` when MongoDB is not connected |
 
 ---
 
