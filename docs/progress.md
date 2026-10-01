@@ -2,7 +2,12 @@
 
 ## Last session
 
-- Date: 2026-10-01
+- Date: 2026-10-01 (last short session)
+- Done: session start summary + **O-04 plan** shown (no code changed). Tests: **281 pass** (client 78, server 203).
+- O-04 plan (waiting for your answers): `Screen` model (database.md 5.8); owner endpoints `GET / POST /api/owner/theatres/:id/screens`, `GET / PATCH /api/owner/screens/:id` (own only); server checks the layout and makes row letters, seat IDs and `seatCount`; editor page with brushes (Balcony / First / Second / Wheelchair / Aisle / Blocked), row / column quick buttons, marks not only colours (NF-04), live seat summary, "SCREEN THIS WAY" at the bottom; seed 2 screens per sample theatre.
+
+## Earlier on 2026-10-01
+
 - Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout**, 3 fixes from your browser check, the card mustard colour, **theme saved in the profile (UI-02)**, **T-01 tests**, the general rate limit (SEC-03) and **helmet + CORS (SEC-08)**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
@@ -99,7 +104,12 @@
 
 ## Next step
 
-- **O-04 Screens + seat layout editor** (plan first), then O-07, O-05 + T-08.
+- **O-04 Screens + seat layout editor**: the plan is ready; answer these 4 questions, then I build it:
+  1. May owners add screens to **pending** (and rejected) theatres? (suggested: yes; ROLE-04 still stops live shows)
+  2. Row letters automatic, **A = row nearest the screen**, up to Z; rows without seats get no letter; max **26 rows × 40 columns**; seat numbers left to right on the map, aisles / blocked skipped? (suggested: yes)
+  3. Wheelchair-friendly flag **automatic** when the screen has at least 1 wheelchair space, or a separate checkbox? (suggested: automatic)
+  4. **No delete** for screens (like theatres)? (suggested: yes)
+- Then O-07, O-05 + T-08.
 - Try A-04 by hand: as `owner@talkies.test` add a theatre (Pending) → as admin "Theatres" (sidebar count 1) → open map / photos → Reject with a reason (owner sees it, console shows E-09) → owner edits it (Pending again) → admin Approve. Block that owner in "Owners" → the theatre row shows "Owner blocked" and no Approve; unblock again.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
