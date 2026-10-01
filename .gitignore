@@ -21,3 +21,6 @@ npm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local image uploads in development (no Cloudinary keys)
+server/uploads/

@@ -25,7 +25,7 @@ export default function TextField({ label, error, hint, ...inputProps }) {
         </p>
       )}
       {error && (
-        <p id={errorId} className="text-sm font-bold text-maroon">
+        <p id={errorId} className="text-sm font-bold text-(--tone-alert)">
           {error}
         </p>
       )}

@@ -240,9 +240,10 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 | Method | Path | Body / query | Notes |
 | --- | --- | --- | --- |
 | GET | `/dashboard` | `date?` | A-01: tickets today, revenue, commission, top movies, top theatres, cities. Live updates by Socket.io |
-| GET | `/movies` | `q?, status?`, page | A-02 |
-| POST | `/movies` | `title, posterUrl, trailerUrl?, cast?, genres, languages, durationMinutes, certificate, releaseDate, status` | |
-| PATCH | `/movies/:id` | same fields | Status `inactive` hides it from users and owners |
+| GET | `/movies` | `q?` (part of the title, any case), `status?`, page | A-02. Newest release first; inactive movies too |
+| GET | `/movies/:id` | — | A-02 edit form: `{ movie, inUse }` (`inUse` = has shows or bookings) |
+| POST | `/movies` | `title, posterUrl, trailerUrl?, cast?, genres, languages, durationMinutes, certificate, releaseDate, status` | `201 { movie }`. `genres` / `languages`: at least 1 from the fixed lists. `durationMinutes` 30–300. `certificate` `U` · `UA` · `A`. `releaseDate` = IST day `YYYY-MM-DD`. `trailerUrl` https only (`''` = none). `cast` max 30: `{ name, photoUrl? }` |
+| PATCH | `/movies/:id` | same fields, all optional (at least one) | Status `inactive` hides it from users and owners. `trailerUrl: ''` removes the trailer |
 | DELETE | `/movies/:id` | — | Only if no shows and no bookings, else `409 IN_USE` "make it inactive" |
 | GET | `/owners` | `approvalStatus?, q?`, page | A-03 |
 | POST | `/owners/:id/approve` | — | (audit) E-09 |
@@ -282,7 +283,8 @@ All paths below start with `/api/admin`. **Who = Admin.** Every change marked **
 
 | Method | Path | Who | Body | Result / notes |
 | --- | --- | --- | --- | --- |
-| POST | `/api/uploads` | Owner · Admin | `multipart/form-data`: `file`, `kind` (`poster` · `cast` · `theatre` · `food`) | `201 { url }`. Only jpg / png / webp, max `uploadMaxMb` (2 MB), file type checked from the content, not only the name. Posters resized to max 800 px wide. Cloudinary; the DB saves only the URL |
+| POST | `/api/uploads` | Owner · Admin | `multipart/form-data`: `file`, `kind` (`poster` · `cast` · `theatre` · `food`) | `201 { url }`. Only jpg / png / webp, max `uploadMaxMb` (2 MB), file type checked from the content, not only the name. Posters resized to max 800 px wide. Cloudinary; the DB saves only the URL. Owner = approved owner. **Development without Cloudinary keys:** saved in `server/uploads/` (no resize) and the URL is `/api/uploads/files/<name>`. Production without keys: the server refuses to start |
+| GET | `/api/uploads/files/:name` | Guest | — | Development only: the locally saved images |
 
 ---
 

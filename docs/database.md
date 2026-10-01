@@ -235,18 +235,18 @@ Numbers that must go up one by one without duplicates (invoice series).
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `title` | String | yes | |
-| `posterUrl` | String | yes | Cloudinary URL (NF-08) |
+| `posterUrl` | String | yes | Cloudinary URL (NF-08). Development without Cloudinary keys: `/api/uploads/files/<name>` |
 | `trailerUrl` | String | | |
 | `cast` | [{ `name`, `photoUrl` }] | | UI-16 "photo cards"; `photoUrl` optional |
-| `genres` | [String] | yes | |
-| `languages` | [String] | yes | |
+| `genres` | [String] | yes | At least 1, from the fixed list (A-02, `config/movieOptions.js`) |
+| `languages` | [String] | yes | At least 1, from the fixed list (A-02, `config/movieOptions.js`) |
 | `durationMinutes` | Number | yes | Used for show end time (BR-10) |
 | `certificate` | String | yes | `U` · `UA` · `A` (U-08: `A` shows the 18+ warning) |
-| `releaseDate` | Date | yes | |
+| `releaseDate` | Date | yes | 00:00 IST of the release day, stored in UTC (BR-21). The API uses the IST day `YYYY-MM-DD` |
 | `status` | String | yes | `coming_soon` · `now_showing` · `inactive` |
 | `ratingAvg` / `ratingCount` | Number | yes | Default 0. Updated when reviews change (U-07, U-23); hidden reviews do not count |
 
-- A movie with shows or bookings cannot be deleted, only made `inactive` (A-02). Owners can pick only movies that are not `inactive` (O-05).
+- A movie with shows or bookings cannot be deleted, only made `inactive` (A-02). Seeded movies have `isSample: true`. Owners can pick only movies that are not `inactive` (O-05).
 
 **Indexes**
 - `{ status: 1, releaseDate: 1 }` (home: now showing / coming soon)

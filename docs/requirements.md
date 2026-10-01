@@ -141,7 +141,7 @@ Put these in a settings collection so admin can change them later (except where 
 | U-03 | Forgot password | Email with reset link (valid 30 min, default). | Password can be reset from the link |
 | U-04 | Select city | City picker in header; saved for next visit. The picker shows only cities that have at least one approved theatre. All lists show only that city. | Changing city changes shows and theatres |
 | U-05 | Home page | Coming soon ticker (UI-26), marquee "Now showing" banner, "Now showing" grid, "Coming soon" row. | Home shows real movies of the selected city |
-| U-06 | Search and filter | By movie name, language, genre, format (2D/3D), and special show filters (SF-08). | Filters combine correctly |
+| U-06 | Search and filter | By movie name, language, genre, format (2D/3D), and special show filters (SF-08). Language and genre filters use the fixed lists from A-02. | Filters combine correctly |
 | U-07 | Movie details | Poster, trailer link, cast, duration, certificate (U, U/A, A), languages, rating and reviews. | Page shows all fields from DB |
 | U-08 | Age certificate warning | For "A" movies, show a confirm message before seat selection ("This movie is for adults 18+"). | Message shows for "A" movies only |
 | U-09 | Choose show | Pick date (next 7 days), theatre list with show times. Each time shows its old label (BR-22) e.g. "Matinee · 2:30 PM". Full shows show "Housefull" + "Join waitlist". | Show list correct; labels correct |
@@ -193,7 +193,7 @@ Put these in a settings collection so admin can change them later (except where 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
 | A-01 | Admin dashboard | Register style (UI-30) for the whole platform: tickets today, revenue, commission earned, top movies, top theatres, cities. | — |
-| A-02 | Movies | Add / edit / mark inactive: title, poster, trailer link, cast, genres, languages, duration, certificate, release date, status (Coming soon / Now showing / Inactive). A movie with shows or bookings cannot be deleted, only made inactive. | Owners can pick active movies |
+| A-02 | Movies | Add / edit / mark inactive: title, poster, trailer link, cast, genres, languages, duration, certificate, release date, status (Coming soon / Now showing / Inactive). A movie with shows or bookings cannot be deleted, only made inactive. Languages and genres come from fixed lists (one config file, `server/src/config/movieOptions.js`): languages Hindi, Tamil, Telugu, Malayalam, Kannada, Bengali, Marathi, Gujarati, Punjabi, English; genres Action, Comedy, Drama, Romance, Thriller, Horror, Family, Animation, Crime, Fantasy, Musical, Historical, Sci-Fi, Mystery. | Owners can pick active movies |
 | A-03 | Owner approvals | See Pending owners; approve / reject with reason; block owners. | Emails sent on decision |
 | A-04 | Theatre approvals | See Pending theatres; approve / reject with reason. | — |
 | A-05 | Platform settings | All BR values that can change: commission %, convenience fee, GST rates, hold time, cancellation cutoff and refund %, etc. Every change is saved in the audit log. | New values used in new bookings only |

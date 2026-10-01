@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js'
 import meRoutes from './routes/me.js'
 import ownerRoutes from './routes/owner.js'
 import staffRoutes from './routes/staff.js'
+import uploadRoutes from './routes/uploads.js'
 
 // Builds the Express app. It does not start listening here, so tests
 // (Supertest) can import the app without opening a port.
@@ -40,6 +41,7 @@ app.use('/api/me', meRoutes)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/uploads', uploadRoutes) // SEC-11, NF-08
 
 // Any other /api path: not found. Then all errors in one shape (api.md 1.5).
 app.use('/api', notFound)

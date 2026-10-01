@@ -19,7 +19,9 @@ const SESSION_EXPIRED_MESSAGE = 'Interval over! Please log in again to continue 
 async function request(path, { method = 'GET', body } = {}) {
   const token = useAuthStore.getState().accessToken
   const headers = {}
-  if (body) headers['Content-Type'] = 'application/json'
+  // FormData (image uploads): the browser sets the multipart Content-Type itself
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData
+  if (body && !isForm) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 
   let res
@@ -27,7 +29,7 @@ async function request(path, { method = 'GET', body } = {}) {
     res = await fetch(`/api${path}`, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: isForm ? body : body ? JSON.stringify(body) : undefined,
       credentials: 'include', // sends the refresh cookie to /api/auth
     })
   } catch {

@@ -45,19 +45,21 @@
   }
 
   /* Colours that follow the surface they sit on (text contrast 4.5:1, NF-03):
-     outline buttons and green / mustard stamps. Day show = dark colours,
+     outline buttons, green / mustard stamps and error text. Day show = dark colours,
      Night show page = light colours. */
   :root {
     --outline: var(--color-ink);
     --outline-hover: var(--color-cream);
     --tone-green: var(--color-green);
     --tone-mustard: var(--color-mustard);
+    --tone-alert: var(--color-maroon); /* error text */
   }
   html[data-theme="night"] {
     --outline: var(--color-cream);
     --outline-hover: var(--color-ink);
     --tone-green: var(--color-green-night);
     --tone-mustard: var(--color-mustard-night);
+    --tone-alert: var(--color-gold);
   }
   /* Light paper (cards) stays light in Night show too, so it keeps the dark colours */
   .paper {
@@ -65,6 +67,7 @@
     --outline-hover: var(--color-cream);
     --tone-green: var(--color-green);
     --tone-mustard: var(--color-mustard-card);
+    --tone-alert: var(--color-maroon);
   }
 }
 

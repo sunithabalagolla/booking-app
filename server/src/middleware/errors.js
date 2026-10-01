@@ -26,6 +26,20 @@ export function errorHandler(err, req, res, next) {
     return send(res, req, 413, 'VALIDATION_ERROR', 'The request body is too big.')
   }
 
+  // Client errors (4xx) from Express helpers, e.g. express.static: file not found.
+  // Only our own short message is sent, never the helper's text (it can hold file paths).
+  const status = err.status ?? err.statusCode
+  if (Number.isInteger(status) && status >= 400 && status < 500) {
+    const notFoundError = status === 404
+    return send(
+      res,
+      req,
+      status,
+      notFoundError ? 'NOT_FOUND' : 'VALIDATION_ERROR',
+      notFoundError ? 'This reel is missing from the projector room.' : 'This request is not allowed.',
+    )
+  }
+
   // Unique index broken (e.g. two sign ups with the same email at the same moment)
   if (err.code === 11000 && err.keyPattern?.email) {
     return send(res, req, 409, 'EMAIL_TAKEN', 'This email already has an account.')

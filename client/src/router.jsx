@@ -4,6 +4,8 @@ import SiteLayout from './components/layout/SiteLayout.jsx'
 import StaffLayout from './components/layout/StaffLayout.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
 import AdminHomePage from './pages/admin/AdminHomePage.jsx'
+import AdminMovieFormPage from './pages/admin/AdminMovieFormPage.jsx'
+import AdminMoviesPage from './pages/admin/AdminMoviesPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
@@ -51,6 +53,10 @@ const router = createBrowserRouter([
     children: [
       { path: '/owner', element: guard(['owner'], <OwnerHomePage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
+      // A-02 movies
+      { path: '/admin/movies', element: guard(['admin'], <AdminMoviesPage />) },
+      { path: '/admin/movies/new', element: guard(['admin'], <AdminMovieFormPage />) },
+      { path: '/admin/movies/:id', element: guard(['admin'], <AdminMovieFormPage />) },
     ],
   },
   // S-01 staff open straight to the scanner

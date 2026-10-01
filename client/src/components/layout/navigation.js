@@ -37,7 +37,10 @@ export function dashboardMenuFor(user) {
     case 'owner':
       return [{ to: '/owner', label: 'Box office register' }]
     case 'admin':
-      return [{ to: '/admin', label: 'Box office register' }]
+      return [
+        { to: '/admin', label: 'Box office register' },
+        { to: '/admin/movies', label: 'Movies' }, // A-02
+      ]
     default:
       return []
   }

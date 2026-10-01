@@ -1,12 +1,15 @@
 import app from './app.js'
 import { getAccessSecret } from './config/auth.js'
 import { connectDB } from './config/db.js'
+import { assertUploadConfig } from './services/upload/index.js'
 
 const PORT = process.env.PORT || 5000
 
 // Stop at once if the login token secret is missing or too short (SEC-07)
+// Production also needs the Cloudinary keys (no local upload folder there)
 try {
   getAccessSecret()
+  assertUploadConfig()
 } catch (error) {
   console.error(error.message)
   process.exit(1)

@@ -27,7 +27,7 @@ export default function DashboardLayout() {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
-                  end
+                  end={item.to === '/owner' || item.to === '/admin'}
                   className={({ isActive }) =>
                     `flex min-h-11 items-center rounded-btn px-3 font-type hover:bg-stage ${isActive ? 'bg-stage text-gold' : ''}`
                   }

@@ -58,11 +58,21 @@
   - U-03 and O-01: checked by the developer in the browser, both work.
   - Tests: **166 pass** (client 48; server 118).
   - Theme in profile + final role pass (all 4 seed logins): checked by the developer in the browser, both work. **Phase 1 done.**
+- **Phase 2 started: A-02 Movies** (your decisions 2026-10-01):
+  - New packages (Section 2): `multer` 2.4.0, `cloudinary` 2.11.0.
+  - Uploads `POST /api/uploads` (approved owner / admin; `kind` poster · cast · theatre · food; jpg / png / webp checked from the first bytes; max 2 MB). Cloudinary when the 3 keys are in `.env` (posters max 800 px wide); **no keys in development → saved in `server/uploads/`** (git-ignored, no resize), served at `/api/uploads/files/<name>`. Production without keys → server refuses to start. `services/upload/index.js`, `config/uploads.js`.
+  - Movies: `Movie` model (database.md 5.6), `GET / POST /api/admin/movies`, `GET / PATCH / DELETE /api/admin/movies/:id`. Delete only without shows / bookings (`409 IN_USE`, checked in those collections). Release date = IST day, stored as 00:00 IST in UTC (`utils/time.js`).
+  - Fixed lists in `server/src/config/movieOptions.js` (+ client copy, a test checks they match): 10 languages, 14 genres incl. Sci-Fi and Mystery. requirements A-02 + U-06 updated.
+  - Client: sidebar "Movies", `/admin/movies` register table (poster, title, cert., languages, release, status stamp; search, status filter, pages), `/admin/movies/new` and `/admin/movies/:id` form (poster upload with preview, languages / genres checkboxes, cast with optional photos, delete with "Yes, delete" step; "make it inactive" text when in use). New UI parts: `SelectField`, `CheckboxGroup`, `ImageUpload`. Error text now follows the surface (`--tone-alert`: maroon on light, gold on the Night show page).
+  - Seed step `movies`: 6 made-up sample movies (4 now showing incl. one "A", 2 coming soon) with vintage SVG posters drawn by code (`seed/posters.js`). Ran on Docker; looked at all 6 posters in Chrome (fixed the title overlapping the circle).
+  - Fix found by a new test: 4xx errors from Express helpers (e.g. a missing upload file) were answered as 500; now 404 / 400 with our own message.
+  - Tests: **205 pass** (client 58: movie lists 5, movie form 5; server 147: admin movies 13, uploads 10, seed movies 3, IST time 4). Lint + build OK. The admin pages are not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **Phase 2**, starting with **A-02 Movies** (plan first).
+- **A-05 Platform settings** (plan first), then A-03, O-03, A-04, O-04, O-07, O-05 + T-08.
+- Try A-02 by hand: log in as `admin@talkies.test` → sidebar "Movies" → the 6 sample movies with posters → search / status filter → "+ Add movie" (upload a jpg / png poster, pick languages / genres) → edit → delete (and "Make it inactive" text for a movie in use comes when shows exist). Also Night show.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -75,6 +85,7 @@
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
 - Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
+- Local uploads (development) are not resized; Cloudinary resizes posters. Local files are not deleted when a movie is deleted or a poster changes (Cloudinary clean-up: decide later).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
 
 - **Seeded Gate Staff has no theatres yet** (`staff.theatreIds: []`). ROLE-05 says one or more; theatres only exist from Phase 2 (O-03). When the theatres seed step is added, link `staff@talkies.test` to the sample owner's theatres.
@@ -137,12 +148,14 @@
 **Phase 1 done (2026-10-01).** All 4 roles log in and see only their pages.
 
 ## Phase 2 – Admin + owner setup
-- [ ] A-02 Movies
-- [ ] A-03 Owner approvals
-- [ ] A-04 Theatre approvals
+Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A-03 → O-03 → A-04 (needs theatres) → O-04 → O-07 → O-05 + T-08.
+- [x] A-02 Movies (admin list / add / edit / delete, uploads, fixed lists, 6 sample movies)
 - [ ] A-05 Platform settings
+  - [ ] Move token lifetimes (`config/auth.js`), reset link minutes, `uploadMaxMb` / `posterMaxWidthPx` (`config/uploads.js`) into settings
+- [ ] A-03 Owner approvals
 - [ ] O-03 Theatres
   - [ ] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404, staff only their theatres)
+- [ ] A-04 Theatre approvals
 - [ ] O-04 Screens + seat layout editor
 - [ ] O-07 Canteen items
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
