@@ -13,6 +13,8 @@ const userSchema = new Schema(
     email: { type: String, required: true, trim: true, lowercase: true },
     // bcrypt hash (SEC-01). Not loaded unless asked for with .select('+passwordHash')
     passwordHash: { type: String, select: false },
+    // Set when the password changes (U-03). Access tokens made before this are refused.
+    passwordChangedAt: Date,
     role: { type: String, enum: ROLES, required: true, default: 'user' },
     phone: { type: String, trim: true },
     emailVerified: { type: Boolean, required: true, default: false }, // U-01, O-01

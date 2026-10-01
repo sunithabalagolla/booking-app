@@ -110,6 +110,7 @@ One collection for all 4 roles (Section 3). Role-specific data is in the `owner`
 | `name` | String | yes | |
 | `email` | String | yes | Lowercase, trimmed, unique. Login is email + password only |
 | `passwordHash` | String | yes | bcrypt (SEC-01). Password rule BR-18 is checked before hashing. Never sent to the browser |
+| `passwordChangedAt` | Date | | Set when the password changes (U-03 reset; later also `POST /me/password`). `requireAuth` refuses an access token whose `iat` (whole seconds) is before it: `401 TOKEN_EXPIRED`. So a password change logs out all devices at once, not after up to 15 min |
 | `role` | String | yes | `user` · `owner` · `staff` · `admin` |
 | `phone` | String | owner: yes | O-01, U-25 |
 | `emailVerified` | Boolean | yes | Default `false`. Login works only when `true` (U-01; owners too, O-01). Staff and seeded admin: `true` |
@@ -152,7 +153,7 @@ Email verify links, password reset links and refresh tokens (U-01, U-02, U-03).
 | `usedAt` | Date | | Verify and reset links work only once |
 
 - Resend verify email (U-01): deletes the user's old `verify_email` tokens and makes a new one, so the old link stops working. Max 3 per hour (SEC-03).
-- Forgot password (U-03): deletes the user's old `reset_password` tokens and makes a new one (30 min). A successful reset deletes all `refresh` and `reset_password` tokens of the user (all devices logged out) and sets `emailVerified: true`.
+- Forgot password (U-03): deletes the user's old `reset_password` tokens and makes a new one (30 min). A successful reset deletes all `refresh` and `reset_password` tokens of the user (all devices logged out) and sets `emailVerified: true` and `users.passwordChangedAt`.
 
 **Indexes**
 - `{ tokenHash: 1 }` unique

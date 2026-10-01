@@ -11,6 +11,7 @@
   - E-02 template `resetPasswordTemplate` (vintage email style).
   - Client: "Forgot password?" link on the login page (takes the typed email along), `/forgot-password` page, `/reset-password` page (new password twice, "Get a new link" when the link does not work, "Log in" after success).
   - Tests: **78 pass** (client 19: new `validation/auth.test.js` 3; server 59: health 3, new `auth.reset.test.js` 13). Client lint + build OK. Not checked by hand in the browser yet.
+- Gap fixed (your request): new `users.passwordChangedAt`, set on reset. `requireAuth` refuses an access token made before it (`401 TOKEN_EXPIRED`), so a reset logs out all devices at once. Tests now **79 pass** (server 60). Later `POST /me/password` (U-25) must set it too.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
@@ -30,8 +31,6 @@
 
 - Token lifetimes (15 min / 7 days) are in `server/src/config/auth.js` for now; move them to the settings collection with A-05 (Phase 2).
 - Rate limit counts are kept in server memory (`express-rate-limit` MemoryStore): they reset when the server restarts, and do not work across several server copies. OK for now; look again at deploy time (Phase 12).
-
-- After a password reset, an access token that was already given out still works until it runs out (max 15 min, BR-19). Refresh tokens are deleted at once. If needed later: add a `passwordChangedAt` field and refuse older access tokens in `requireAuth` (ask first, it is a new database field).
 
 ## Open questions
 

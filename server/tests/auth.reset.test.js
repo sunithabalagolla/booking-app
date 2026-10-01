@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import request from 'supertest'
+import jwt from 'jsonwebtoken'
 import app from '../src/app.js'
 import { resetRateLimits } from '../src/config/rateLimits.js'
 import { AuthToken } from '../src/models/AuthToken.js'
@@ -113,6 +114,29 @@ describe('POST /api/auth/reset-password (U-03)', () => {
     expect(await AuthToken.countDocuments({ type: 'refresh' })).toBe(0)
     const res = await request(app).post('/api/auth/refresh').set('Cookie', [cookie])
     expect(res.status).toBe(401)
+  })
+
+  it('refuses an access token made before the reset at once (401 TOKEN_EXPIRED)', async () => {
+    const user = await createUser()
+    // A token from another device, made a minute ago and not expired yet
+    const oldToken = jwt.sign(
+      { role: 'user', iat: Math.floor(Date.now() / 1000) - 60 },
+      process.env.JWT_ACCESS_SECRET,
+      { subject: String(user._id), expiresIn: '15m' },
+    )
+    const me = (token) => request(app).get('/api/me').set('Authorization', `Bearer ${token}`)
+    expect((await me(oldToken)).status).toBe(200)
+
+    await reset(await getResetToken())
+
+    const refused = await me(oldToken)
+    expect(refused.status).toBe(401)
+    expect(refused.body.error.code).toBe('TOKEN_EXPIRED')
+    expect((await User.findById(user._id)).passwordChangedAt).toBeInstanceOf(Date)
+
+    // A login right after the reset (same second) still works
+    const { accessToken } = (await login(NEW_PASSWORD)).body
+    expect((await me(accessToken)).status).toBe(200)
   })
 
   it('works only once', async () => {

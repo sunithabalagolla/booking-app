@@ -66,11 +66,12 @@ export async function resetPassword(req, res) {
   // The link proves the person owns the email, so it also verifies it (decided 2026-10-01)
   const updated = await User.updateOne(
     { _id: token.userId, status: 'active', deletedAt: null },
-    { $set: { passwordHash, emailVerified: true } },
+    { $set: { passwordHash, emailVerified: true, passwordChangedAt: now } }, // requireAuth refuses older access tokens
   )
   if (updated.matchedCount === 0) throw linkError('link_invalid') // blocked or deleted meanwhile
 
-  // Log out all devices, and remove any other reset links
+  // Log out all devices (refresh tokens; access tokens are stopped by passwordChangedAt),
+  // and remove any other reset links
   await AuthToken.deleteMany({ userId: token.userId, type: { $in: ['refresh', 'reset_password'] } })
 
   res.json({ message: 'Password changed. Please log in with your new password.' })

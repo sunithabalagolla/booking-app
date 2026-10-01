@@ -31,6 +31,13 @@ export async function requireAuth(req, res, next) {
   if (user.status === 'blocked') {
     throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked. Please contact support.')
   }
+  // Token made before the last password change (e.g. reset on another device): refuse it.
+  // `iat` is in whole seconds, so compare in whole seconds; a token made in the same
+  // second as the change still works (otherwise a login right after a reset would fail).
+  if (user.passwordChangedAt && payload.iat < Math.floor(user.passwordChangedAt.getTime() / 1000)) {
+    // The client tries a refresh; that fails too (refresh tokens were deleted) → log in again
+    throw new AppError(401, 'TOKEN_EXPIRED', 'Your login has expired.')
+  }
 
   req.user = user
   next()
