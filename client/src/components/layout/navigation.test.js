@@ -30,7 +30,10 @@ describe('accountLinksFor (header)', () => {
 
 describe('dashboardMenuFor (UI-30 sidebar)', () => {
   it('gives owners and admins their register', () => {
-    expect(dashboardMenuFor(owner)).toEqual([{ to: '/owner', label: 'Box office register' }])
+    expect(dashboardMenuFor(owner)).toEqual([
+      { to: '/owner', label: 'Box office register' },
+      { to: '/owner/theatres', label: 'Theatres' },
+    ])
     expect(dashboardMenuFor(admin)).toEqual([
       { to: '/admin', label: 'Box office register' },
       { to: '/admin/owners', label: 'Owners', count: 'pendingOwners' },

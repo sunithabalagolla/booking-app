@@ -35,19 +35,20 @@ export default {
       passwordHash,
       owner: { businessName: 'Sample Talkies Pvt Ltd', approvalStatus: 'approved', decidedBy: admin._id, decidedAt: new Date() },
     })
-    // ROLE-05 needs theatres; they come with the theatres seed step (Phase 2). Until then: none.
+    // ROLE-05: the theatres seed step links this staff to the 2 Hyderabad theatres.
+    // A new staff starts with none; an existing one keeps its theatres.
     await upsertUser(SEED_LOGINS.staff, {
       name: 'Sample Gate Staff',
       role: 'staff',
       passwordHash,
-      staff: { ownerId: owner._id, theatreIds: [] },
+      'staff.ownerId': owner._id,
     })
 
     return [
       'Test logins (password = SEED_PASSWORD in .env):',
       `  User:       ${SEED_LOGINS.user}`,
       `  Owner:      ${SEED_LOGINS.owner} (approved)`,
-      `  Gate Staff: ${SEED_LOGINS.staff} (no theatres yet)`,
+      `  Gate Staff: ${SEED_LOGINS.staff} (Hyderabad theatres)`,
       `  Admin:      ${SEED_LOGINS.admin}`,
     ]
   },

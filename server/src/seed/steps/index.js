@@ -17,6 +17,7 @@
 
 import movies from './movies.js'
 import settings from './settings.js'
+import theatres from './theatres.js'
 import users from './users.js'
 
-export const steps = [settings, users, movies]
+export const steps = [settings, users, movies, theatres]

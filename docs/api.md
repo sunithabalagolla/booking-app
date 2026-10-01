@@ -191,9 +191,10 @@ All paths below start with `/api/owner`. **Who = Owner (approved)** and **own** 
 | --- | --- | --- | --- |
 | GET | `/dashboard` | `theatreId?, date?` | O-02: tickets sold today, revenue today, seats filled %, today's entries, food sales. Live updates by Socket.io |
 | GET | `/insights` | `theatreId?` | SF-01: seats filled % by show label and weekday, last 4 weeks + one tip (Phase 9) |
-| GET | `/theatres` | — | My theatres with status |
-| POST | `/theatres` | `name, cityCode, address, mapLink?, photos?, gstin, amenities` | O-03. Starts `pending` (ROLE-04). `cityCode` must be in `settings.cities` |
-| GET · PATCH | `/theatres/:id` | same fields | Edit |
+| GET | `/cities` | — | The fixed city list `{ cities: [{ code, name, state }] }` for the theatre form (added with O-03) |
+| GET | `/theatres` | — | My theatres with status, newest first. Each: `id, name, city { code, name, state }, address, mapLink, photos, gstin, amenities, status, rejectReason, createdAt` |
+| POST | `/theatres` | `name, cityCode, address, mapLink?, photos?, gstin, amenities` | O-03. Starts `pending` (ROLE-04). `cityCode` must be in `settings.cities`. `gstin` must start with the state code of that city (`400 VALIDATION_ERROR` on `gstin`). Photos max 6, map link https |
+| GET · PATCH | `/theatres/:id` | same fields (PATCH: all optional) | Own only (another owner's → `404`). Approved: changing `cityCode` / `gstin` → `400 RULE_BROKEN` (`reason: locked_after_approval`). A rejected theatre goes back to `pending` when edited. No delete |
 | GET | `/theatres/:id/screens` | — | |
 | POST | `/theatres/:id/screens` | `name, format, cleaningBreakMinutes?, wheelchairFriendly, layout` | O-04. Layout checked: seat IDs unique, valid classes |
 | GET · PATCH | `/screens/:id` | same fields | Layout edits do not change existing shows (they keep a copy) |

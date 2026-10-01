@@ -10,6 +10,8 @@ import AdminOwnersPage from './pages/admin/AdminOwnersPage.jsx'
 import AdminSettingsPage from './pages/admin/AdminSettingsPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
+import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
+import OwnerTheatresPage from './pages/owner/OwnerTheatresPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
 import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage.jsx'
@@ -54,6 +56,10 @@ const router = createBrowserRouter([
     element: guard(['owner', 'admin'], <DashboardLayout />),
     children: [
       { path: '/owner', element: guard(['owner'], <OwnerHomePage />) },
+      // O-03 theatres
+      { path: '/owner/theatres', element: guard(['owner'], <OwnerTheatresPage />) },
+      { path: '/owner/theatres/new', element: guard(['owner'], <OwnerTheatreFormPage />) },
+      { path: '/owner/theatres/:id', element: guard(['owner'], <OwnerTheatreFormPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },

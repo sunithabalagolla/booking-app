@@ -35,7 +35,10 @@ export function accountLinksFor(status, user) {
 export function dashboardMenuFor(user) {
   switch (roleKey(user)) {
     case 'owner':
-      return [{ to: '/owner', label: 'Box office register' }]
+      return [
+        { to: '/owner', label: 'Box office register' },
+        { to: '/owner/theatres', label: 'Theatres' }, // O-03
+      ]
     case 'admin':
       return [
         { to: '/admin', label: 'Box office register' },

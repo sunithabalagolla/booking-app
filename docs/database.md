@@ -262,17 +262,18 @@ Numbers that must go up one by one without duplicates (invoice series).
 | --- | --- | --- | --- |
 | `ownerId` | ObjectId → users | yes | ROLE-02 |
 | `name` | String | yes | |
-| `cityCode` | String | yes | Must be a `code` from `settings.cities` (no free text) |
+| `cityCode` | String | yes | Must be a `code` from `settings.cities` (no free text). Locked after approval |
 | `address` | String | yes | |
 | `mapLink` | String | | |
-| `photos` | [String] | | Cloudinary URLs |
-| `gstin` | String | yes | Seller on the invoice (11.3) |
+| `photos` | [String] | | Cloudinary URLs, max 6 |
+| `gstin` | String | yes | Seller on the invoice (11.3). Must start with the GST state code of the city's state (`config/gstStates.js`). Locked after approval |
 | `amenities.wheelchairAccess` / `amenities.parking` | Boolean | yes | Default `false` |
 | `status` | String | yes | `pending` · `approved` · `rejected` (ROLE-04). Default `pending` |
 | `rejectReason` | String | | A-04 |
 | `decidedBy` / `decidedAt` | ObjectId → users / Date | | |
 
 - The **user city picker** (U-04) = `distinct('cityCode', { status: 'approved' })`, with names from `settings.cities`.
+- Editing a `rejected` theatre sets it back to `pending` (and removes `rejectReason`). Theatres are never deleted. Seeded theatres have `isSample: true`.
 - The theatre's GST state = the `state` of its city in `settings.cities`. **Every invoice line (tickets, food, convenience fee) uses CGST + SGST of this state** (11.3). No IGST.
 
 **Indexes**
