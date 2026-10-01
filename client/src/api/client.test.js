@@ -71,18 +71,52 @@ describe('apiFetch token refresh (U-02)', () => {
   })
 })
 
+// A small in-memory localStorage (tests run in Node, which has none)
+function fakeStorage(items = {}) {
+  const store = new Map(Object.entries(items))
+  vi.stubGlobal('localStorage', {
+    getItem: (key) => (store.has(key) ? store.get(key) : null),
+    setItem: (key, value) => store.set(key, String(value)),
+    removeItem: (key) => store.delete(key),
+  })
+  return store
+}
+
 describe('restoreSession (app start)', () => {
-  it('logs in again with the refresh cookie', async () => {
-    useAuthStore.setState({ status: 'loading', accessToken: null, user: null })
+  beforeEach(() => useAuthStore.setState({ status: 'loading', accessToken: null, user: null }))
+
+  it('logs in again with the refresh cookie when this browser was logged in', async () => {
+    fakeStorage({ talkies_was_logged_in: '1' })
     fakeServer({ '/auth/refresh': [refreshed('fresh-token')] })
     await restoreSession()
     expect(useAuthStore.getState()).toMatchObject({ status: 'user', accessToken: 'fresh-token' })
   })
 
-  it('becomes a guest without a good cookie (no "Interval over!" message)', async () => {
-    useAuthStore.setState({ status: 'loading', accessToken: null, user: null })
+  it('a guest (no hint) makes no refresh call at all, so no 401 in the console', async () => {
+    fakeStorage()
+    const calls = fakeServer({ '/auth/refresh': [] })
+    await restoreSession()
+    expect(calls).toHaveLength(0)
+    expect(useAuthStore.getState()).toMatchObject({ status: 'guest', sessionExpired: false })
+  })
+
+  it('becomes a guest without a good cookie and removes the hint (no "Interval over!")', async () => {
+    const storage = fakeStorage({ talkies_was_logged_in: '1' })
     fakeServer({ '/auth/refresh': [{ status: 401, body: { error: { code: 'UNAUTHORIZED' } } }] })
     await restoreSession()
     expect(useAuthStore.getState()).toMatchObject({ status: 'guest', sessionExpired: false })
+    expect(storage.has('talkies_was_logged_in')).toBe(false)
+  })
+})
+
+describe('login hint', () => {
+  it('is set at login and removed at logout; it never holds the token', () => {
+    const storage = fakeStorage()
+    useAuthStore.getState().setSession({ accessToken: 'secret-token', user: { name: 'Asha' } })
+    expect(storage.get('talkies_was_logged_in')).toBe('1')
+    expect([...storage.values()].join()).not.toContain('secret-token')
+
+    useAuthStore.getState().clearSession()
+    expect(storage.has('talkies_was_logged_in')).toBe(false)
   })
 })

@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06** and the **basic vintage layout**.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix, **O-01 owner register**, **S-01 staff login** + seed test logins, **ROLE-01 to ROLE-06**, the **basic vintage layout** and 3 fixes from your browser check.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -36,6 +36,12 @@
   - New UI parts: `ButtonLink`, `Card` (optional `footer` under a tear line), `Stamp` (green / mustard / maroon), `buttonStyles.js` (variants primary / secondary / light). `PaperCard` no longer shows its own logo. New CSS utility `ledger` (Day + Night show). `ThemeSwitch` has `onDark` for dark bars.
   - 404 page now uses the UI-36 text ("This reel is missing from the projector room." + Go to home); the full vintage page stays in Phase 10. Test Home page shows the new buttons, card and stamps.
   - Tests: **138 pass** (client 39: new `navigation.test.js` 7; server 99). Lint + build OK. Not checked by hand in the browser yet.
+- Fixes from your browser check (2026-10-01):
+  1. Night show: Secondary (outline) button was almost invisible. Now cream on the Night show page (15.0:1), ink inside cards (cards stay light paper).
+  2. Night show: green and mustard stamps too dark. New Night show colours (added to requirements UI-01): bottle green `#7FB89F` (8.0:1 on stage dark), mustard `#E8B25C` (9.4:1). Inside cards the day colours stay. Done with CSS variables (`--outline`, `--tone-green`, `--tone-mustard`) + a `paper` class on `Card` (theme.css).
+  3. Guest page load showed a red 401 from `/api/auth/refresh`. Now a "was logged in" hint (`talkies_was_logged_in` = `'1'` in localStorage, no token) is set at login and removed at logout / failed refresh; without it the app start makes no refresh call. Note: people logged in before this change get logged out once.
+  - Checked by Claude in Chrome on your dev server: Night show colours measured as above; guest reload makes no `/api/auth/refresh` call, no console errors.
+  - Tests: **140 pass** (client 41: restoreSession 3 + login hint 1; server 99).
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
@@ -47,7 +53,8 @@
 
 ## Known bugs
 
-- (none yet)
+- Day show mustard `#8A5A00` (UI-30, Pending stamp) on light cream `#E8D9B5` (cards) is only **4.24:1**, under 4.5:1 (NF-03). Seen on the owner "Waiting for approval" page. On paper cream `#F3E9D2` it is 4.91:1. Needs your choice: a slightly darker mustard for cards, or a larger / bold stamp. Not changed yet.
+- One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
 ## Notes for later
 

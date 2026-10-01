@@ -30,6 +30,28 @@ export function roleRedirect({ status, user }, allow) {
   return allow.includes(roleKey(user)) ? null : homePathFor(user)
 }
 
+// "Was logged in" hint in localStorage: only '1', never a token or user data.
+// Set at login, removed at logout. Without it, the app start does not try a
+// silent refresh, so a guest's browser shows no 401 (restoreSession).
+const LOGIN_HINT_KEY = 'talkies_was_logged_in'
+
+export function hasLoginHint() {
+  try {
+    return localStorage.getItem(LOGIN_HINT_KEY) === '1'
+  } catch {
+    return false // storage blocked: behave like a guest
+  }
+}
+
+function setLoginHint(on) {
+  try {
+    if (on) localStorage.setItem(LOGIN_HINT_KEY, '1')
+    else localStorage.removeItem(LOGIN_HINT_KEY)
+  } catch {
+    // storage blocked: the login still works in this tab
+  }
+}
+
 // Who is logged in (U-02). Kept in memory only, never in localStorage, so page
 // scripts cannot steal the token. After a page reload the refresh cookie
 // logs the user in again (see restoreSession in api/client.js).
@@ -41,7 +63,12 @@ export const useAuthStore = create((set) => ({
   // true when the login ran out while using the app (UI-36 "Interval over!")
   sessionExpired: false,
 
-  setSession: ({ accessToken, user }) => set({ status: 'user', accessToken, user, sessionExpired: false }),
-  clearSession: ({ expired = false } = {}) =>
-    set({ status: 'guest', accessToken: null, user: null, sessionExpired: expired }),
+  setSession: ({ accessToken, user }) => {
+    setLoginHint(true)
+    set({ status: 'user', accessToken, user, sessionExpired: false })
+  },
+  clearSession: ({ expired = false } = {}) => {
+    setLoginHint(false)
+    set({ status: 'guest', accessToken: null, user: null, sessionExpired: expired })
+  },
 }))

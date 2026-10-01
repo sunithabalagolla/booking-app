@@ -1,4 +1,4 @@
-import { useAuthStore } from '../store/authStore.js'
+import { hasLoginHint, useAuthStore } from '../store/authStore.js'
 
 // Small fetch helper for all API calls.
 // Errors from the server come in one shape (docs/api.md 1.5); they are thrown as ApiError.
@@ -67,8 +67,13 @@ export function refreshSession() {
   return refreshing
 }
 
-// App start: log in again silently if the refresh cookie is still good
+// App start: log in again silently if the refresh cookie is still good.
+// Only when this browser was logged in before (hint); a guest makes no call.
 export async function restoreSession() {
+  if (!hasLoginHint()) {
+    useAuthStore.getState().clearSession()
+    return
+  }
   const error = await refreshSession()
   if (error) useAuthStore.getState().clearSession()
 }

@@ -15,6 +15,8 @@
   --color-cream-light: #E8D9B5;  /* light cream */
   --color-stage: #1E140E;        /* stage dark */
   --color-mustard: #8A5A00;      /* dark mustard: Pending stamps (UI-30) */
+  --color-green-night: #7FB89F;  /* bottle green for Night show: 8.0:1 on stage dark */
+  --color-mustard-night: #E8B25C; /* mustard for Night show: 9.4:1 on stage dark */
 
   --font-heading: "Rye", Georgia, serif;
   --font-type: "Special Elite", "Courier New", monospace;
@@ -39,6 +41,29 @@
   }
   html[data-theme="night"] body {
     @apply bg-stage text-cream;
+  }
+
+  /* Colours that follow the surface they sit on (text contrast 4.5:1, NF-03):
+     outline buttons and green / mustard stamps. Day show = dark colours,
+     Night show page = light colours. */
+  :root {
+    --outline: var(--color-ink);
+    --outline-hover: var(--color-cream);
+    --tone-green: var(--color-green);
+    --tone-mustard: var(--color-mustard);
+  }
+  html[data-theme="night"] {
+    --outline: var(--color-cream);
+    --outline-hover: var(--color-ink);
+    --tone-green: var(--color-green-night);
+    --tone-mustard: var(--color-mustard-night);
+  }
+  /* Light paper (cards) stays light in Night show too, so it keeps the dark colours */
+  .paper {
+    --outline: var(--color-ink);
+    --outline-hover: var(--color-cream);
+    --tone-green: var(--color-green);
+    --tone-mustard: var(--color-mustard);
   }
 }
 

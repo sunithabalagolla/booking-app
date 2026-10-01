@@ -589,6 +589,8 @@ Approved preview (private link, only for the developer to look at): https://clau
 | UI-01 | Wood brown | #6B4A2E | Box office frame, armrests |
 | UI-01 | Light cream | #E8D9B5 | Available seats, soft panels |
 | UI-01 | Stage dark | #1E140E | Intro background, dark mode base |
+| UI-01 | Bottle green (Night show) | #7FB89F | Green stamps / text on the Night show page (8.0:1 on stage dark) |
+| UI-01 | Dark mustard (Night show) | #E8B25C | Pending stamps on the Night show page (9.4:1 on stage dark). Day show: #8A5A00 (UI-30) |
 
 - UI-02 Theme switch: 3 options — **Auto** (default), **Day show**, **Night show**.
   - Day show = paper cream background, ink brown text. Night show = stage dark / ink brown background, cream text, same accents.
