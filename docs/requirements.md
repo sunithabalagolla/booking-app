@@ -171,7 +171,7 @@ Put these in a settings collection so admin can change them later (except where 
 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
-| O-01 | Register as owner | Name, email, phone, business name, password. Must verify the email before login (same as U-01, with resend). Status Pending until admin approves (ROLE-03). Email on approval/rejection. | Pending owner cannot add theatres |
+| O-01 | Register as owner | Name, email, phone, business name, password. Phone = Indian mobile number: 10 digits starting with 6–9, optional `+91` in front; saved as the 10 digits. Must verify the email before login (same as U-01, with resend). Status Pending until admin approves (ROLE-03). Email on approval/rejection. | Pending owner cannot add theatres |
 | O-02 | Owner dashboard | Box office register style (UI-30): flip-clock cards (tickets sold today, revenue today, seats filled %), today's entries table, show timing insights (SF-01), food sales. | Numbers match DB; update live |
 | O-03 | Theatres | Add/edit own theatres: name, city (picked from the fixed city list in settings, seeded; no free text), address, map link, photos, GSTIN, amenities (wheelchair access, parking). Each new theatre is Pending (ROLE-04). | Theatre visible to users only after approval |
 | O-04 | Screens and seat layout | For each screen: name, format (2D/3D), cleaning break (BR-09), accessibility flags (wheelchair-friendly). Grid editor: rows × columns; each cell = seat, aisle (gap) or blocked. Seat types with class names: Balcony / First class / Second class (UI-22). Wheelchair spaces marked. | Layout saved and shown the same on the user seat map |

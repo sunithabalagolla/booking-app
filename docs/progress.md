@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-01
-- Done: **`/api/health` database status** (separate commit) and **U-03 forgot / reset password**.
+- Done: **`/api/health` database status** (separate commit), **U-03 forgot / reset password**, the **passwordChangedAt** fix and **O-01 owner register**.
 - Health: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`. `api.md` updated, test added.
 - U-03 details:
   - `controllers/password.js`: `POST /api/auth/forgot-password` (always the same 200 answer; sends E-02 only for an active, not deleted account; old reset links deleted, so only the newest works; 3 per hour per email in `rateLimits.js`) and `POST /api/auth/reset-password` (BR-18 password, link used up atomically and only once, 30 min in `config/auth.js` `RESET_LINK_MINUTES`).
@@ -12,12 +12,17 @@
   - Client: "Forgot password?" link on the login page (takes the typed email along), `/forgot-password` page, `/reset-password` page (new password twice, "Get a new link" when the link does not work, "Log in" after success).
   - Tests: **78 pass** (client 19: new `validation/auth.test.js` 3; server 59: health 3, new `auth.reset.test.js` 13). Client lint + build OK. Not checked by hand in the browser yet.
 - Gap fixed (your request): new `users.passwordChangedAt`, set on reset. `requireAuth` refuses an access token made before it (`401 TOKEN_EXPIRED`), so a reset logs out all devices at once. Tests now **79 pass** (server 60). Later `POST /me/password` (U-25) must set it too.
+- O-01 details (your decisions 2026-10-01):
+  - `POST /api/auth/owner-signup` (`controllers/auth.js`, shares `createAccount` with U-01): owner with `approvalStatus: pending`, `emailVerified: false`, sends E-01. Same 409 `EMAIL_TAKEN`. Shares the sign up rate limit (5 per hour per IP, user + owner together).
+  - Phone rule (added to requirements O-01, api.md, database.md): Indian mobile, 10 digits starting 6–9, optional `+91`, saved as 10 digits. Business name max 120.
+  - Client: `/owner/signup` page, "Own a theatre? Register as an owner" link on the sign up page, "Check your email" page has owner text, `/owner/pending` page (Pending stamp in dark mustard, Rejected stamp in maroon with the reason, Log out). After login a pending / rejected owner goes to `/owner/pending` (`needsApproval` in `authStore.js`). Approved owners go to Home until the owner dashboard exists. New colour token `mustard` (#8A5A00, UI-30).
+  - Tests: **90 pass** (client 22: new `validation/owner.test.js` 3; server 68: new `auth.owner.test.js` 8). Client lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
-- **O-01 Owner register** (Pending status, verify email like U-01, `POST /api/auth/owner-signup`).
-- Try U-03 by hand once: Log in page → Forgot password? → copy the link from the server console → new password → log in.
+- **S-01 Staff login** (next in Phase 1).
+- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as an owner → verify link from the console → log in → Waiting for approval page).
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -72,10 +77,11 @@
 - [x] U-01 Sign up + verify email (with resend, max 3 per hour)
 - [x] U-02 Login / logout + tokens
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email)
-- [ ] O-01 Owner register (Pending)
+- [x] O-01 Owner register (Pending, phone rule, waiting for approval page)
 - [ ] S-01 Staff login
 - [ ] ROLE-01 to ROLE-06 role + ownership middleware
 - [ ] Basic vintage layout: header, footer, buttons, cards
+  - [ ] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
 - [ ] T-01 tests
 
 ## Phase 2 – Admin + owner setup

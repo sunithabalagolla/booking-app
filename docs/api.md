@@ -74,7 +74,7 @@ All errors have the same shape:
 | --- | --- | --- |
 | `POST /auth/login` | 5 wrong logins / 15 min (BR-17) | email + IP |
 | `POST /auth/resend-verify` | 3 / hour (U-01) | email |
-| `POST /auth/signup`, `POST /auth/owner-signup` | 5 / hour *(start)* | IP |
+| `POST /auth/signup`, `POST /auth/owner-signup` | 5 / hour *(start)*, both together | IP |
 | `POST /auth/forgot-password` | 3 / hour *(start)* | email |
 | Seat hold, food, coupon | 30 / 10 min *(start)* | user |
 | Payment (create order, pay, verify) | 10 / 10 min *(start)* | user |
@@ -99,7 +99,7 @@ All errors have the same shape:
 | POST | `/signup` | Guest | `name, email, password` | `201`. Password BR-18. Sends E-01 (verify link, 24 h). `409 EMAIL_TAKEN` if the email exists. U-01 |
 | POST | `/verify-email` | Guest | `token` | `200` → `emailVerified: true`. Used / expired link → `400 RULE_BROKEN` with a "Resend" hint |
 | POST | `/resend-verify` | Guest | `email` | Always `200` (does not tell if the email exists). Deletes old verify links, sends a new E-01. Max 3 / hour (U-01, SEC-03) |
-| POST | `/owner-signup` | Guest | `name, email, phone, businessName, password` | `201`. Owner with `approvalStatus: pending` (O-01, ROLE-03). Sends E-01: owners must verify the email before login, same as users (resend works too) |
+| POST | `/owner-signup` | Guest | `name, email, phone, businessName, password` | `201`. Owner with `approvalStatus: pending` (O-01, ROLE-03). `phone`: 10 digits starting 6–9, optional `+91`, saved as 10 digits. `businessName` max 120. `409 EMAIL_TAKEN`. Shares the `/signup` rate limit (one count per IP). Sends E-01: owners must verify the email before login, same as users (resend works too) |
 | POST | `/login` | Guest | `email, password` | `200 { accessToken, user }` + sets `talkies_rt` cookie. `401 INVALID_LOGIN`, `403 EMAIL_NOT_VERIFIED`, `403 ACCOUNT_BLOCKED`. Same login for all 4 roles (S-01). Pending owners can log in (they see a "waiting for approval" page) |
 | POST | `/refresh` | Guest (cookie) | — | `200 { accessToken }` + new cookie. No / bad cookie → `401` |
 | POST | `/logout` | Guest (cookie) | — | `204`. Deletes the refresh token and clears the cookie |

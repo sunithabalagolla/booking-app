@@ -112,7 +112,7 @@ One collection for all 4 roles (Section 3). Role-specific data is in the `owner`
 | `passwordHash` | String | yes | bcrypt (SEC-01). Password rule BR-18 is checked before hashing. Never sent to the browser |
 | `passwordChangedAt` | Date | | Set when the password changes (U-03 reset; later also `POST /me/password`). `requireAuth` refuses an access token whose `iat` (whole seconds) is before it: `401 TOKEN_EXPIRED`. So a password change logs out all devices at once, not after up to 15 min |
 | `role` | String | yes | `user` · `owner` · `staff` · `admin` |
-| `phone` | String | owner: yes | O-01, U-25 |
+| `phone` | String | owner: yes | O-01, U-25. 10 digits (Indian mobile, starts with 6–9), saved without `+91` |
 | `emailVerified` | Boolean | yes | Default `false`. Login works only when `true` (U-01; owners too, O-01). Staff and seeded admin: `true` |
 | `status` | String | yes | `active` · `blocked`. Blocked = cannot log in (A-07, A-03, O-09). Default `active` |
 | `owner.businessName` | String | owner: yes | O-01 |

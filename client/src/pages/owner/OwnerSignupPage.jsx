@@ -1,31 +1,30 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { useSignup } from '../../api/auth.js'
+import { useOwnerSignup } from '../../api/auth.js'
 import Button from '../../components/ui/Button.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import TextField from '../../components/ui/TextField.jsx'
-import { fieldErrors, signupSchema } from '../../validation/auth.js'
+import { fieldErrors, ownerSignupSchema } from '../../validation/auth.js'
 
-// U-01 Sign up: name, email, password. After sign up the user must verify the email.
-export default function SignupPage() {
+// O-01 Register as owner. Verify email first (like U-01), then Pending until an admin approves.
+export default function OwnerSignupPage() {
   const navigate = useNavigate()
-  const signup = useSignup()
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const signup = useOwnerSignup()
+  const [form, setForm] = useState({ name: '', email: '', phone: '', businessName: '', password: '' })
   const [errors, setErrors] = useState({})
 
   const change = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
   function submit(e) {
     e.preventDefault()
-    const result = signupSchema.safeParse(form)
+    const result = ownerSignupSchema.safeParse(form)
     if (!result.success) {
       setErrors(fieldErrors(result.error))
       return
     }
     setErrors({})
     signup.mutate(result.data, {
-      onSuccess: (data) => navigate('/check-email', { state: { email: data.email } }),
-      // Field errors from the server (same rules) show under the fields
+      onSuccess: (data) => navigate('/check-email', { state: { email: data.email, owner: true } }),
       onError: (error) => setErrors(error.details ?? {}),
     })
   }
@@ -33,9 +32,10 @@ export default function SignupPage() {
   const serverError = signup.error && !signup.error.details ? signup.error : null
 
   return (
-    <PaperCard title="Sign up">
+    <PaperCard title="Register as an owner">
       <form onSubmit={submit} noValidate className="space-y-4">
-        <TextField label="Name" name="name" autoComplete="name" value={form.name} onChange={change('name')} error={errors.name} />
+        <p>For theatre owners. After you verify your email, an admin checks your account before you can add theatres.</p>
+        <TextField label="Your name" name="name" autoComplete="name" value={form.name} onChange={change('name')} error={errors.name} />
         <TextField
           label="Email"
           name="email"
@@ -44,6 +44,25 @@ export default function SignupPage() {
           value={form.email}
           onChange={change('email')}
           error={errors.email}
+        />
+        <TextField
+          label="Mobile number"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          hint="10 digits, for example 9876543210. +91 in front is fine."
+          value={form.phone}
+          onChange={change('phone')}
+          error={errors.phone}
+        />
+        <TextField
+          label="Business name"
+          name="businessName"
+          autoComplete="organization"
+          value={form.businessName}
+          onChange={change('businessName')}
+          error={errors.businessName}
         />
         <TextField
           label="Password"
@@ -62,7 +81,7 @@ export default function SignupPage() {
             {serverError.code === 'EMAIL_TAKEN' && (
               <>
                 {' '}
-                <Link to="/check-email" state={{ email: form.email.trim().toLowerCase() }} className="underline">
+                <Link to="/check-email" state={{ email: form.email.trim().toLowerCase(), owner: true }} className="underline">
                   Resend the verify email
                 </Link>
               </>
@@ -71,7 +90,7 @@ export default function SignupPage() {
         )}
 
         <Button type="submit" className="w-full" disabled={signup.isPending}>
-          {signup.isPending ? 'Creating your account…' : 'Create account'}
+          {signup.isPending ? 'Creating your account…' : 'Register'}
         </Button>
       </form>
 
@@ -79,13 +98,6 @@ export default function SignupPage() {
         Already have an account?{' '}
         <Link to="/login" className="font-bold text-maroon underline">
           Log in
-        </Link>
-      </p>
-      {/* O-01 */}
-      <p className="mt-2 text-sm">
-        Own a theatre?{' '}
-        <Link to="/owner/signup" className="font-bold text-maroon underline">
-          Register as an owner
         </Link>
       </p>
     </PaperCard>

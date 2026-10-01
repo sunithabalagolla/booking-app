@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import ResendVerify from '../../components/ui/ResendVerify.jsx'
 import TextField from '../../components/ui/TextField.jsx'
-import { useAuthStore } from '../../store/authStore.js'
+import { needsApproval, useAuthStore } from '../../store/authStore.js'
 import { fieldErrors, loginSchema } from '../../validation/auth.js'
 
 // U-02 Login: email + password. Same page for all 4 roles (S-01).
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const status = useAuthStore((s) => s.status)
+  const user = useAuthStore((s) => s.user)
   const sessionExpired = useAuthStore((s) => s.sessionExpired)
   const login = useLogin()
   const [form, setForm] = useState({ email: location.state?.email ?? '', password: '' })
@@ -21,7 +22,10 @@ export default function LoginPage() {
   // Go back to the page the user came from, or Home
   const from = location.state?.from ?? '/'
 
-  if (status === 'user' && !login.isSuccess) return <Navigate to={from} replace />
+  // Where to go after login: a pending / rejected owner waits on /owner/pending (O-01)
+  const target = (u) => (needsApproval(u) ? '/owner/pending' : from)
+
+  if (status === 'user' && !login.isSuccess) return <Navigate to={target(user)} replace />
 
   const change = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
@@ -34,7 +38,7 @@ export default function LoginPage() {
     }
     setErrors({})
     login.mutate(result.data, {
-      onSuccess: () => navigate(from, { replace: true }),
+      onSuccess: (data) => navigate(target(data.user), { replace: true }),
       onError: (error) => setErrors(error.details ?? {}),
     })
   }

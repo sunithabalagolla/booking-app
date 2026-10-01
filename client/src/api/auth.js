@@ -23,6 +23,13 @@ export function useResendVerify() {
   })
 }
 
+// O-01
+export function useOwnerSignup() {
+  return useMutation({
+    mutationFn: (body) => apiFetch('/auth/owner-signup', { method: 'POST', body }),
+  })
+}
+
 // U-02
 export function useLogin() {
   return useMutation({

@@ -33,19 +33,37 @@ async function sendVerifyEmail(user) {
   }
 }
 
-// POST /api/auth/signup (U-01)
-export async function signup(req, res) {
-  const { name, email, password } = req.valid.body
-
-  if (await User.exists({ email })) {
+// Saves a new, not yet verified account and sends E-01 (U-01 and O-01)
+async function createAccount(res, { password, ...fields }) {
+  if (await User.exists({ email: fields.email })) {
     throw new AppError(409, 'EMAIL_TAKEN', 'This email already has an account. Log in, or resend the verify email.')
   }
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS) // SEC-01
-  const user = await User.create({ name, email, passwordHash, role: 'user' })
+  const user = await User.create({ ...fields, passwordHash })
   await sendVerifyEmail(user)
 
   res.status(201).json({ message: 'Account created. Please check your email to verify it.', email: user.email })
+}
+
+// POST /api/auth/signup (U-01)
+export async function signup(req, res) {
+  const { name, email, password } = req.valid.body
+  await createAccount(res, { name, email, password, role: 'user' })
+}
+
+// POST /api/auth/owner-signup (O-01). The owner must verify the email (like U-01)
+// and stays Pending until an admin approves (ROLE-03, A-03).
+export async function ownerSignup(req, res) {
+  const { name, email, phone, businessName, password } = req.valid.body
+  await createAccount(res, {
+    name,
+    email,
+    phone,
+    password,
+    role: 'owner',
+    owner: { businessName, approvalStatus: 'pending' },
+  })
 }
 
 // POST /api/auth/verify-email (U-01)

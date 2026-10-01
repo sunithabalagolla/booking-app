@@ -7,7 +7,7 @@ const MINUTE = 60 * 1000
 const HOUR = 60 * MINUTE
 
 export const LIMITS = {
-  signup: { windowMs: HOUR, limit: 5 }, // per IP (start value)
+  signup: { windowMs: HOUR, limit: 5 }, // per IP, user + owner sign up together (start value)
   resendVerify: { windowMs: HOUR, limit: 3 }, // per email (U-01)
   login: { windowMs: 15 * MINUTE, limit: 5 }, // wrong logins per email + IP (BR-17)
   forgotPassword: { windowMs: HOUR, limit: 3 }, // per email (start value, U-03)

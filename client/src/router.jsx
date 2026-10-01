@@ -3,6 +3,8 @@ import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage.jsx'
 import HomePage from './pages/public/HomePage.jsx'
 import LoginPage from './pages/public/LoginPage.jsx'
+import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
+import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
@@ -20,6 +22,9 @@ const router = createBrowserRouter([
   // U-03 forgot / reset password
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/reset-password', element: <ResetPasswordPage /> },
+  // O-01 owner register + waiting for approval
+  { path: '/owner/signup', element: <OwnerSignupPage /> },
+  { path: '/owner/pending', element: <OwnerPendingPage /> },
   { path: '*', element: <NotFoundPage /> },
 ])
 
