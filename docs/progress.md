@@ -15,14 +15,14 @@
 - O-01 details (your decisions 2026-10-01):
   - `POST /api/auth/owner-signup` (`controllers/auth.js`, shares `createAccount` with U-01): owner with `approvalStatus: pending`, `emailVerified: false`, sends E-01. Same 409 `EMAIL_TAKEN`. Shares the sign up rate limit (5 per hour per IP, user + owner together).
   - Phone rule (added to requirements O-01, api.md, database.md): Indian mobile, 10 digits starting 6–9, optional `+91`, saved as 10 digits. Business name max 120.
-  - Client: `/owner/signup` page, "Own a theatre? Register as an owner" link on the sign up page, "Check your email" page has owner text, `/owner/pending` page (Pending stamp in dark mustard, Rejected stamp in maroon with the reason, Log out). After login a pending / rejected owner goes to `/owner/pending` (`needsApproval` in `authStore.js`). Approved owners go to Home until the owner dashboard exists. New colour token `mustard` (#8A5A00, UI-30).
+  - Client: `/owner/signup` page, "Own a theatre? Register as a theatre owner" link on the sign up page, "Check your email" page has owner text, `/owner/pending` page (Pending stamp in dark mustard, Rejected stamp in maroon with the reason, Log out). After login a pending / rejected owner goes to `/owner/pending` (`needsApproval` in `authStore.js`). Approved owners go to Home until the owner dashboard exists. New colour token `mustard` (#8A5A00, UI-30).
   - Tests: **90 pass** (client 22: new `validation/owner.test.js` 3; server 68: new `auth.owner.test.js` 8). Client lint + build OK. Not checked by hand in the browser yet.
 - Earlier (2026-09-30): Phase 0, U-01, U-02.
 
 ## Next step
 
 - **S-01 Staff login** (next in Phase 1).
-- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as an owner → verify link from the console → log in → Waiting for approval page).
+- Try by hand once: U-03 (Log in → Forgot password? → link from the server console → new password → log in) and O-01 (Sign up → Register as a theatre owner → verify link from the console → log in → Waiting for approval page).
 - Add `SEED_PASSWORD=` to your own `.env` (needed once the seed makes test logins).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 

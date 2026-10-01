@@ -85,7 +85,7 @@ export default function SignupPage() {
       <p className="mt-2 text-sm">
         Own a theatre?{' '}
         <Link to="/owner/signup" className="font-bold text-maroon underline">
-          Register as an owner
+          Register as a theatre owner
         </Link>
       </p>
     </PaperCard>

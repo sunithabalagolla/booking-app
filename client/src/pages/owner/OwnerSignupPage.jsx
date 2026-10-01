@@ -32,7 +32,7 @@ export default function OwnerSignupPage() {
   const serverError = signup.error && !signup.error.details ? signup.error : null
 
   return (
-    <PaperCard title="Register as an owner">
+    <PaperCard title="Register as a theatre owner">
       <form onSubmit={submit} noValidate className="space-y-4">
         <p>For theatre owners. After you verify your email, an admin checks your account before you can add theatres.</p>
         <TextField label="Your name" name="name" autoComplete="name" value={form.name} onChange={change('name')} error={errors.name} />
