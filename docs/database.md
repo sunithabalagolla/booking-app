@@ -292,18 +292,20 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `name` | String | yes | e.g. "Screen 1" |
 | `format` | String | yes | `2D` · `3D` |
 | `cleaningBreakMinutes` | Number | yes | Default from `settings.defaultCleaningBreakMinutes` (BR-09) |
-| `wheelchairFriendly` | Boolean | yes | Default `false` (SF-08) |
-| `layout.rows` / `layout.cols` | Number | yes | Grid size |
+| `wheelchairFriendly` | Boolean | yes | **Automatic**: `true` when the layout has at least 1 wheelchair space (SF-08, decided 2026-10-04). Not sent by the client |
+| `layout.rows` / `layout.cols` | Number | yes | Grid size: max 26 rows (A–Z) × 40 columns |
 | `layout.grid` | [Row] | yes | One entry per row, see below |
 | `seatCount` | { `balcony`, `first`, `second` } | yes | Number of seats per class, calculated when the layout is saved |
 
-**Row** = `{ label: 'A', cells: [Cell] }`
+**Row** = `{ label: 'A' | null, cells: [Cell] }`. `grid[0]` = the row farthest from the screen (top of the map); the screen is below the last row
 **Cell** = one of:
 - `{ type: 'seat', seatId: 'A4', seatClass: 'balcony' | 'first' | 'second', wheelchair: Boolean }`
 - `{ type: 'aisle' }` (gap)
 - `{ type: 'blocked' }` (never bookable)
 
-- `seatId` = row label + seat number. Numbers count only seats (aisles are skipped). `seatId` is unique inside a screen.
+- Row letters are made by the server (`utils/seatLayout.js`), never sent by the client: **A = the row with seats nearest the screen**, then B, C… Rows without seats get `label: null` and no letter (decided 2026-10-04).
+- `seatId` = row label + seat number. Seats are numbered 1, 2, 3… left to right; aisles and blocked places are skipped. `seatId` is unique inside a screen.
+- Screens can be added to `pending` and `rejected` theatres too (ROLE-04 still stops live shows). Screens are never deleted (decided 2026-10-04). Seeded screens have `isSample: true`.
 - Class names shown to users (UI-22): `balcony` = "Balcony", `first` = "First class", `second` = "Second class".
 
 **Indexes**: `{ theatreId: 1, name: 1 }` unique

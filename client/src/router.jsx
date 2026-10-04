@@ -11,6 +11,8 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage.jsx'
 import AdminTheatresPage from './pages/admin/AdminTheatresPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
+import OwnerScreenFormPage from './pages/owner/OwnerScreenFormPage.jsx'
+import OwnerScreensPage from './pages/owner/OwnerScreensPage.jsx'
 import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
 import OwnerTheatresPage from './pages/owner/OwnerTheatresPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
@@ -61,6 +63,10 @@ const router = createBrowserRouter([
       { path: '/owner/theatres', element: guard(['owner'], <OwnerTheatresPage />) },
       { path: '/owner/theatres/new', element: guard(['owner'], <OwnerTheatreFormPage />) },
       { path: '/owner/theatres/:id', element: guard(['owner'], <OwnerTheatreFormPage />) },
+      // O-04 screens + seat layout editor
+      { path: '/owner/theatres/:id/screens', element: guard(['owner'], <OwnerScreensPage />) },
+      { path: '/owner/theatres/:theatreId/screens/new', element: guard(['owner'], <OwnerScreenFormPage />) },
+      { path: '/owner/screens/:id', element: guard(['owner'], <OwnerScreenFormPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },

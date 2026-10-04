@@ -3,7 +3,9 @@ import { requireAuth } from '../middleware/auth.js'
 import { requireApprovedOwner, requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
 import { createTheatre, getMyTheatre, listCities, listMyTheatres, updateTheatre } from '../controllers/ownerTheatres.js'
+import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
 import { idParams } from '../validation/common.js'
+import { createScreenSchema, updateScreenSchema } from '../validation/screens.js'
 import { createTheatreSchema, updateTheatreSchema } from '../validation/theatres.js'
 
 // /api/owner (api.md Section 8). The role check is set once for the whole group (ROLE-01).
@@ -22,5 +24,11 @@ router.get('/theatres', listMyTheatres)
 router.post('/theatres', validate({ body: createTheatreSchema }), createTheatre)
 router.get('/theatres/:id', validate({ params: idParams }), getMyTheatre)
 router.patch('/theatres/:id', validate({ params: idParams, body: updateTheatreSchema }), updateTheatre)
+
+// O-04 screens + seat layout (also for pending / rejected theatres; no delete)
+router.get('/theatres/:id/screens', validate({ params: idParams }), listTheatreScreens)
+router.post('/theatres/:id/screens', validate({ params: idParams, body: createScreenSchema }), createScreen)
+router.get('/screens/:id', validate({ params: idParams }), getMyScreen)
+router.patch('/screens/:id', validate({ params: idParams, body: updateScreenSchema }), updateScreen)
 
 export default router

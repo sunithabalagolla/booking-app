@@ -2,9 +2,18 @@
 
 ## Last session
 
-- Date: 2026-10-01 (last short session)
-- Done: session start summary + **O-04 plan** shown (no code changed). Tests: **281 pass** (client 78, server 203).
-- O-04 plan (waiting for your answers): `Screen` model (database.md 5.8); owner endpoints `GET / POST /api/owner/theatres/:id/screens`, `GET / PATCH /api/owner/screens/:id` (own only); server checks the layout and makes row letters, seat IDs and `seatCount`; editor page with brushes (Balcony / First / Second / Wheelchair / Aisle / Blocked), row / column quick buttons, marks not only colours (NF-04), live seat summary, "SCREEN THIS WAY" at the bottom; seed 2 screens per sample theatre.
+- Date: 2026-10-04
+- Done: **O-04 Screens + seat layout editor**, with your 4 decisions: screens also for pending / rejected theatres; row letters automatic (A = nearest the screen, rows without seats get no letter, max 26 × 40, numbers left to right, aisles / blocked skipped); wheelchair-friendly automatic; no delete.
+  - Server: `models/Screen.js`, `utils/seatLayout.js` (row letters, seat IDs, counts), `validation/screens.js`, `controllers/ownerScreens.js`. Endpoints `GET / POST /api/owner/theatres/:id/screens`, `GET / PATCH /api/owner/screens/:id` (own only, other owner → 404). Same name in one theatre → `409 ALREADY_EXISTS`. Empty cleaning break = settings default (BR-09).
+  - Client: theatre list has a "Screens" link → screens table → editor (`SeatLayoutEditor.jsx`): grid size, 6 brushes, ▸ / ▾ paint a whole row / column, marks + colours (B / F / S / ♿ / — , NF-04), row letters on both sides, live seat summary, "SCREEN THIS WAY". Helpers in `validation/screens.js`.
+  - Seed step `screens`: 2 screens per sample theatre (12). Screen 1 (2D): Balcony / walkway / First / Second, 2 aisles, 2 wheelchair spaces where the theatre has wheelchair access. Screen 2 (3D): First + Second, 1 aisle.
+  - Checked in Chrome (owner login): list, edit Screen 1, painting blocked + wheelchair, save, duplicate name message. Fixed: ♿ showed as a blue emoji, now a plain ink mark. Seed run again afterwards, so the sample screens are back to normal.
+  - Docs: `database.md` 5.8 and `api.md` Section 8 updated.
+  - Tests: **313 pass** (client 89, server 224). Lint + build OK.
+
+## Earlier on 2026-10-01 (last short session)
+
+- Session start summary + O-04 plan shown (no code changed). Tests then: 281 pass.
 
 ## Earlier on 2026-10-01
 
@@ -104,14 +113,10 @@
 
 ## Next step
 
-- **O-04 Screens + seat layout editor**: the plan is ready; answer these 4 questions, then I build it:
-  1. May owners add screens to **pending** (and rejected) theatres? (suggested: yes; ROLE-04 still stops live shows)
-  2. Row letters automatic, **A = row nearest the screen**, up to Z; rows without seats get no letter; max **26 rows × 40 columns**; seat numbers left to right on the map, aisles / blocked skipped? (suggested: yes)
-  3. Wheelchair-friendly flag **automatic** when the screen has at least 1 wheelchair space, or a separate checkbox? (suggested: automatic)
-  4. **No delete** for screens (like theatres)? (suggested: yes)
-- Then O-07, O-05 + T-08.
-- Try A-04 by hand: as `owner@talkies.test` add a theatre (Pending) → as admin "Theatres" (sidebar count 1) → open map / photos → Reject with a reason (owner sees it, console shows E-09) → owner edits it (Pending again) → admin Approve. Block that owner in "Owners" → the theatre row shows "Owner blocked" and no Approve; unblock again.
-- Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login (header links, owner / admin sidebar, staff bar), keyboard Tab → "Skip to content".
+- **O-07 Canteen items** (Phase 2 order): plan first, then build. Then O-05 Shows + T-08.
+- Try O-04 by hand: as `owner@talkies.test` → Theatres → "Screens" → open Screen 1, paint a few places, Save; add a new screen (also on a Pending theatre). Day and Night show.
+- Try A-04 by hand (still open): as `owner@talkies.test` add a theatre (Pending) → as admin "Theatres" → Reject with a reason → owner edits it (Pending again) → admin Approve. Block that owner in "Owners" → the theatre row shows "Owner blocked" and no Approve; unblock again.
+- Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -119,6 +124,8 @@
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
 ## Notes for later
+
+- Client build warns that the main JS file is over 500 kB (524 kB now, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
@@ -192,7 +199,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] O-03 Theatres (list / add / edit, GSTIN state check, locked city + GSTIN after approval, 6 sample theatres; tested in the browser by the developer 2026-10-01)
   - [x] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404). Staff "only their theatres" is tested with the scanner (S-03, T-07)
 - [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit)
-- [ ] O-04 Screens + seat layout editor
+- [x] O-04 Screens + seat layout editor (list / add / edit, automatic row letters + wheelchair-friendly, 12 sample screens; checked in Chrome 2026-10-04)
 - [ ] O-07 Canteen items
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
   - [ ] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, test it). Use `findOwned` for the screen / theatre

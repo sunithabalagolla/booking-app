@@ -38,7 +38,7 @@ export default function OwnerTheatresPage() {
             <caption className="sr-only">My theatres</caption>
             <thead className="font-type">
               <tr>
-                {['Theatre', 'City', 'Address', 'Amenities', 'Status'].map((h) => (
+                {['Theatre', 'City', 'Address', 'Amenities', 'Status', 'Screens'].map((h) => (
                   <th key={h} scope="col" className={cell}>
                     {h}
                   </th>
@@ -66,6 +66,12 @@ export default function OwnerTheatresPage() {
                       {THEATRE_STATUS_LABELS[t.status]}
                     </Stamp>
                     {t.rejectReason && <p className="mt-2 text-sm">Reason: {t.rejectReason}</p>}
+                  </td>
+                  <td className={cell}>
+                    {/* O-04 */}
+                    <Link to={`/owner/theatres/${t.id}/screens`} className="font-type underline" aria-label={`Screens of ${t.name}`}>
+                      Screens
+                    </Link>
                   </td>
                 </tr>
               ))}
