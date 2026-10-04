@@ -180,3 +180,40 @@
     transition: none;
   }
 }
+
+/* Very wide screens (1440 px+): red velvet curtains in the empty space left and right
+   of the 1280 px page (UI-11 velvet colours #8E2626 / #6A1818 / #7B1E1E, gold tie-back).
+   Decoration only: no clicks, no animation (so nothing changes with reduce motion),
+   hidden on smaller screens. The -16px keeps them clear of the page (scrollbar + padding). */
+.side-curtain {
+  display: none;
+}
+@media (min-width: 1440px) {
+  .side-curtain {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: calc((100vw - 1280px) / 2 - 16px);
+    pointer-events: none;
+    z-index: 30;
+    background-color: #7b1e1e;
+    background-image:
+      /* gold tie-back band */
+      linear-gradient(to bottom, transparent calc(62% - 7px), #d9a441 calc(62% - 7px), #d9a441 calc(62% + 7px), transparent calc(62% + 7px)),
+      /* shadow towards the page */
+      linear-gradient(to var(--curtain-shade), transparent 55%, rgba(0, 0, 0, 0.5)),
+      /* velvet folds */
+      repeating-linear-gradient(to right, #6a1818 0, #8e2626 14px, #7b1e1e 26px, #6a1818 40px);
+  }
+  .side-curtain-left {
+    left: 0;
+    --curtain-shade: right;
+    border-right: 3px solid #d9a441;
+  }
+  .side-curtain-right {
+    right: 0;
+    --curtain-shade: left;
+    border-left: 3px solid #d9a441;
+  }
+}

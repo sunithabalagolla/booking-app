@@ -10,6 +10,8 @@
   - Docs: `api.md` `/api/movies` updated.
   - Tests: **380 pass** (client 109, server 271). Lint + build OK.
 
+- Layout fix (your request, after you tested U-05): public pages up to **1280 px** wide (was 1024 px); Now showing grid 2 / 3 / 4 / 5 / 6 posters per row (6 from 1280 px). On **1440 px+** screens: red velvet side curtains (`SideCurtains.jsx`, CSS in `theme.css`, UI-11 velvet colours + gold tie-back), decoration only (no clicks, no animation, hidden on smaller screens). Checked in Chrome at 2304 px: 6 per row, curtains clear of the page, no sideways scroll. Tests: 380 pass.
+
 ## Earlier on 2026-10-04 (U-04)
 
 - Done: O-05 tested by you, **Phase 2 done** (separate commit). Then 2 small fixes you asked about (they were not in progress.md before, so they had not been done; separate commit):
@@ -159,8 +161,7 @@
 ## Next step
 
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
-- Try U-05 by hand: Home in each city, change city, hover posters, Day / Night show; **on your phone**: posters turn to colour when they scroll into view.
-- Then **U-06 Search + filters, SF-08** (plan first).
+- **U-06 Search + filters, SF-08**: plan shown 2026-10-04, waiting for your answers.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -169,6 +170,8 @@
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
 ## Notes for later
+
+- **Phones: the public header breaks into 2 lines** (logo + city picker, then name / links / theme switch). Consider a small menu (your note 2026-10-04). Decide later, e.g. with the bottom navigation (UI-15) or Phase 10.
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
 
@@ -254,7 +257,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 3 – User browsing
 - [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
-- [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; checked in Chrome 2026-10-04)
+- [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; tested in the browser by the developer 2026-10-04)
 - [ ] U-06 Search + filters, SF-08
 - [ ] U-07 Movie details
 - [ ] U-08 Age warning

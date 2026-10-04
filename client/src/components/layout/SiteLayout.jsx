@@ -4,9 +4,11 @@ import { useAuthStore } from '../../store/authStore.js'
 import CityPicker from '../ui/CityPicker.jsx'
 import ThemeSwitch from '../ui/ThemeSwitch.jsx'
 import { accountLinksFor, FOOTER_LINKS } from './navigation.js'
+import SideCurtains from './SideCurtains.jsx'
 import SkipLink from './SkipLink.jsx'
 
-// Public layout (UI-15): header, page, footer. Mobile first (360 px, NF-02).
+// Public layout (UI-15): header, page, footer, max 1280 px wide; velvet curtains on
+// very wide screens. Mobile first (360 px, NF-02).
 // City picker (U-04) next to the logo. Later: ticker strip on top (UI-26, Phase 10),
 // sound icon (UI-40, Phase 10), bottom navigation (when Ticket album + Profile exist).
 
@@ -55,8 +57,9 @@ export default function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
+      <SideCurtains />
       <header className="border-b border-ink dark:border-cream-light">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
           <div className="flex items-center gap-3">
             <Link to="/" className="font-heading text-3xl text-maroon dark:text-gold" aria-label="Talkies – Home">
               Talkies
@@ -70,11 +73,11 @@ export default function SiteLayout() {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 focus:outline-none">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 focus:outline-none">
         <Outlet />
       </main>
 
-      <footer className="mx-auto w-full max-w-5xl px-4 pb-6">
+      <footer className="mx-auto w-full max-w-7xl px-4 pb-6">
         <div className="tear-line mb-4 dark:border-cream-light" />
         <nav aria-label="Footer" className="flex flex-wrap items-center justify-between gap-4 font-type">
           <ul className="flex flex-wrap gap-4">
