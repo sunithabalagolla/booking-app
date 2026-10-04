@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react'
 import { useThemeStore } from '../../store/themeStore.js'
 import { chooseTheme } from '../../theme/themeSync.js'
+import { useDropdown } from './useDropdown.js'
 
 // UI-02 theme switch: sun/moon icon; tap opens a small menu
 // Auto / Day show / Night show, with a tick on the current choice.
@@ -32,35 +32,11 @@ function MoonIcon() {
 export default function ThemeSwitch({ onDark = false }) {
   const choice = useThemeStore((state) => state.choice)
   const theme = useThemeStore((state) => state.theme)
-  const [open, setOpen] = useState(false)
-  const wrapperRef = useRef(null)
-  const buttonRef = useRef(null)
-  const menuId = useId()
-
-  // Close when tapping outside or pressing Escape
-  useEffect(() => {
-    if (!open) return
-    function onPointerDown(event) {
-      if (!wrapperRef.current.contains(event.target)) setOpen(false)
-    }
-    function onKeyDown(event) {
-      if (event.key === 'Escape') {
-        setOpen(false)
-        buttonRef.current.focus()
-      }
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open])
+  const { open, toggle, close, wrapperRef, buttonRef, menuId } = useDropdown()
 
   function pick(value) {
     chooseTheme(value) // logged in: also saved in the profile
-    setOpen(false)
-    buttonRef.current.focus()
+    close()
   }
 
   const current = options.find((o) => o.value === choice).label
@@ -75,7 +51,7 @@ export default function ThemeSwitch({ onDark = false }) {
         aria-label={buttonLabel}
         aria-expanded={open}
         aria-controls={menuId}
-        onClick={() => setOpen((isOpen) => !isOpen)}
+        onClick={toggle}
         className={`flex h-11 w-11 items-center justify-center rounded-btn border ${
           onDark ? 'border-cream text-gold' : 'border-ink text-ink dark:border-cream dark:text-gold'
         }`}

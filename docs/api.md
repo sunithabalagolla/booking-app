@@ -127,7 +127,7 @@ All errors have the same shape:
 
 | Method | Path | Who | Query | Result / notes |
 | --- | --- | --- | --- | --- |
-| GET | `/api/cities` | Guest | — | `[{ code, name }]`: only cities with approved theatres (U-04) |
+| GET | `/api/cities` | Guest | — | U-04: `{ cities: [{ code, name }] }`: only cities with at least one approved theatre, names from `settings.cities`, A to Z. The chosen city is kept in the browser only (localStorage `talkies-city`, decided 2026-10-04); every user list sends it as `city` |
 | GET | `/api/settings/public` | Guest | — | Values the UI needs: `holdMinutes, maxSeatsPerBooking, convenienceFeePaise, cancelCutoffMinutes, userRefundTicketPercent, transferCutoffMinutes, uploadMaxMb` (`uploadMaxMb` for the upload check in the browser, added with A-05) |
 | GET | `/api/banners` | Guest | `city, kind?` (`banner` · `ticker`) | Active now, for that city + no-city ones (A-11, UI-26) |
 | GET | `/api/movies` | Guest | `city, status?` (`now_showing` · `coming_soon`), `q?, language?, genre?, format?` (`2D` · `3D`), `subtitles?, wheelchair?, parentBaby?`, page | U-05, U-06, SF-08. Filters combine (AND). `now_showing` + `city` = movies with a scheduled show in that city in the next 7 days. Format and SF-08 filters look at those shows |

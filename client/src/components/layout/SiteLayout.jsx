@@ -1,12 +1,13 @@
 import { Link, Outlet } from 'react-router'
 import { useLogout } from '../../api/auth.js'
 import { useAuthStore } from '../../store/authStore.js'
+import CityPicker from '../ui/CityPicker.jsx'
 import ThemeSwitch from '../ui/ThemeSwitch.jsx'
 import { accountLinksFor, FOOTER_LINKS } from './navigation.js'
 import SkipLink from './SkipLink.jsx'
 
 // Public layout (UI-15): header, page, footer. Mobile first (360 px, NF-02).
-// Later: ticker strip on top (UI-26, Phase 10), city picker (U-04, Phase 3),
+// City picker (U-04) next to the logo. Later: ticker strip on top (UI-26, Phase 10),
 // sound icon (UI-40, Phase 10), bottom navigation (when Ticket album + Profile exist).
 
 const linkClass = 'inline-flex min-h-11 items-center font-bold text-maroon underline dark:text-gold'
@@ -56,9 +57,12 @@ export default function SiteLayout() {
       <SkipLink />
       <header className="border-b border-ink dark:border-cream-light">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
-          <Link to="/" className="font-heading text-3xl text-maroon dark:text-gold" aria-label="Talkies – Home">
-            Talkies
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="font-heading text-3xl text-maroon dark:text-gold" aria-label="Talkies – Home">
+              Talkies
+            </Link>
+            <CityPicker />
+          </div>
           <div className="flex items-center gap-4">
             <AccountArea />
             <ThemeSwitch />

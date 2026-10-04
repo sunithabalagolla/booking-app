@@ -3,6 +3,18 @@
 ## Last session
 
 - Date: 2026-10-04
+- Done: O-05 tested by you, **Phase 2 done** (separate commit). Then 2 small fixes you asked about (they were not in progress.md before, so they had not been done; separate commit):
+  - Show date messages name days like "Sun 4 Oct" (server "cannot be used" message, release day in the client form and the movie picker).
+  - No light-blue browser autofill on inputs: autofilled inputs keep cream paper + ink text (`theme.css`). Not checked by hand: Chrome only autofills with saved logins, please look at the login page.
+- **U-04 City picker** (Phase 3 start) with your 3 decisions: saved in this browser only (localStorage `talkies-city`); first visit = "Pick your city" card on Home (no pop-up, no location); picker = small list with a tick.
+  - Server: `GET /api/cities` (guests too): only cities with an approved theatre, names from settings, A to Z (`controllers/cities.js`, `routes/cities.js`).
+  - Client: `store/cityStore.js` (save / load, never crashes in private mode), `api/cities.js` (`useCities`, `useCurrentCity`: a saved city with no approved theatre any more is forgotten), header `CityPicker` next to the logo (public pages only), `CityChooser` card on Home, Home heading "Now showing in [city]" (the movie lists come with U-05). New shared `useDropdown` hook (the theme switch uses it too).
+  - Checked in Chrome: first visit card shows the 3 seeded cities only, pick Hyderabad, switch to Chennai in the header (tick moves), reload keeps Chennai, a stale saved city ("mumbai") is forgotten, 360 px phone width fits (no sideways scroll).
+  - Docs: `api.md` `/api/cities` updated.
+  - Tests: **370 pass** (client 105, server 265). Lint + build OK.
+
+## Earlier on 2026-10-04 (O-05)
+
 - Done: you tested O-07 and later O-05 in the browser (both ticked; **Phase 2 done**); your Phase 10 note on the ledger lines added to "Notes for later". **O-05 Shows + T-08** built with your 5 decisions (3D only on 3D screens; dates today … +30, max 14 per request, start in the future, not before the release day; prices whole ₹1–₹5,000 for every class of the screen; no delete; ~336 sample shows) and **your extra rule: no parent-and-baby tag on "A" movies** (server + form + seed; added to requirements O-05).
   - Server: `models/Show.js` (database.md 5.9, all indexes), `utils/showTime.js` (IST times, BR-22 labels, BR-10 end), `validation/shows.js`, `controllers/ownerShows.js`. Endpoints `GET /api/owner/movies` (new), `GET / POST /api/owner/shows`, `GET / PATCH /api/owner/shows/:id` (`GET /:id` new; PATCH takes one `date`).
   - ROLE-04: shows only on approved theatres (`400 RULE_BROKEN`). Overlap (T-08): `409 SHOW_OVERLAP` lists the refused dates and the shows in the way; several dates = all or none. Two saves at the same moment: `screens.showLock` is changed inside the transaction, so exactly one wins (tested).
@@ -137,7 +149,8 @@
 
 ## Next step
 
-- **Phase 3: U-04 City picker**: plan shown 2026-10-04, waiting for your answers.
+- Try U-04 by hand (as a guest too): pick a city on Home, change it in the header, reload. Also check the login page autofill colour.
+- Then **U-05 Home page** (plan first).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -230,7 +243,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] T-08 test (overlap cases, touching edges, cleaning break, all-or-none dates, two saves at the same moment)
 
 ## Phase 3 – User browsing
-- [ ] U-04 City
+- [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; checked in Chrome 2026-10-04)
 - [ ] U-05 Home
 - [ ] U-06 Search + filters, SF-08
 - [ ] U-07 Movie details

@@ -1,7 +1,9 @@
-// Placeholder until U-05 (Home page) is built in Phase 3.
-// For now it shows the Talkies theme (UI-01 to UI-05) so we can check it.
+// Home. U-04: first the city (flow 9.2); the real Home lists come with U-05.
+// Until then it also shows the Talkies theme (UI-01 to UI-05) so we can check it.
+import { useCurrentCity } from '../../api/cities.js'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
+import CityChooser from '../../components/ui/CityChooser.jsx'
 import Stamp from '../../components/ui/Stamp.jsx'
 
 const colours = [
@@ -16,10 +18,24 @@ const colours = [
 ]
 
 export default function HomePage() {
+  const { city, cities, setCity } = useCurrentCity()
+
   return (
     <div className="mx-auto max-w-3xl space-y-8 py-6">
       {/* Maroon is too dark on the Night show background, so headings turn gold */}
-      <h1 className="font-heading text-4xl text-maroon dark:text-gold">Talkies – coming soon</h1>
+      {cities.isPending && <p role="status">Loading…</p>}
+      {cities.isError && (
+        <p role="alert" className="font-bold text-(--tone-alert)">
+          {cities.error.message}
+        </p>
+      )}
+      {cities.data && !city && <CityChooser cities={cities.data} onPick={setCity} />}
+      {city && (
+        <section className="space-y-1">
+          <h1 className="font-heading text-4xl text-maroon dark:text-gold">Now showing in {city.name}</h1>
+          <p className="font-type">The movies of {city.name} come here next (U-05).</p>
+        </section>
+      )}
 
       <section className="space-y-2">
         <h2 className="font-type text-xl">Colours (UI-01)</h2>

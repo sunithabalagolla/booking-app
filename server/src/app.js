@@ -9,6 +9,7 @@ import { errorHandler, notFound } from './middleware/errors.js'
 import { requestId } from './middleware/requestId.js'
 import adminRoutes from './routes/admin.js'
 import authRoutes from './routes/auth.js'
+import cityRoutes from './routes/cities.js'
 import meRoutes from './routes/me.js'
 import ownerRoutes from './routes/owner.js'
 import settingsRoutes from './routes/settings.js'
@@ -39,6 +40,7 @@ app.use('/api', generalLimiter)
 app.use('/api/auth', authRoutes)
 app.use('/api/me', meRoutes)
 app.use('/api/settings', settingsRoutes) // A-05 public values
+app.use('/api/cities', cityRoutes) // U-04 city picker
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)
