@@ -3,8 +3,10 @@ import { requireAuth } from '../middleware/auth.js'
 import { requireApprovedOwner, requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
 import { createTheatre, getMyTheatre, listCities, listMyTheatres, updateTheatre } from '../controllers/ownerTheatres.js'
+import { createFood, deleteFood, listTheatreFood, updateFood } from '../controllers/ownerFood.js'
 import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
 import { idParams } from '../validation/common.js'
+import { createFoodSchema, updateFoodSchema } from '../validation/food.js'
 import { createScreenSchema, updateScreenSchema } from '../validation/screens.js'
 import { createTheatreSchema, updateTheatreSchema } from '../validation/theatres.js'
 
@@ -30,5 +32,11 @@ router.get('/theatres/:id/screens', validate({ params: idParams }), listTheatreS
 router.post('/theatres/:id/screens', validate({ params: idParams, body: createScreenSchema }), createScreen)
 router.get('/screens/:id', validate({ params: idParams }), getMyScreen)
 router.patch('/screens/:id', validate({ params: idParams, body: updateScreenSchema }), updateScreen)
+
+// O-07 canteen items (also for pending / rejected theatres; real delete, bookings keep a copy)
+router.get('/theatres/:id/food', validate({ params: idParams }), listTheatreFood)
+router.post('/theatres/:id/food', validate({ params: idParams, body: createFoodSchema }), createFood)
+router.patch('/food/:id', validate({ params: idParams, body: updateFoodSchema }), updateFood)
+router.delete('/food/:id', validate({ params: idParams }), deleteFood)
 
 export default router

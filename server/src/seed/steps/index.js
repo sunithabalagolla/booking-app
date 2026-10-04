@@ -15,10 +15,11 @@
 //   2. Import it below and add it to the array.
 //   Order matters: settings → users → movies → theatres → screens → food → shows → coupons.
 
+import food from './food.js'
 import movies from './movies.js'
 import screens from './screens.js'
 import settings from './settings.js'
 import theatres from './theatres.js'
 import users from './users.js'
 
-export const steps = [settings, users, movies, theatres, screens]
+export const steps = [settings, users, movies, theatres, screens, food]

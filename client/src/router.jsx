@@ -9,6 +9,8 @@ import AdminMoviesPage from './pages/admin/AdminMoviesPage.jsx'
 import AdminOwnersPage from './pages/admin/AdminOwnersPage.jsx'
 import AdminSettingsPage from './pages/admin/AdminSettingsPage.jsx'
 import AdminTheatresPage from './pages/admin/AdminTheatresPage.jsx'
+import OwnerFoodFormPage from './pages/owner/OwnerFoodFormPage.jsx'
+import OwnerFoodPage from './pages/owner/OwnerFoodPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
 import OwnerScreenFormPage from './pages/owner/OwnerScreenFormPage.jsx'
@@ -67,6 +69,10 @@ const router = createBrowserRouter([
       { path: '/owner/theatres/:id/screens', element: guard(['owner'], <OwnerScreensPage />) },
       { path: '/owner/theatres/:theatreId/screens/new', element: guard(['owner'], <OwnerScreenFormPage />) },
       { path: '/owner/screens/:id', element: guard(['owner'], <OwnerScreenFormPage />) },
+      // O-07 canteen items
+      { path: '/owner/theatres/:id/food', element: guard(['owner'], <OwnerFoodPage />) },
+      { path: '/owner/theatres/:theatreId/food/new', element: guard(['owner'], <OwnerFoodFormPage />) },
+      { path: '/owner/theatres/:theatreId/food/:foodId', element: guard(['owner'], <OwnerFoodFormPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },

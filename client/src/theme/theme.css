@@ -63,6 +63,8 @@
   }
   /* Light paper (cards) stays light in Night show too, so it keeps the dark colours */
   .paper {
+    /* Native checkboxes / radios draw light on light paper (dark ones looked checked in Night show) */
+    color-scheme: light;
     --outline: var(--color-ink);
     --outline-hover: var(--color-cream);
     --tone-green: var(--color-green);

@@ -467,13 +467,16 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | --- | --- | --- | --- |
 | `theatreId` / `ownerId` | ObjectId | yes | |
 | `name` | String | yes | |
-| `photoUrl` | String | | Cloudinary |
-| `pricePaise` | Number | yes | GST included |
+| `photoUrl` | String | | Cloudinary. Optional; seeded items have code-drawn vintage SVG pictures |
+| `pricePaise` | Number | yes | GST included. Whole rupees only, ₹1–₹5,000 (`100`–`500000`, a multiple of 100; decided 2026-10-04) |
 | `isVeg` | Boolean | yes | Veg / non-veg mark |
 | `inStock` | Boolean | yes | Default `true` |
 | `isCombo` | Boolean | yes | Default `false` |
 
-**Indexes**: `{ theatreId: 1 }`
+- `ownerId` is a copy from the theatre, for quick ownership checks (ROLE-02).
+- Items can be added to `pending` and `rejected` theatres too. Items **can be deleted** for good: bookings keep their own copy of name + price (5.11). Decided 2026-10-04.
+
+**Indexes**: `{ theatreId: 1, name: 1 }` **unique** (one name per canteen; also used for the canteen list)
 
 ---
 

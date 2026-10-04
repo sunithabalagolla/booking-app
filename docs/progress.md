@@ -3,6 +3,17 @@
 ## Last session
 
 - Date: 2026-10-04
+- Done: you tested O-04 and A-04 in the browser (ticked). **O-07 Canteen items** built with your 5 decisions: real delete allowed; whole rupees ₹1–₹5,000; one name per canteen; also for pending / rejected theatres; sample pictures drawn by code.
+  - Server: `models/FoodItem.js` (unique `theatreId + name`), `validation/food.js`, `controllers/ownerFood.js`. Endpoints `GET / POST /api/owner/theatres/:id/food`, `PATCH / DELETE /api/owner/food/:id` (own only, other owner → 404, same name → `409 ALREADY_EXISTS`).
+  - Client: theatres table now has "Screens" and "Canteen" links. Canteen page (register table): photo, name, Combo stamp, veg / non-veg mark (`components/ui/VegMark.jsx`: square + dot / triangle + the word), price in ₹, one-click In stock / Out of stock button, Edit, Delete with "Yes, delete / No" in the row (no browser pop-up). Add / edit form: name, price in whole ₹, Veg / Non-veg, In stock, Combo, photo upload. UI-44 empty text "The canteen is closed for now."
+  - Seed step `food`: 6 sample items per sample theatre (36): Butter Popcorn, Samosa, Filter Coffee, Cold Drink, Chicken Puff (non-veg), Popcorn + Cold Drink Combo. Vintage SVG pictures in `seed/foodPictures.js`, saved once like uploads.
+  - Fix found in the Chrome check: in Night show, **unchecked** checkboxes / radios inside light cards looked dark and filled (like checked). Light paper cards now use the light colour scheme (`theme.css` `.paper`). This also fixes the theatre form amenities.
+  - Checked in Chrome (owner login): list, pictures, stock switch, delete confirm (cancelled), price error for ₹49.50, save ₹65. Seed run again afterwards, so the samples are back to normal. One console message "play() request was interrupted" did not come from our code (the app plays no media); probably the browser tool.
+  - Docs: `database.md` 5.14 and `api.md` Section 8 updated.
+  - Tests: **331 pass** (client 94, server 237). Lint + build OK.
+
+## Earlier on 2026-10-04 (O-04)
+
 - Done: **O-04 Screens + seat layout editor**, with your 4 decisions: screens also for pending / rejected theatres; row letters automatic (A = nearest the screen, rows without seats get no letter, max 26 × 40, numbers left to right, aisles / blocked skipped); wheelchair-friendly automatic; no delete.
   - Server: `models/Screen.js`, `utils/seatLayout.js` (row letters, seat IDs, counts), `validation/screens.js`, `controllers/ownerScreens.js`. Endpoints `GET / POST /api/owner/theatres/:id/screens`, `GET / PATCH /api/owner/screens/:id` (own only, other owner → 404). Same name in one theatre → `409 ALREADY_EXISTS`. Empty cleaning break = settings default (BR-09).
   - Client: theatre list has a "Screens" link → screens table → editor (`SeatLayoutEditor.jsx`): grid size, 6 brushes, ▸ / ▾ paint a whole row / column, marks + colours (B / F / S / ♿ / — , NF-04), row letters on both sides, live seat summary, "SCREEN THIS WAY". Helpers in `validation/screens.js`.
@@ -113,9 +124,8 @@
 
 ## Next step
 
-- **O-07 Canteen items** (Phase 2 order): plan first, then build. Then O-05 Shows + T-08.
-- Try O-04 by hand: as `owner@talkies.test` → Theatres → "Screens" → open Screen 1, paint a few places, Save; add a new screen (also on a Pending theatre). Day and Night show.
-- Try A-04 by hand (still open): as `owner@talkies.test` add a theatre (Pending) → as admin "Theatres" → Reject with a reason → owner edits it (Pending again) → admin Approve. Block that owner in "Owners" → the theatre row shows "Owner blocked" and no Approve; unblock again.
+- **O-05 Shows + T-08** (last Phase 2 task): plan first, then build. Includes ROLE-04 (no live show on a pending / rejected theatre), labels BR-22, end time BR-10, overlap check.
+- Try O-07 by hand: as `owner@talkies.test` → Theatres → "Canteen": add an item with a photo, switch stock, edit, delete. Check the checkboxes in Night show (the fix above).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -125,7 +135,7 @@
 
 ## Notes for later
 
-- Client build warns that the main JS file is over 500 kB (524 kB now, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
+- Client build warns that the main JS file is over 500 kB (534 kB after O-07, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
@@ -198,9 +208,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] A-03 Owner approvals (list, approve / reject + E-09, block / unblock owners + their staff, audit; tested in the browser by the developer 2026-10-01)
 - [x] O-03 Theatres (list / add / edit, GSTIN state check, locked city + GSTIN after approval, 6 sample theatres; tested in the browser by the developer 2026-10-01)
   - [x] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404). Staff "only their theatres" is tested with the scanner (S-03, T-07)
-- [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit)
-- [x] O-04 Screens + seat layout editor (list / add / edit, automatic row letters + wheelchair-friendly, 12 sample screens; checked in Chrome 2026-10-04)
-- [ ] O-07 Canteen items
+- [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit; tested in the browser by the developer 2026-10-04)
+- [x] O-04 Screens + seat layout editor (list / add / edit, automatic row letters + wheelchair-friendly, 12 sample screens; tested in the browser by the developer 2026-10-04)
+- [x] O-07 Canteen items (list / add / edit / delete, stock switch, veg mark, whole rupees, 36 sample items with pictures; checked in Chrome 2026-10-04)
 - [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
   - [ ] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, test it). Use `findOwned` for the screen / theatre
 - [ ] T-08 test
