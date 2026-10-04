@@ -181,39 +181,141 @@
   }
 }
 
-/* Very wide screens (1440 px+): red velvet curtains in the empty space left and right
-   of the 1280 px page (UI-11 velvet colours #8E2626 / #6A1818 / #7B1E1E, gold tie-back).
-   Decoration only: no clicks, no animation (so nothing changes with reduce motion),
-   hidden on smaller screens. The -16px keeps them clear of the page (scrollbar + padding). */
+/* ===== Home "Stage" frame (UI-15, docs/home-design.md Section 1) ===== */
+
+/* Velvet: vertical folds, about 32 px each */
+@utility velvet {
+  background-color: #6a1818;
+  background-image: repeating-linear-gradient(to right, #4e1010 0, #8e2626 8px, #6a1818 16px, #a0302e 24px, #4e1010 32px);
+}
+
+/* Soft warm spotlight glow at the top centre of the stage (gold, ~13%) */
+@utility stage-glow {
+  background-image: radial-gradient(ellipse 70% 420px at 50% 0, rgb(217 164 65 / 0.13), transparent 70%);
+}
+
+/* Pelmet (valance): velvet band, 3 px gold line, scallops (dark maroon with gold border) */
+.pelmet-scallops {
+  height: 14px;
+  background-image: radial-gradient(circle at 50% 0, #5e1515 0 9px, #d9a441 9px 11px, transparent 11px);
+  background-size: 24px 14px;
+  background-repeat: repeat-x;
+}
+@media (max-width: 767px) {
+  .pelmet-scallops {
+    height: 10px;
+    background-image: radial-gradient(circle at 50% 0, #5e1515 0 6px, #d9a441 6px 8px, transparent 8px);
+    background-size: 16px 10px;
+  }
+}
+
+/* Side curtains: decoration only (no clicks), fixed at the edges.
+   Below 1280 px: a thin 12 px velvet edge. From 1280 px: a gathered curtain
+   (straight top, pulled in at 55% height, flaring at the bottom) with a gold rope
+   tie-back, between the screen edge and the 1120 px page. */
 .side-curtain {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  pointer-events: none;
+  z-index: 30;
+}
+.side-curtain-left {
+  left: 0;
+  transform-origin: top left;
+}
+.side-curtain-right {
+  right: 0;
+  transform-origin: top right;
+}
+.curtain-cloth {
+  position: absolute;
+  inset: 0;
+}
+.curtain-tie {
   display: none;
 }
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
   .side-curtain {
-    display: block;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: calc((100vw - 1280px) / 2 - 16px);
-    pointer-events: none;
-    z-index: 30;
-    background-color: #7b1e1e;
-    background-image:
-      /* gold tie-back band */
-      linear-gradient(to bottom, transparent calc(62% - 7px), #d9a441 calc(62% - 7px), #d9a441 calc(62% + 7px), transparent calc(62% + 7px)),
-      /* shadow towards the page */
-      linear-gradient(to var(--curtain-shade), transparent 55%, rgba(0, 0, 0, 0.5)),
-      /* velvet folds */
-      repeating-linear-gradient(to right, #6a1818 0, #8e2626 14px, #7b1e1e 26px, #6a1818 40px);
-  }
-  .side-curtain-left {
-    left: 0;
-    --curtain-shade: right;
-    border-right: 3px solid #d9a441;
+    width: calc((100vw - 1120px) / 2 - 16px);
+    animation: curtain-sway var(--curtain-sway, 7000ms) ease-in-out infinite alternate;
   }
   .side-curtain-right {
+    animation-name: curtain-sway-right;
+  }
+  .side-curtain-left .curtain-cloth {
+    clip-path: polygon(0 0, 100% 0, 96% 15%, 80% 35%, 48% 55%, 62% 72%, 84% 88%, 100% 100%, 0 100%);
+  }
+  .side-curtain-right .curtain-cloth {
+    clip-path: polygon(100% 0, 0 0, 4% 15%, 20% 35%, 52% 55%, 38% 72%, 16% 88%, 0 100%, 100% 100%);
+  }
+  /* Gold rope tie-back with a small tassel at the gather point */
+  .curtain-tie {
+    display: block;
+    position: absolute;
+    top: calc(55% - 6px);
+    width: 52%;
+    height: 12px;
+    border-radius: 6px;
+    background: repeating-linear-gradient(60deg, #d9a441 0 6px, #a8781e 6px 9px);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+  }
+  .side-curtain-left .curtain-tie {
+    left: 0;
+  }
+  .side-curtain-right .curtain-tie {
     right: 0;
-    --curtain-shade: left;
-    border-left: 3px solid #d9a441;
+  }
+  .curtain-tie::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    width: 12px;
+    height: 26px;
+    border-radius: 3px 3px 6px 6px;
+    background: repeating-linear-gradient(to right, #d9a441 0 2px, #a8781e 2px 3px);
+  }
+  .side-curtain-left .curtain-tie::after {
+    right: -2px;
+  }
+  .side-curtain-right .curtain-tie::after {
+    left: -2px;
+  }
+}
+@keyframes curtain-sway {
+  from { transform: rotate(-0.7deg); }
+  to { transform: rotate(0.7deg); }
+}
+@keyframes curtain-sway-right {
+  from { transform: rotate(0.7deg); }
+  to { transform: rotate(-0.7deg); }
+}
+
+/* UI-45 film grain: very light noise over the whole page, jitters every 0.4 s.
+   Max 3–4% opacity (UI-04, decided 2026-10-04), never blocks clicks. */
+.film-grain {
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-jitter var(--grain-jitter, 400ms) steps(1) infinite;
+}
+@keyframes grain-jitter {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3%, 2%); }
+  50% { transform: translate(2%, -3%); }
+  75% { transform: translate(-2%, -1%); }
+}
+
+/* UI-41 / NF-05: reduce motion stops the stage animations; film grain is off */
+@media (prefers-reduced-motion: reduce) {
+  .side-curtain {
+    animation: none !important;
+  }
+  .film-grain {
+    display: none;
   }
 }

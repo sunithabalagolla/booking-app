@@ -148,6 +148,11 @@ describe('U-06 search + filters, SF-08 (combine with AND)', () => {
     expect(await titles('q=.*')).toEqual([])
   })
 
+  it('q also finds a language or genre of the movie (header search, UI-15)', async () => {
+    expect(await titles('q=telugu')).toEqual(['Kadal Kaatru'])
+    expect(await titles('q=horr')).toEqual(['Ghost of Gulmohar Lane'])
+  })
+
   it('language = the language of a show in this city (not just the movie)', async () => {
     expect(await titles('language=Tamil')).toEqual([]) // Monsoon and Kadal exist in Tamil, but no Tamil shows here
     expect(await titles('language=Telugu')).toEqual(['Kadal Kaatru'])

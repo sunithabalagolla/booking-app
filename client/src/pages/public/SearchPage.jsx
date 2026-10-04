@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useCurrentCity } from '../../api/cities.js'
 import { useMovies } from '../../api/movies.js'
@@ -21,9 +21,9 @@ import {
   SHOW_FILTERS,
 } from './search.js'
 
-// U-06 search + filters (SF-08) at /movies. Filters live in the page address.
+// U-06 search + filters (SF-08) at /movies. Filters live in the page address;
+// the search text comes from the header search box (UI-15).
 // Phones: filters fold into a "Filters (n)" panel; laptops: a column on the left.
-const TYPING_DELAY_MS = 300 // wait a moment after typing before searching
 
 export default function SearchPage() {
   const { city, cities, setCity } = useCurrentCity()
@@ -49,7 +49,6 @@ export default function SearchPage() {
 function CitySearch({ city }) {
   const [params, setParams] = useSearchParams()
   const filters = filtersFromParams(params)
-  const [text, setText] = useState(filters.q)
   const [panelOpen, setPanelOpen] = useState(false)
   const panelId = useId()
 
@@ -59,19 +58,6 @@ function CitySearch({ city }) {
     (changes) => setParams((latest) => paramsFromFilters({ ...filtersFromParams(latest), ...changes }), { replace: true }),
     [setParams],
   )
-
-  // Search text: wait until typing stops
-  const savedQ = filters.q
-  useEffect(() => {
-    if (text.trim() === savedQ) return
-    const timer = setTimeout(() => update({ q: text }), TYPING_DELAY_MS)
-    return () => clearTimeout(timer)
-  }, [text, savedQ, update])
-
-  function submit(event) {
-    event.preventDefault()
-    update({ q: text })
-  }
 
   const query = apiQuery(filters)
   const showFilterOn = hasShowFilter(filters)
@@ -90,21 +76,12 @@ function CitySearch({ city }) {
     <div className="space-y-6 py-6">
       <h1 className="font-heading text-3xl text-maroon dark:text-gold">Find a movie in {city.name}</h1>
 
-      <form role="search" onSubmit={submit} className="flex gap-2">
-        <label htmlFor="search-text" className="sr-only">
-          Movie name
-        </label>
-        <input
-          id="search-text"
-          type="search"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Movie name…"
-          maxLength={100}
-          className="min-h-11 w-full max-w-xl rounded-btn border border-ink bg-cream px-3 py-2 text-ink focus:outline-2 focus:outline-offset-2 focus:outline-maroon"
-        />
-        <Button type="submit">Search</Button>
-      </form>
+      {/* The search box is in the header (UI-15); it drives this page */}
+      {filters.q && (
+        <p className="font-type">
+          Results for “{filters.q}”
+        </p>
+      )}
 
       <div className="lg:grid lg:grid-cols-[16rem_1fr] lg:gap-8">
         {/* Filters */}
@@ -142,10 +119,7 @@ function CitySearch({ city }) {
             {(count > 0 || filters.q) && (
               <Button
                 variant="secondary"
-                onClick={() => {
-                  setText('')
-                  setParams(paramsFromFilters(EMPTY_FILTERS), { replace: true })
-                }}
+                onClick={() => setParams(paramsFromFilters(EMPTY_FILTERS), { replace: true })}
               >
                 Clear search and filters
               </Button>

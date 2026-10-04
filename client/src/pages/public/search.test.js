@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { activeFilterCount, apiQuery, EMPTY_FILTERS, filtersFromParams, hasShowFilter, paramsFromFilters } from './search.js'
+import { activeFilterCount, apiQuery, EMPTY_FILTERS, filtersFromParams, hasShowFilter, paramsFromFilters, searchHref, withQ } from './search.js'
 
 // U-06 search + filters in the page address
 const full = { q: ' monsoon ', language: ['Tamil', 'Telugu'], genre: ['Action'], format: '3D', subtitles: true, wheelchair: false, parentBaby: true }
@@ -32,5 +32,19 @@ describe('search filters (U-06)', () => {
     expect(hasShowFilter({ ...EMPTY_FILTERS, language: ['Hindi'] })).toBe(false)
     expect(hasShowFilter({ ...EMPTY_FILTERS, wheelchair: true })).toBe(true)
     expect(hasShowFilter({ ...EMPTY_FILTERS, format: '2D' })).toBe(true)
+  })
+})
+
+describe('header search box (UI-15)', () => {
+  it('Enter opens the Search page with the text', () => {
+    expect(searchHref(' tamil ')).toBe('/movies?q=tamil')
+    expect(searchHref('  ')).toBe('/movies')
+  })
+
+  it('on the Search page it changes only q and keeps the filters', () => {
+    const params = new URLSearchParams('q=old&language=Tamil&subtitles=1')
+    expect(withQ(params, ' new ').toString()).toBe('q=new&language=Tamil&subtitles=1')
+    expect(withQ(params, '').toString()).toBe('language=Tamil&subtitles=1')
+    expect(params.get('q')).toBe('old') // the old address is not changed
   })
 })

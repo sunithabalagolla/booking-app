@@ -10,7 +10,7 @@ import { dateToIstDay, istDayToDate, istToday } from '../utils/time.js'
 //   the marquee banner), then the newest release, then A to Z.
 // - coming_soon = all "Coming soon" movies, the same in every city, soonest release first.
 // U-06 + SF-08 filters (decided 2026-10-04), all combined with AND:
-// - q = part of the title, any case
+// - q = part of the title, a language or a genre of the movie, any case
 // - language / genre = any of the picked values. For now_showing the language is the
 //   language of a SHOW in the city (a Hindi + Tamil movie may have only Hindi shows here);
 //   for coming_soon (no shows yet) it is the movie's languages
@@ -48,7 +48,8 @@ export async function listMovies(req, res) {
   const { city, status, q, language, genre, page, limit } = req.valid.query
   const skip = (page - 1) * limit
   const movieFilter = {
-    ...(q && { title: { $regex: escapeRegex(q), $options: 'i' } }),
+    // The header search box says "Search movies, languages, genres…" (UI-15)
+    ...(q && { $or: ['title', 'languages', 'genres'].map((field) => ({ [field]: { $regex: escapeRegex(q), $options: 'i' } })) }),
     ...(genre?.length && { genres: { $in: genre } }),
   }
   const byShow = showFilters(req.valid.query)

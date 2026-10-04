@@ -14,6 +14,7 @@ describe('accountLinksFor (header)', () => {
 
   it('shows Log in and Sign up to guests', () => {
     expect(accountLinksFor('guest', null).links.map((l) => l.to)).toEqual(['/login', '/signup'])
+    expect(accountLinksFor('guest', null).links.map((l) => Boolean(l.button))).toEqual([false, true]) // Sign up = gold button (UI-15)
   })
 
   it('shows the name; a user has no extra own-page link', () => {

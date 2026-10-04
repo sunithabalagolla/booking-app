@@ -23,7 +23,7 @@ export function accountLinksFor(status, user) {
       kind: 'guest',
       links: [
         { to: '/login', label: 'Log in' },
-        { to: '/signup', label: 'Sign up' },
+        { to: '/signup', label: 'Sign up', button: true }, // gold button (UI-15)
       ],
     }
   }

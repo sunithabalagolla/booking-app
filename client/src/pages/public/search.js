@@ -65,3 +65,17 @@ export const hasShowFilter = (filters) => Boolean(filters.format) || SHOW_FILTER
 
 // UI-44
 export const NO_RESULTS_TEXT = 'This reel is not in our cans. Try another name.'
+
+// Header search box (UI-15): where Enter goes from any page
+export function searchHref(text) {
+  const q = text.trim()
+  return q ? `/movies?${new URLSearchParams({ q })}` : '/movies'
+}
+
+// On the Search page the header box changes only `q` and keeps the filters
+export function withQ(params, text) {
+  const next = new URLSearchParams(params)
+  if (text.trim()) next.set('q', text.trim())
+  else next.delete('q')
+  return next
+}

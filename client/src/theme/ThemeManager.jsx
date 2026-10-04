@@ -18,6 +18,8 @@ export default function ThemeManager() {
     root.setProperty('--theme-fade', `${motion.themeFade}ms`)
     root.setProperty('--bulb-cycle', `${motion.bulbCycle}ms`) // UI-14
     root.setProperty('--sepia-fade', `${motion.sepiaFade}ms`) // UI-46
+    root.setProperty('--curtain-sway', `${motion.curtainSway}ms`) // UI-15
+    root.setProperty('--grain-jitter', `${motion.grainJitter}ms`) // UI-45
   }, [])
 
   useEffect(() => {

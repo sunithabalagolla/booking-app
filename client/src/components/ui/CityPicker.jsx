@@ -26,7 +26,7 @@ export default function CityPicker() {
   }
 
   return (
-    <div ref={wrapperRef} className="relative inline-block">
+    <div ref={wrapperRef} className="relative min-w-0">
       <button
         ref={buttonRef}
         type="button"
@@ -34,10 +34,10 @@ export default function CityPicker() {
         aria-expanded={open}
         aria-controls={menuId}
         onClick={toggle}
-        className="flex min-h-11 items-center gap-1 rounded-btn border border-ink px-3 font-type text-ink dark:border-cream dark:text-cream"
+        className="flex min-h-11 min-w-0 items-center gap-1 rounded-full border-2 border-ink px-2 font-type text-ink sm:px-3 dark:border-gold dark:text-gold"
       >
         <PinIcon />
-        <span className="max-w-32 truncate">{city ? city.name : 'Pick city'}</span>
+        <span className="max-w-24 truncate sm:max-w-32">{city ? city.name : 'Pick city'}</span>
         <span aria-hidden="true">▾</span>
       </button>
 

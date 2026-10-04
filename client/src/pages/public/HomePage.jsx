@@ -1,8 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
 import { useCurrentCity } from '../../api/cities.js'
 import { useMovies } from '../../api/movies.js'
-import Button from '../../components/ui/Button.jsx'
 import CityChooser from '../../components/ui/CityChooser.jsx'
 import MarqueeBanner from '../../components/ui/MarqueeBanner.jsx'
 import MovieCard from '../../components/ui/MovieCard.jsx'
@@ -10,8 +7,7 @@ import { releaseLabel } from '../../validation/movies.js'
 import { istToday } from '../../validation/shows.js'
 import { bannerMovie, COMING_SOON_LIMIT, noShowsText, NOW_SHOWING_LIMIT } from './home.js'
 
-// U-05 Home (UI-15): first the city (U-04, flow 9.2), then a search box (opens U-06
-// Search at /movies), the marquee banner with the
+// U-05 Home (UI-15): first the city (U-04, flow 9.2), then the marquee banner with the
 // city's busiest movie, the "Now showing" grid and the "Coming soon" row.
 // Later: ticker strip (UI-26) and admin banners (A-11) in Phase 10; bottom navigation
 // when Ticket album + Profile exist.
@@ -45,8 +41,6 @@ function CityHome({ city }) {
   return (
     <div className="space-y-10 py-6">
       <h1 className="sr-only">Movies in {city.name}</h1>
-
-      <HomeSearch />
 
       {featured && <MarqueeBanner movie={featured} />}
 
@@ -100,32 +94,3 @@ function ListState({ query, empty }) {
   return null
 }
 
-// U-06: search starts on Home and opens the Search page (decided 2026-10-04)
-function HomeSearch() {
-  const navigate = useNavigate()
-  const [text, setText] = useState('')
-
-  function submit(event) {
-    event.preventDefault()
-    const q = text.trim()
-    navigate(q ? `/movies?${new URLSearchParams({ q })}` : '/movies')
-  }
-
-  return (
-    <form role="search" onSubmit={submit} className="flex max-w-2xl gap-2">
-      <label htmlFor="home-search" className="sr-only">
-        Search movies by name
-      </label>
-      <input
-        id="home-search"
-        type="search"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Search movies…"
-        maxLength={100}
-        className="min-h-11 w-full rounded-btn border border-ink bg-cream px-3 py-2 text-ink focus:outline-2 focus:outline-offset-2 focus:outline-maroon"
-      />
-      <Button type="submit">Search</Button>
-    </form>
-  )
-}
