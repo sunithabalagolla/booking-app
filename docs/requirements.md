@@ -140,7 +140,7 @@ Put these in a settings collection so admin can change them later (except where 
 | U-02 | Login / logout | Email + password only. JWT (BR-19). Wrong password limit (BR-17). | Login works; tokens refresh; logout clears cookie |
 | U-03 | Forgot password | Email with reset link (valid 30 min, default). | Password can be reset from the link |
 | U-04 | Select city | City picker in header; saved for next visit. The picker shows only cities that have at least one approved theatre. All lists show only that city. | Changing city changes shows and theatres |
-| U-05 | Home page | Coming soon ticker (UI-26), marquee "Now showing" banner, "Now showing" grid, "Coming soon" row. | Home shows real movies of the selected city |
+| U-05 | Home page | "Stage" design (approved 2026-10-04, full spec in `docs/home-design.md`): stage frame with pelmet and side curtains, one-line header with search, coming soon ticker (UI-26), marquee hero banner with the city's busiest movie (poster, tagline, info chips, today's show times in the city, Book tickets, Watch trailer), "Now showing" grid, "Coming soon" row. | Home shows real movies of the selected city |
 | U-06 | Search and filter | By movie name, language, genre, format (2D/3D), and special show filters (SF-08). Language and genre filters use the fixed lists from A-02. | Filters combine correctly |
 | U-07 | Movie details | Poster, trailer link, cast, duration, certificate (U, U/A, A), languages, rating and reviews. | Page shows all fields from DB |
 | U-08 | Age certificate warning | For "A" movies, show a confirm message before seat selection ("This movie is for adults 18+"). | Message shows for "A" movies only |
@@ -193,7 +193,7 @@ Put these in a settings collection so admin can change them later (except where 
 | ID | Feature | Details | Done when |
 | --- | --- | --- | --- |
 | A-01 | Admin dashboard | Register style (UI-30) for the whole platform: tickets today, revenue, commission earned, top movies, top theatres, cities. | — |
-| A-02 | Movies | Add / edit / mark inactive: title, poster, trailer link, cast, genres, languages, duration, certificate, release date, status (Coming soon / Now showing / Inactive). A movie with shows or bookings cannot be deleted, only made inactive. Languages and genres come from fixed lists (one config file, `server/src/config/movieOptions.js`): languages Hindi, Tamil, Telugu, Malayalam, Kannada, Bengali, Marathi, Gujarati, Punjabi, English; genres Action, Comedy, Drama, Romance, Thriller, Horror, Family, Animation, Crime, Fantasy, Musical, Historical, Sci-Fi, Mystery. | Owners can pick active movies |
+| A-02 | Movies | Add / edit / mark inactive: title, tagline (optional, max 120 characters, shown in the Home banner), poster, trailer link, cast, genres, languages, duration, certificate, release date, status (Coming soon / Now showing / Inactive). A movie with shows or bookings cannot be deleted, only made inactive. Languages and genres come from fixed lists (one config file, `server/src/config/movieOptions.js`): languages Hindi, Tamil, Telugu, Malayalam, Kannada, Bengali, Marathi, Gujarati, Punjabi, English; genres Action, Comedy, Drama, Romance, Thriller, Horror, Family, Animation, Crime, Fantasy, Musical, Historical, Sci-Fi, Mystery. | Owners can pick active movies |
 | A-03 | Owner approvals | See Pending owners; approve / reject with reason; block owners. Approve from Pending or Rejected (only after the owner verified the email); reject only from Pending; an approved owner is blocked, not rejected. Owners who did not verify the email yet are shown with a mark. Approvals, rejections, blocks and unblocks are in the audit log. | Emails sent on decision |
 | A-04 | Theatre approvals | See Pending theatres; approve / reject with reason. Same rules as owners (A-03): approve from Pending or Rejected, reject only from Pending, an approved theatre is not rejected. No approve while the theatre's owner is blocked. Decisions are in the audit log; the owner gets E-09. | — |
 | A-05 | Platform settings | All BR values that can change: commission %, convenience fee, GST rates, hold time, cancellation cutoff and refund %, etc. Every change is saved in the audit log. | New values used in new bookings only |
@@ -638,7 +638,14 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 ### 16.3 Screens
 
-**UI-15 Home**: dark ticker strip at top (UI-26) → header ("Talkies" logo in Rye maroon, city picker, sound icon, theme switch UI-02) → marquee banner (maroon box, blinking gold bulb rows top and bottom, "Now showing" in gold, movie title in Special Elite, certificate + language, gold "Book tickets" button) → "Now showing" 2-column grid (posters with film-strip holes on top and bottom edges, title, certificate + language) → "Coming soon" row → bottom navigation (Home, Ticket album, Profile).
+**UI-15 Home** ("Stage" design, approved 2026-10-04; the full spec with sizes, colours and animations is `docs/home-design.md`, which wins over this summary):
+- Stage frame: stage dark background with a soft gold spotlight glow at the top; full-width velvet pelmet with a gold line and scallops; side curtains (gathered shape with gold rope tie-backs) on screens 1280 px and wider; content about 1120 px wide between them, no hard borders. Phones: smaller pelmet and only a thin velvet edge left and right.
+- Header on one line: "Talkies" logo (Rye, gold), city picker, search box in the centre (cream, dashed dark-mustard border like a ticket stub, magnifier icon; opens / drives the U-06 search), Log in, Sign up (gold button), theme switch. **Phones:** logo + city + a menu button (☰); Log in / Sign up / theme (and the account links when logged in) go inside the menu; the search box goes on its own line under the header.
+- Ticker strip under the header (UI-26).
+- Hero banner (marquee): maroon box with gold bulbs on all 4 sides; poster in a film-strip frame; kicker "NOW SHOWING · MOST SHOWS THIS WEEK"; title; tagline (A-02); info chips (certificate, languages, duration, genres); "TODAY IN [CITY]" show-time chips (label + time; "Tomorrow" when none are left today); gold "Book tickets" and outlined "Watch trailer" (only when the movie has a trailer); a slow spotlight sweep with dust.
+- "Now showing in [City]" (title row with "See all →" to the search page): poster grid, 4 columns on laptops (5–6 if wider), 2 on phones. "Coming soon": sideways row with a "Releases [day]" ticket tag.
+- Footer: dotted gold line, "For theatre owners", "© Talkies".
+- Bottom navigation (Home, Ticket album, Profile): added when Ticket album and Profile exist.
 
 **UI-16 Movie details**: poster in a thin film-strip frame, sepia tint; title in Special Elite; certificate stamp; trailer button; cast as small "photo cards"; reviews as typewritten notes.
 
@@ -670,7 +677,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 **UI-25 Payment page**: tabs UPI / Card / Netbanking in a simple paper card; "Processing…" with spinning film reel (UI-32).
 
-**UI-26 Coming soon ticker**: thin dark strip on Home, cream typewriter text scrolling right to left (coming soon movies, bookings opening, deals, admin messages). Pauses on hover or tap. Reduce motion: one message at a time, no scrolling.
+**UI-26 Coming soon ticker**: thin dark strip on Home under the header, gold lines above and below, cream typewriter text scrolling right to left (~30 s per loop). Built with the Home "Stage" design: **coming soon movies with their dates first**; deals and admin messages (A-11) are added later. Pauses on hover or tap. Reduce motion: one message at a time, no scrolling.
 
 **UI-27 Booking confirmed**: "Booking confirmed" (Rye maroon) + "Your ticket is also sent to your email." Paper ticket (cream, maroon border): "Admit [n]", movie, show label + time, theatre, screen, class, seats, food + pickup, QR, booking number; right side counterfoil with dotted line, ticket number and total — it tears off (UI-34). Badge card when a new badge is earned. Buttons: Download ticket, Transfer to a friend, Back to home.
 
@@ -692,6 +699,8 @@ Approved preview (private link, only for the developer to look at): https://clau
 
 ### 16.4 Animations (all)
 
+Home "Stage" animations (curtain sway, spotlight sweep with dust, "NOW SHOWING" flicker, rise-in of chips and cards, ticker): see `docs/home-design.md` Section 8; same rules as below.
+
 Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/motion.js`; only `transform` and `opacity`; never block clicks; every animation has a reduce-motion fallback (UI-41).
 
 | ID | Component | When | What | Time | Reduce motion |
@@ -712,7 +721,7 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 | UI-43 | Ink chart draw | Dashboard charts | Rough.js chart draws in | 800 ms | Shows directly |
 | UI-02 | Theme change | Day show ↔ Night show (switch or Auto) | Whole page cross-fades (opacity) | 500 ms | Instant |
 | UI-45 | FilmGrain | Always, whole site | Very light grain + soft flicker (CSS only) | Loop | Off |
-| UI-46 | SepiaPoster | Hover (desktop) / poster scrolls into view (phone) | Sepia poster turns full colour (done with opacity: colour layer fades in) | 600 ms | Instant colour change |
+| UI-46 | VintagePoster | Hover / focus (desktop) / poster scrolls into view (phone) | Poster with a light warm vintage tint (`sepia(.35) saturate(.85)`) becomes fully bright, with a small lift | 600 ms | Instant change, no lift |
 
 ### 16.5 Messages with an Indian touch (English)
 
@@ -746,7 +755,7 @@ Rules for all: Framer Motion + CSS keyframes; all timings in `client/src/theme/m
 ### 16.7 Vintage extras
 
 - UI-45 Film grain + flicker: very light grain and soft flicker over the whole site. CSS only, `pointer-events: none` (never blocks clicks). Off when reduce motion is on (UI-41) or on slow phones (NF-06). Never lowers text readability: max 3–4% opacity, text contrast stays at least 4.5:1.
-- UI-46 Sepia posters: posters show in sepia and turn to full colour in 0.6 s, like old film coming alive. Desktop: on hover. Phone: by themselves when they scroll into view (a tap opens the movie straight away).
+- UI-46 Vintage posters (changed 2026-10-04 with the Home "Stage" design): posters show in colour with a **light** warm vintage tint and become fully bright in 0.6 s, with a small lift. Desktop: on hover / keyboard focus. Phone: by themselves when they scroll into view (a tap opens the movie straight away).
 - UI-47 "Behind the scenes" page: see 16.3.
 
 ### 16.8 UI rules

@@ -42,3 +42,13 @@ describe('movieToForm / formatDay', () => {
     expect(formatDay('2026-10-02')).toBe('2 Oct 2026')
   })
 })
+
+describe('tagline (A-02, optional)', () => {
+  it('may be empty, at most 120 characters, and comes back from the API as text', () => {
+    const base = { ...EMPTY_MOVIE, title: 'T', posterUrl: '/p.png', genres: ['Drama'], languages: ['Hindi'], durationMinutes: '120', certificate: 'U', releaseDate: '2026-10-04' }
+    expect(movieFormSchema.safeParse(base).success).toBe(true)
+    expect(movieFormSchema.parse({ ...base, tagline: ' One storm. ' }).tagline).toBe('One storm.')
+    expect(movieFormSchema.safeParse({ ...base, tagline: 'x'.repeat(121) }).success).toBe(false)
+    expect(movieToForm({ ...base, durationMinutes: 120, cast: [], tagline: null }).tagline).toBe('')
+  })
+})

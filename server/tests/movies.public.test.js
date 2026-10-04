@@ -74,7 +74,9 @@ describe('GET /api/movies?status=now_showing (U-05)', () => {
     expect(res.body.items[0]).toEqual({
       id: String(busy._id),
       title: 'Busy',
+      tagline: null,
       posterUrl: '/api/uploads/files/p.png',
+      trailerUrl: null,
       certificate: 'UA',
       languages: ['Hindi'],
       genres: ['Drama'],

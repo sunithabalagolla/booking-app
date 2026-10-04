@@ -5,7 +5,7 @@ import { posterSvg } from '../posters.js'
 import { SAMPLE } from '../sample.js'
 
 // Seed step: 6 made-up sample movies (15.5): 4 now showing, 2 coming soon.
-// Posters are vintage SVGs drawn by code (seed/posters.js), saved like uploads
+// Posters are colourful SVGs drawn by code (seed/posters.js), saved like uploads
 // (Cloudinary when keys exist, else the local folder). Upsert by title, so the
 // seed can run again.
 
@@ -21,7 +21,7 @@ const MOVIES = [
     status: 'now_showing',
     releaseInDays: -10,
     cast: ['Meera Kapoor', 'Arjun Mehra', 'Sunil Rao'],
-    colours: { background: '#7B1E1E', accent: '#D9A441' },
+    poster: 'sapnon', // seed/posters.js picture + palette
   },
   {
     slug: 'ghost-of-gulmohar-lane',
@@ -34,7 +34,7 @@ const MOVIES = [
     status: 'now_showing',
     releaseInDays: -3,
     cast: ['Kavya Iyer', 'Rohan Das'],
-    colours: { background: '#1E140E', accent: '#7FB89F' },
+    poster: 'ghost', // seed/posters.js picture + palette
   },
   {
     slug: 'kadal-kaatru',
@@ -47,7 +47,7 @@ const MOVIES = [
     status: 'now_showing',
     releaseInDays: -17,
     cast: ['Lakshmi Narayanan', 'Karthik Raman'],
-    colours: { background: '#2F5D50', accent: '#D9A441' },
+    poster: 'kadal', // seed/posters.js picture + palette
   },
   {
     slug: 'operation-monsoon',
@@ -60,7 +60,7 @@ const MOVIES = [
     status: 'now_showing',
     releaseInDays: -1,
     cast: ['Vikrant Singh', 'Ananya Bose', 'Imran Qureshi'],
-    colours: { background: '#6B4A2E', accent: '#E8B25C' },
+    poster: 'monsoon', // seed/posters.js picture + palette
   },
   {
     slug: 'chandamama-express',
@@ -73,7 +73,7 @@ const MOVIES = [
     status: 'coming_soon',
     releaseInDays: 14,
     cast: [],
-    colours: { background: '#3B2A20', accent: '#E8D9B5' },
+    poster: 'chandamama', // seed/posters.js picture + palette
   },
   {
     slug: 'star-voyage-1983',
@@ -86,7 +86,7 @@ const MOVIES = [
     status: 'coming_soon',
     releaseInDays: 30,
     cast: ['Neel Varma', 'Zoya Khan'],
-    colours: { background: '#2A2118', accent: '#D9A441' },
+    poster: 'star', // seed/posters.js picture + palette
   },
 ]
 
@@ -94,7 +94,7 @@ export default {
   name: 'movies',
   async run() {
     for (const m of MOVIES) {
-      const svg = posterSvg({ title: m.title, tagline: m.tagline, languages: m.languages, certificate: m.certificate, ...m.colours })
+      const svg = posterSvg({ title: m.title, tagline: m.tagline, languages: m.languages, certificate: m.certificate, picture: m.poster })
       const posterUrl = await storeImage(Buffer.from(svg), { kind: 'poster', ext: 'svg', name: `sample-${m.slug}` })
 
       await Movie.findOneAndUpdate(
@@ -102,6 +102,7 @@ export default {
         {
           $set: {
             title: m.title,
+            tagline: m.tagline,
             posterUrl,
             genres: m.genres,
             languages: m.languages,

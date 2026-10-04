@@ -7,6 +7,7 @@ const { Schema } = mongoose
 const movieSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
+    tagline: { type: String, trim: true }, // optional, max 120 (A-02), Home banner
     posterUrl: { type: String, required: true }, // Cloudinary URL (NF-08); local file link in development
     trailerUrl: String,
     cast: [{ _id: false, name: { type: String, required: true, trim: true }, photoUrl: String }],

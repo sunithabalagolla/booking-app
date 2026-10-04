@@ -9,6 +9,7 @@ const isRealDay = (day) => /^\d{4}-\d{2}-\d{2}$/.test(day) && new Date(`${day}T0
 
 export const movieFormSchema = z.object({
   title: z.string().trim().min(1, { error: 'Please enter the title.' }).max(150, { error: 'Title can have at most 150 characters.' }),
+  tagline: z.string().trim().max(120, { error: 'The tagline can have at most 120 characters.' }),
   posterUrl: z.string().min(1, { error: 'Please upload a poster.' }),
   trailerUrl: z
     .string()
@@ -34,6 +35,7 @@ export const movieFormSchema = z.object({
 // Empty form for "+ Add movie"
 export const EMPTY_MOVIE = {
   title: '',
+  tagline: '',
   posterUrl: '',
   trailerUrl: '',
   cast: [],
@@ -49,6 +51,7 @@ export const EMPTY_MOVIE = {
 export function movieToForm(movie) {
   return {
     title: movie.title,
+    tagline: movie.tagline ?? '',
     posterUrl: movie.posterUrl,
     trailerUrl: movie.trailerUrl ?? '',
     cast: movie.cast.map((c) => (c.photoUrl ? { name: c.name, photoUrl: c.photoUrl } : { name: c.name })),

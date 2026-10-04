@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../src/app.js'
 import { Movie } from '../src/models/Movie.js'
-import { posterSvg } from '../src/seed/posters.js'
+import { POSTER_PICTURES, posterSvg } from '../src/seed/posters.js'
 import moviesStep from '../src/seed/steps/movies.js'
 import { istDayToDate, istToday } from '../src/utils/time.js'
 import { clearTestDB, closeTestDB, connectTestDB } from './helpers/db.js'
@@ -42,9 +42,18 @@ describe('seed step: movies (15.5)', () => {
 
 describe('posterSvg', () => {
   it('escapes text, so a title cannot break the SVG', () => {
-    const svg = posterSvg({ title: 'Tom & <Jerry>', tagline: '"Hi"', languages: ['Hindi'], certificate: 'U', background: '#000', accent: '#fff' })
+    const svg = posterSvg({ title: 'Tom & <Jerry>', tagline: '"Hi"', languages: ['Hindi'], certificate: 'U', picture: 'monsoon' })
     expect(svg).toContain('Tom &amp;')
     expect(svg).toContain('&lt;Jerry&gt;')
     expect(svg).not.toContain('<Jerry>')
+  })
+
+  it('every sample movie has its own picture (design Section 9)', async () => {
+    await moviesStep.run()
+    const movies = await Movie.find({ isSample: true })
+    expect(POSTER_PICTURES).toHaveLength(6)
+    const files = new Set(movies.map((m) => m.posterUrl))
+    expect(files.size).toBe(6)
+    for (const m of movies) expect(m.tagline, m.title).toBeTruthy()
   })
 })

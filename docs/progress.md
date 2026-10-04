@@ -3,6 +3,11 @@
 ## Last session
 
 - Date: 2026-10-04
+- **Home "Stage" redesign** (`docs/home-design.md`, approved by you). Requirements updated (U-05, UI-15, UI-26, UI-46, A-02, 16.4 note). Your 5 decisions: film grain stays at 3–4% (UI-04 / UI-45); poster titles in Georgia bold (SVG in `<img>` cannot load Rye); "Today in [city]" chips use the U-09 endpoint `GET /api/movies/:id/shows`, built now; the header search box replaces the Home and Search page boxes; content 1120 px, side curtains from 1280 px screens. Built in 3 steps:
+  - **Step 1 (data):** optional movie `tagline` (max 120; model, admin API + form field, public list, seed); public list items also have `trailerUrl`. 6 new colourful sample posters (`seed/posters.js`, design Section 9: rain + lightning, haunted house + gulmohar, sunset road + bus, sea + boat, planet + rocket, moon + train). Checked all 6 in Chrome. Tests: 395 pass.
+
+## Earlier on 2026-10-04 (U-06)
+
 - You asked if the wider layout + side curtains were done: yes, already in commit `49a3d7c` (nothing redone).
 - **U-06 Search + filters, SF-08** with your 5 decisions: search box at the top of Home opens the Search page `/movies` (header unchanged); language for Now showing = a show in that language in the city (Coming soon: the movie's languages); several languages / genres = any of them, different filters = AND; Coming soon in the results, hidden while a format / special show filter is on; up to 50 results, no paging.
   - Server: `GET /api/movies` now takes `q` (part of the title, any case, regex-safe), `language` and `genre` (comma separated, fixed lists), `format`, `subtitles`, `wheelchair`, `parentBaby` (`true`). Show filters must all match the **same** show. New shared `utils/escapeRegex.js` (admin movie + owner searches use it too).
@@ -182,7 +187,7 @@
 
 ## Notes for later
 
-- **Phones: the public header breaks into 2 lines** (logo + city picker, then name / links / theme switch). Consider a small menu (your note 2026-10-04). Decide later, e.g. with the bottom navigation (UI-15) or Phase 10.
+- ~~Phones: the public header breaks into 2 lines~~ → decided 2026-10-04: menu button (☰) on phones, part of the Home "Stage" design (UI-15). Remove this note when it is built.
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
 

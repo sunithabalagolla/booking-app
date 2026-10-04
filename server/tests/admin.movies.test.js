@@ -171,3 +171,20 @@ describe('PATCH / GET one / DELETE /api/admin/movies/:id', () => {
     expect(await Movie.countDocuments()).toBe(1)
   })
 })
+
+describe('A-02 tagline (optional, max 120)', () => {
+  it('saves, refuses 121 characters, and an empty tagline removes it', async () => {
+    let res = await admin().post('/api/admin/movies', { ...good, tagline: '  One storm. One mission.  ' })
+    expect(res.status).toBe(201)
+    expect(res.body.movie.tagline).toBe('One storm. One mission.')
+    const id = res.body.movie.id
+
+    res = await admin().post('/api/admin/movies', { ...good, title: 'Other', tagline: 'x'.repeat(121) })
+    expect(res.status).toBe(400)
+    expect(res.body.error.details.tagline).toMatch(/120/)
+
+    res = await admin().patch(`/api/admin/movies/${id}`, { tagline: '' })
+    expect(res.body.movie.tagline).toBe(null)
+    expect((await admin().post('/api/admin/movies', { ...good, title: 'No tagline' })).body.movie.tagline).toBe(null)
+  })
+})

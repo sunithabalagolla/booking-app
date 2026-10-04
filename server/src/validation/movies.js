@@ -13,6 +13,7 @@ const pickList = (options, label) =>
 
 const movieFields = {
   title: z.string({ error: 'Please enter the title.' }).trim().min(1, { error: 'Please enter the title.' }).max(150, { error: 'Title can have at most 150 characters.' }),
+  tagline: z.string().trim().max(120, { error: 'The tagline can have at most 120 characters.' }).optional(), // '' removes it
   posterUrl: imageUrlField,
   trailerUrl: z
     .string()

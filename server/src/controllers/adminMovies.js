@@ -11,6 +11,7 @@ export function publicMovie(movie) {
   return {
     id: String(movie._id),
     title: movie.title,
+    tagline: movie.tagline ?? null,
     posterUrl: movie.posterUrl,
     trailerUrl: movie.trailerUrl ?? null,
     cast: (movie.cast ?? []).map((c) => ({ name: c.name, photoUrl: c.photoUrl ?? null })),
@@ -25,11 +26,12 @@ export function publicMovie(movie) {
   }
 }
 
-// Body → database fields (empty trailer link = no trailer)
+// Body → database fields (empty trailer link / tagline = none)
 function toDb(body) {
   const fields = { ...body }
   if (body.releaseDate !== undefined) fields.releaseDate = istDayToDate(body.releaseDate)
   if (body.trailerUrl === '') fields.trailerUrl = undefined
+  if (body.tagline === '') fields.tagline = undefined
   return fields
 }
 
@@ -67,7 +69,7 @@ export async function updateMovie(req, res) {
   const changes = toDb(req.valid.body)
   const update = { $set: {}, $unset: {} }
   for (const [key, value] of Object.entries(changes)) {
-    if (value === undefined && key === 'trailerUrl') update.$unset.trailerUrl = 1
+    if (value === undefined && (key === 'trailerUrl' || key === 'tagline')) update.$unset[key] = 1
     else if (value !== undefined) update.$set[key] = value
   }
   if (Object.keys(update.$unset).length === 0) delete update.$unset

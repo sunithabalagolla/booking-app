@@ -21,7 +21,9 @@ export function listMovie(movie) {
   return {
     id: String(movie._id),
     title: movie.title,
+    tagline: movie.tagline ?? null,
     posterUrl: movie.posterUrl,
+    trailerUrl: movie.trailerUrl ?? null,
     certificate: movie.certificate,
     languages: movie.languages,
     genres: movie.genres,

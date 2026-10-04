@@ -236,6 +236,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `title` | String | yes | |
+| `tagline` | String | | Optional, max 120 characters (A-02). Shown in the Home banner (UI-15) |
 | `posterUrl` | String | yes | Cloudinary URL (NF-08). Development without Cloudinary keys: `/api/uploads/files/<name>` |
 | `trailerUrl` | String | | |
 | `cast` | [{ `name`, `photoUrl` }] | | UI-16 "photo cards"; `photoUrl` optional |

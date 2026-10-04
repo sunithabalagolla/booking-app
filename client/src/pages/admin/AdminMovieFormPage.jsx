@@ -86,6 +86,15 @@ function MovieForm({ id, initial = EMPTY_MOVIE, inUse = false }) {
       <Card>
         <form onSubmit={submit} noValidate className="space-y-6">
           <TextField label="Title" value={form.title} onChange={change('title')} error={errors.title} />
+          <TextField
+            label="Tagline (optional)"
+            placeholder="One storm. One mission."
+            maxLength={120}
+            hint="Short line under the title in the Home banner. At most 120 characters."
+            value={form.tagline}
+            onChange={change('tagline')}
+            error={errors.tagline}
+          />
 
           <ImageUpload label="Poster" kind="poster" value={form.posterUrl} onChange={(url) => set('posterUrl', url)} error={errors.posterUrl} />
 
