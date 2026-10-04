@@ -117,7 +117,7 @@ export function showFormSchema({ movie, screen, edit = false, now = new Date() }
       }
       for (const day of edit ? [form.date].filter(Boolean) : form.dates) {
         if (day < today || day > lastDay) issue(edit ? 'date' : 'dates', `Please pick dates from today up to ${MAX_DAYS_AHEAD} days ahead.`)
-        else if (movie && day < movie.releaseDate) issue(edit ? 'date' : 'dates', `${movie.title} is released on ${movie.releaseDate}. Please pick that day or later.`)
+        else if (movie && day < movie.releaseDate) issue(edit ? 'date' : 'dates', `${movie.title} is released on ${formatShortDay(movie.releaseDate)}. Please pick that day or later.`)
       }
     })
 }

@@ -153,6 +153,11 @@ describe('POST /api/owner/shows (O-05)', () => {
     expect(await Show.countDocuments()).toBe(0)
   })
 
+  it('the dates message names the days like "Sun 4 Oct"', async () => {
+    const res = await ravi.post('/api/owner/shows', body({ dates: [istToday(-1)] }))
+    expect(res.body.error.details.dates).toMatch(/^These dates cannot be used: (Sun|Mon|Tue|Wed|Thu|Fri|Sat) \d{1,2} [A-Z][a-z]{2} \(already started\)\.$/)
+  })
+
   it('allowed: 2D on a 3D screen, "A" movie without the tag, parent-and-baby on a U/A movie, coming soon from its release day', async () => {
     const screen3d = await makeScreen(theatre, { name: 'Screen 2', format: '3D' })
     const soon = await makeMovie({ title: 'Soon', status: 'coming_soon', releaseDate: istDayToDate(istToday(5)) })

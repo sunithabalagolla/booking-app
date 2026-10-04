@@ -32,3 +32,11 @@ export function showLabel(startAt) {
 export function showEnd(startAt, durationMinutes, cleaningBreakMinutes) {
   return new Date(startAt.getTime() + (durationMinutes + cleaningBreakMinutes) * MINUTE_MS)
 }
+
+// 'YYYY-MM-DD' (already IST) → 'Sun 4 Oct', for messages
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export function formatShortDay(day) {
+  const date = new Date(`${day}T00:00:00Z`)
+  return `${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`
+}

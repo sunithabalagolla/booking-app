@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { istDateTime, istParts, showEnd, showLabel } from '../src/utils/showTime.js'
+import { formatShortDay, istDateTime, istParts, showEnd, showLabel } from '../src/utils/showTime.js'
 
 // O-05 show times in IST (BR-21), labels (BR-22), end time (BR-10)
 describe('show times', () => {
@@ -19,5 +19,9 @@ describe('show times', () => {
   it('end = start + duration + cleaning break (BR-10), also past midnight', () => {
     const end = showEnd(istDateTime('2026-10-05', '22:00'), 150, 15)
     expect(istParts(end)).toEqual({ date: '2026-10-06', time: '00:45' })
+  })
+
+  it('days in messages look like "Sun 4 Oct"', () => {
+    expect(formatShortDay('2026-10-04')).toBe('Sun 4 Oct')
   })
 })

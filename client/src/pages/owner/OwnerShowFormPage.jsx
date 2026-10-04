@@ -120,7 +120,7 @@ function ShowForm({ id, theatres, movies, show }) {
             <SelectField
               label="Movie"
               placeholder="Pick a movie"
-              options={movies.map((m) => ({ value: m.id, label: `${m.title} (${m.certificate}${m.status === 'coming_soon' ? `, from ${m.releaseDate}` : ''})` }))}
+              options={movies.map((m) => ({ value: m.id, label: `${m.title} (${m.certificate}${m.status === 'coming_soon' ? `, from ${formatShortDay(m.releaseDate)}` : ''})` }))}
               value={form.movieId}
               onChange={(e) => {
                 const picked = movies.find((m) => m.id === e.target.value)

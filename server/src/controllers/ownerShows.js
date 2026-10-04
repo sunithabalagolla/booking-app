@@ -6,7 +6,7 @@ import { Show } from '../models/Show.js'
 import { Theatre } from '../models/Theatre.js'
 import { AppError } from '../utils/AppError.js'
 import { SEAT_CLASSES } from '../utils/seatLayout.js'
-import { istParts, istDateTime, showEnd, showLabel } from '../utils/showTime.js'
+import { formatShortDay, istParts, istDateTime, showEnd, showLabel } from '../utils/showTime.js'
 import { dateToIstDay, istDayToDate, istToday } from '../utils/time.js'
 import { MAX_DAYS_AHEAD } from '../validation/shows.js'
 
@@ -91,9 +91,9 @@ function checkRules({ screen, theatre, movie }, input, days, now = new Date()) {
   const releaseDay = dateToIstDay(movie.releaseDate)
   const bad = []
   for (const day of days) {
-    if (istDateTime(day, input.startTime) <= now) bad.push(`${day} (already started)`)
-    else if (day > lastDay) bad.push(`${day} (more than ${MAX_DAYS_AHEAD} days ahead)`)
-    else if (day < releaseDay) bad.push(`${day} (before the release on ${releaseDay})`)
+    if (istDateTime(day, input.startTime) <= now) bad.push(`${formatShortDay(day)} (already started)`)
+    else if (day > lastDay) bad.push(`${formatShortDay(day)} (more than ${MAX_DAYS_AHEAD} days ahead)`)
+    else if (day < releaseDay) bad.push(`${formatShortDay(day)} (before the release on ${formatShortDay(releaseDay)})`)
   }
   if (bad.length) errors.dates = `These dates cannot be used: ${bad.join(', ')}.`
 

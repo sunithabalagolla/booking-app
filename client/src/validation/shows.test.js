@@ -78,7 +78,7 @@ describe('showFormSchema (O-05)', () => {
     expect(errors({ prices: { balcony: '249.50', first: '', second: '' } }).prices).toMatch(/Balcony, Second class/)
     expect(errors({ dates: ['2026-10-03'] }).dates).toMatch(/from today/)
     expect(errors({ dates: ['2026-11-04'] }).dates).toMatch(/30 days/)
-    expect(errors({ dates: ['2026-10-05'] }, { movie: { ...movie, releaseDate: '2026-10-08' } }).dates).toMatch(/released on 2026-10-08/)
+    expect(errors({ dates: ['2026-10-05'] }, { movie: { ...movie, releaseDate: '2026-10-08' } }).dates).toMatch(/released on Thu 8 Oct/)
     expect(errors({ dates: Array.from({ length: 15 }, (_, i) => istToday(i, NOW)) }).dates).toMatch(/At most 14/)
   })
 

@@ -61,6 +61,23 @@
     --tone-mustard: var(--color-mustard-night);
     --tone-alert: var(--color-gold);
   }
+  /* Browser autofill (saved email / password) paints inputs light blue. Keep our
+     cream paper and ink text instead (the inset shadow covers the blue). */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-ink);
+    caret-color: var(--color-ink);
+    box-shadow: 0 0 0 1000px var(--color-cream) inset;
+    transition: background-color 600000s 0s; /* stops Chrome fading the blue back in */
+  }
+  input:autofill {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+  }
+
   /* Light paper (cards) stays light in Night show too, so it keeps the dark colours */
   .paper {
     /* Native checkboxes / radios draw light on light paper (dark ones looked checked in Night show) */
