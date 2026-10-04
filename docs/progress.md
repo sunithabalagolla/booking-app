@@ -278,7 +278,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-06 Search + filters, SF-08 (Search page `/movies`, filters in the address, same-show rule; checked in Chrome 2026-10-04)
 - [ ] U-07 Movie details
 - [ ] U-08 Age warning
-- [ ] U-09 Show list
+- [ ] U-09 Show list (the API `GET /api/movies/:id/shows` is already built and tested, 2026-10-04, for the Home banner chips; the show list page is still to do)
 
 ## Phase 4 – Seats
 - [ ] UI-20 Box office window
