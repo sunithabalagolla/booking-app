@@ -13,6 +13,8 @@ import OwnerFoodFormPage from './pages/owner/OwnerFoodFormPage.jsx'
 import OwnerFoodPage from './pages/owner/OwnerFoodPage.jsx'
 import OwnerHomePage from './pages/owner/OwnerHomePage.jsx'
 import OwnerPendingPage from './pages/owner/OwnerPendingPage.jsx'
+import OwnerShowFormPage from './pages/owner/OwnerShowFormPage.jsx'
+import OwnerShowsPage from './pages/owner/OwnerShowsPage.jsx'
 import OwnerScreenFormPage from './pages/owner/OwnerScreenFormPage.jsx'
 import OwnerScreensPage from './pages/owner/OwnerScreensPage.jsx'
 import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
@@ -73,6 +75,10 @@ const router = createBrowserRouter([
       { path: '/owner/theatres/:id/food', element: guard(['owner'], <OwnerFoodPage />) },
       { path: '/owner/theatres/:theatreId/food/new', element: guard(['owner'], <OwnerFoodFormPage />) },
       { path: '/owner/theatres/:theatreId/food/:foodId', element: guard(['owner'], <OwnerFoodFormPage />) },
+      // O-05 shows
+      { path: '/owner/shows', element: guard(['owner'], <OwnerShowsPage />) },
+      { path: '/owner/shows/new', element: guard(['owner'], <OwnerShowFormPage />) },
+      { path: '/owner/shows/:id', element: guard(['owner'], <OwnerShowFormPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },

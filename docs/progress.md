@@ -3,6 +3,19 @@
 ## Last session
 
 - Date: 2026-10-04
+- Done: you tested O-07 in the browser (ticked); your Phase 10 note on the ledger lines added to "Notes for later". **O-05 Shows + T-08** built with your 5 decisions (3D only on 3D screens; dates today … +30, max 14 per request, start in the future, not before the release day; prices whole ₹1–₹5,000 for every class of the screen; no delete; ~336 sample shows) and **your extra rule: no parent-and-baby tag on "A" movies** (server + form + seed; added to requirements O-05).
+  - Server: `models/Show.js` (database.md 5.9, all indexes), `utils/showTime.js` (IST times, BR-22 labels, BR-10 end), `validation/shows.js`, `controllers/ownerShows.js`. Endpoints `GET /api/owner/movies` (new), `GET / POST /api/owner/shows`, `GET / PATCH /api/owner/shows/:id` (`GET /:id` new; PATCH takes one `date`).
+  - ROLE-04: shows only on approved theatres (`400 RULE_BROKEN`). Overlap (T-08): `409 SHOW_OVERLAP` lists the refused dates and the shows in the way; several dates = all or none. Two saves at the same moment: `screens.showLock` is changed inside the transaction, so exactly one wins (tested).
+  - Edit only before the start and while there are no bookings (`409 IN_USE`). A-02 "movie with shows cannot be deleted" now works (tested).
+  - Client: sidebar "Shows". Shows page: theatre / screen / from-date filters, previous / next 7 days, grouped by day, label + time + end, extras, prices, seats sold, Edit (only future shows without bookings). New show form: approved theatres only (others greyed out), screen, movie, language from the movie, format (3D greyed out on a 2D screen), start time, subtitles, parent-and-baby (off for "A"), date boxes for 31 days, a price per seat class of the screen, live preview "Matinee · 2:30 PM – ends 4:45 PM (120 min + 15 min cleaning)", overlap list. Edit form: one date. `SelectField` options can now be disabled.
+  - Seed step `shows`: 4 shows per screen per day for 7 days (336), sample movies only, some with subtitles / parent-and-baby (never "A"). Never changes existing shows; a slot that would overlap a hand-made show is skipped.
+  - Fix found in the Chrome check: the seed first used **every** Now showing movie, also your own movie "new". Now sample movies only. I deleted the 336 sample shows and seeded again (there were no hand-made shows).
+  - Checked in Chrome (owner login): list, new show with an overlap (both clashes listed), new show on 2 dates, edit (movie + parent-and-baby). My 2 test shows were deleted afterwards.
+  - Docs: `requirements.md` O-05, `database.md` 5.8 / 5.9, `api.md` Section 8 updated.
+  - Tests: **363 pass** (client 102, server 261). Lint + build OK.
+
+## Earlier on 2026-10-04 (O-07)
+
 - Done: you tested O-04 and A-04 in the browser (ticked). **O-07 Canteen items** built with your 5 decisions: real delete allowed; whole rupees ₹1–₹5,000; one name per canteen; also for pending / rejected theatres; sample pictures drawn by code.
   - Server: `models/FoodItem.js` (unique `theatreId + name`), `validation/food.js`, `controllers/ownerFood.js`. Endpoints `GET / POST /api/owner/theatres/:id/food`, `PATCH / DELETE /api/owner/food/:id` (own only, other owner → 404, same name → `409 ALREADY_EXISTS`).
   - Client: theatres table now has "Screens" and "Canteen" links. Canteen page (register table): photo, name, Combo stamp, veg / non-veg mark (`components/ui/VegMark.jsx`: square + dot / triangle + the word), price in ₹, one-click In stock / Out of stock button, Edit, Delete with "Yes, delete / No" in the row (no browser pop-up). Add / edit form: name, price in whole ₹, Veg / Non-veg, In stock, Combo, photo upload. UI-44 empty text "The canteen is closed for now."
@@ -124,8 +137,8 @@
 
 ## Next step
 
-- **O-05 Shows + T-08** (last Phase 2 task): plan first, then build. Includes ROLE-04 (no live show on a pending / rejected theatre), labels BR-22, end time BR-10, overlap check.
-- Try O-07 by hand: as `owner@talkies.test` → Theatres → "Canteen": add an item with a photo, switch stock, edit, delete. Check the checkboxes in Night show (the fix above).
+- Try O-05 by hand: as `owner@talkies.test` → Shows: filters, previous / next 7 days; New show (try an overlap, several dates, an "A" movie); Edit. When it works, **Phase 2 is done** (flow 9.1 end to end).
+- Then **Phase 3: U-04 City picker** (plan first).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -135,7 +148,9 @@
 
 ## Notes for later
 
-- Client build warns that the main JS file is over 500 kB (534 kB after O-07, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
+- **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
+
+- Client build warns that the main JS file is over 500 kB (550 kB after O-05, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
@@ -188,7 +203,7 @@
 - [x] U-03 Forgot password (reset link 30 min, all devices logged out, also verifies the email; tested in the browser by the developer 2026-10-01)
 - [x] O-01 Owner register (Pending, phone rule, waiting for approval page; tested in the browser by the developer 2026-10-01)
 - [x] S-01 Staff login (opens to `/staff/scan` placeholder; seed test logins for all 4 roles; tested in the browser by the developer 2026-10-01)
-- [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 is built with O-05; tested in the browser by the developer 2026-10-01)
+- [x] ROLE-01 to ROLE-06 role + ownership middleware (ROLE-04 built with O-05 on 2026-10-04; tested in the browser by the developer 2026-10-01)
 - [x] Basic vintage layout: header, footer, buttons, cards (SiteLayout, DashboardLayout, StaffLayout)
   - [x] Footer link "For theatre owners" → `/owner/signup` (O-01, your request 2026-10-01)
   - [ ] Bottom navigation (UI-15: Home, Ticket album, Profile): add when Ticket album (U-18, Phase 6) and Profile (U-25) exist (your decision 2026-10-01)
@@ -210,10 +225,10 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
   - [x] T-01: ownership tests on the real theatre endpoints (other owner's theatre → 404). Staff "only their theatres" is tested with the scanner (S-03, T-07)
 - [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit; tested in the browser by the developer 2026-10-04)
 - [x] O-04 Screens + seat layout editor (list / add / edit, automatic row letters + wheelchair-friendly, 12 sample screens; tested in the browser by the developer 2026-10-04)
-- [x] O-07 Canteen items (list / add / edit / delete, stock switch, veg mark, whole rupees, 36 sample items with pictures; checked in Chrome 2026-10-04)
-- [ ] O-05 Shows (labels BR-22, end time BR-10, overlap check)
-  - [ ] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, test it). Use `findOwned` for the screen / theatre
-- [ ] T-08 test
+- [x] O-07 Canteen items (list / add / edit / delete, stock switch, veg mark, whole rupees, 36 sample items with pictures; tested in the browser by the developer 2026-10-04)
+- [x] O-05 Shows (labels BR-22, end time BR-10, overlap check, no parent-and-baby on "A"; 336 sample shows; checked in Chrome 2026-10-04)
+  - [x] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, tested)
+- [x] T-08 test (overlap cases, touching edges, cleaning break, all-or-none dates, two saves at the same moment)
 
 ## Phase 3 – User browsing
 - [ ] U-04 City

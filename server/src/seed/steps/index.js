@@ -19,7 +19,8 @@ import food from './food.js'
 import movies from './movies.js'
 import screens from './screens.js'
 import settings from './settings.js'
+import shows from './shows.js'
 import theatres from './theatres.js'
 import users from './users.js'
 
-export const steps = [settings, users, movies, theatres, screens, food]
+export const steps = [settings, users, movies, theatres, screens, food, shows]

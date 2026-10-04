@@ -42,6 +42,10 @@ const screenSchema = new Schema(
       first: { type: Number, required: true, default: 0 },
       second: { type: Number, required: true, default: 0 },
     },
+    // O-05: +1 inside every show save transaction. Two saves on the same screen at the
+    // same moment then write the same document, so MongoDB lets only one win; the other
+    // is retried and sees the first one's show in the overlap check (T-08).
+    showLock: { type: Number, default: 0 },
     isSample: Boolean, // seeded test data (15.5)
   },
   { timestamps: true },

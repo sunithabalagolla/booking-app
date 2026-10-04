@@ -296,6 +296,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `layout.rows` / `layout.cols` | Number | yes | Grid size: max 26 rows (A–Z) × 40 columns |
 | `layout.grid` | [Row] | yes | One entry per row, see below |
 | `seatCount` | { `balcony`, `first`, `second` } | yes | Number of seats per class, calculated when the layout is saved |
+| `showLock` | Number | yes | Default 0. O-05: +1 inside every show save transaction, so two saves on one screen at the same moment cannot both pass the overlap check (T-08) |
 
 **Row** = `{ label: 'A' | null, cells: [Cell] }`. `grid[0]` = the row farthest from the screen (top of the map); the screen is below the last row
 **Cell** = one of:
@@ -325,7 +326,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `language` | String | yes | One of the movie's languages |
 | `format` | String | yes | `2D` · `3D` |
 | `subtitles` | Boolean | yes | SF-08 |
-| `tags` | [String] | | `parent_baby` (SF-08) |
+| `tags` | [String] | | `parent_baby` (SF-08). Never on an "A" certificate movie (O-05) |
 | `wheelchairFriendly` | Boolean | yes | Copy from the screen (SF-08 filter) |
 | `prices` | [{ `seatClass`, `pricePaise` }] | yes | Price per seat class in this screen, GST included (Section 2a) |
 | `layout` | Same as `screens.layout` | yes | **Copy of the screen layout when the show is made**. Later layout edits do not break seats of existing shows |
@@ -336,7 +337,9 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `status` | String | yes | `scheduled` · `cancelled`. A show is "completed" when `endAt < now` and not cancelled (used for payouts) |
 | `cancelReason` / `cancelledBy` / `cancelledAt` | String / ObjectId / Date | | O-06. Not allowed after `startAt` (BR-07) |
 
-**Overlap check (BR-10, T-08)**: a new show on a screen is refused when a show exists with the same `screenId`, `status: 'scheduled'`, `startAt < newEndAt` and `endAt > newStartAt`.
+**Overlap check (BR-10, T-08)**: a new show on a screen is refused when a show exists with the same `screenId`, `status: 'scheduled'`, `startAt < newEndAt` and `endAt > newStartAt`. Touching edges are allowed. The check runs in a transaction that first changes `screens.showLock`, so two saves at the same moment cannot both win.
+
+**Create / edit rules (O-05, decided 2026-10-04)**: theatre `approved` (ROLE-04) · movie not `inactive` · `language` one of the movie's languages · `3D` only on a 3D screen (2D on 3D is fine) · one price for every seat class the screen has, whole rupees ₹1–₹5,000 · start in the future, at most 30 days ahead, not before the movie's release day · at most 14 dates per request. Edit only before the start and while the show has no bookings. Shows are not deleted (cancel = O-06).
 
 **Indexes**
 - `{ screenId: 1, startAt: 1 }` (overlap check)

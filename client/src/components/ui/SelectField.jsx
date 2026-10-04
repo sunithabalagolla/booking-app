@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
 // <select> with a real label and its error linked for screen readers (NF-03).
-// options: [{ value, label }]. `placeholder` adds an empty first choice.
+// options: [{ value, label, disabled? }]. `placeholder` adds an empty first choice.
 export default function SelectField({ label, error, options, placeholder, ...selectProps }) {
   const id = useId()
   const errorId = `${id}-error`
@@ -20,7 +20,7 @@ export default function SelectField({ label, error, options, placeholder, ...sel
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}

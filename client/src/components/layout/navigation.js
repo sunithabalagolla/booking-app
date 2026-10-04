@@ -37,7 +37,8 @@ export function dashboardMenuFor(user) {
     case 'owner':
       return [
         { to: '/owner', label: 'Box office register' },
-        { to: '/owner/theatres', label: 'Theatres' }, // O-03
+        { to: '/owner/theatres', label: 'Theatres' }, // O-03 (+ screens O-04, canteen O-07)
+        { to: '/owner/shows', label: 'Shows' }, // O-05
       ]
     case 'admin':
       return [

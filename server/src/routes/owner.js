@@ -4,9 +4,11 @@ import { requireApprovedOwner, requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
 import { createTheatre, getMyTheatre, listCities, listMyTheatres, updateTheatre } from '../controllers/ownerTheatres.js'
 import { createFood, deleteFood, listTheatreFood, updateFood } from '../controllers/ownerFood.js'
+import { createShows, getMyShow, listMyShows, listOwnerMovies, updateShow } from '../controllers/ownerShows.js'
 import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
 import { idParams } from '../validation/common.js'
 import { createFoodSchema, updateFoodSchema } from '../validation/food.js'
+import { createShowSchema, listShowsQuery, updateShowSchema } from '../validation/shows.js'
 import { createScreenSchema, updateScreenSchema } from '../validation/screens.js'
 import { createTheatreSchema, updateTheatreSchema } from '../validation/theatres.js'
 
@@ -38,5 +40,12 @@ router.get('/theatres/:id/food', validate({ params: idParams }), listTheatreFood
 router.post('/theatres/:id/food', validate({ params: idParams, body: createFoodSchema }), createFood)
 router.patch('/food/:id', validate({ params: idParams, body: updateFoodSchema }), updateFood)
 router.delete('/food/:id', validate({ params: idParams }), deleteFood)
+
+// O-05 shows (theatre must be approved, ROLE-04; no delete: cancel is O-06)
+router.get('/movies', listOwnerMovies) // movie picker: Now showing + Coming soon
+router.get('/shows', validate({ query: listShowsQuery }), listMyShows)
+router.post('/shows', validate({ body: createShowSchema }), createShows)
+router.get('/shows/:id', validate({ params: idParams }), getMyShow)
+router.patch('/shows/:id', validate({ params: idParams, body: updateShowSchema }), updateShow)
 
 export default router
