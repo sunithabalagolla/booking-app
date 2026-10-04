@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-04
-- Done: you tested O-07 in the browser (ticked); your Phase 10 note on the ledger lines added to "Notes for later". **O-05 Shows + T-08** built with your 5 decisions (3D only on 3D screens; dates today … +30, max 14 per request, start in the future, not before the release day; prices whole ₹1–₹5,000 for every class of the screen; no delete; ~336 sample shows) and **your extra rule: no parent-and-baby tag on "A" movies** (server + form + seed; added to requirements O-05).
+- Done: you tested O-07 and later O-05 in the browser (both ticked; **Phase 2 done**); your Phase 10 note on the ledger lines added to "Notes for later". **O-05 Shows + T-08** built with your 5 decisions (3D only on 3D screens; dates today … +30, max 14 per request, start in the future, not before the release day; prices whole ₹1–₹5,000 for every class of the screen; no delete; ~336 sample shows) and **your extra rule: no parent-and-baby tag on "A" movies** (server + form + seed; added to requirements O-05).
   - Server: `models/Show.js` (database.md 5.9, all indexes), `utils/showTime.js` (IST times, BR-22 labels, BR-10 end), `validation/shows.js`, `controllers/ownerShows.js`. Endpoints `GET /api/owner/movies` (new), `GET / POST /api/owner/shows`, `GET / PATCH /api/owner/shows/:id` (`GET /:id` new; PATCH takes one `date`).
   - ROLE-04: shows only on approved theatres (`400 RULE_BROKEN`). Overlap (T-08): `409 SHOW_OVERLAP` lists the refused dates and the shows in the way; several dates = all or none. Two saves at the same moment: `screens.showLock` is changed inside the transaction, so exactly one wins (tested).
   - Edit only before the start and while there are no bookings (`409 IN_USE`). A-02 "movie with shows cannot be deleted" now works (tested).
@@ -137,8 +137,7 @@
 
 ## Next step
 
-- Try O-05 by hand: as `owner@talkies.test` → Shows: filters, previous / next 7 days; New show (try an overlap, several dates, an "A" movie); Edit. When it works, **Phase 2 is done** (flow 9.1 end to end).
-- Then **Phase 3: U-04 City picker** (plan first).
+- **Phase 3: U-04 City picker**: plan shown 2026-10-04, waiting for your answers.
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -215,7 +214,7 @@
 
 **Phase 1 done (2026-10-01).** All 4 roles log in and see only their pages.
 
-## Phase 2 – Admin + owner setup
+## Phase 2 – Admin + owner setup ✅ done (flow 9.1 works end to end; tested by the developer 2026-10-04)
 Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A-03 → O-03 → A-04 (needs theatres) → O-04 → O-07 → O-05 + T-08.
 - [x] A-02 Movies (admin list / add / edit / delete, uploads, fixed lists, 6 sample movies; tested in the browser by the developer 2026-10-01)
 - [x] A-05 Platform settings (admin page, audit log, public values, 10 cities, TEST values in the seed; tested in the browser by the developer 2026-10-01)
@@ -226,7 +225,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] A-04 Theatre approvals (list + city filter, approve / reject + E-09, no approve while the owner is blocked, audit; tested in the browser by the developer 2026-10-04)
 - [x] O-04 Screens + seat layout editor (list / add / edit, automatic row letters + wheelchair-friendly, 12 sample screens; tested in the browser by the developer 2026-10-04)
 - [x] O-07 Canteen items (list / add / edit / delete, stock switch, veg mark, whole rupees, 36 sample items with pictures; tested in the browser by the developer 2026-10-04)
-- [x] O-05 Shows (labels BR-22, end time BR-10, overlap check, no parent-and-baby on "A"; 336 sample shows; checked in Chrome 2026-10-04)
+- [x] O-05 Shows (labels BR-22, end time BR-10, overlap check, no parent-and-baby on "A"; 336 sample shows; tested in the browser by the developer 2026-10-04)
   - [x] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, tested)
 - [x] T-08 test (overlap cases, touching edges, cleaning break, all-or-none dates, two saves at the same moment)
 
