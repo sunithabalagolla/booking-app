@@ -26,6 +26,7 @@ import HomePage from './pages/public/HomePage.jsx'
 import LoginPage from './pages/public/LoginPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
+import SearchPage from './pages/public/SearchPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 import StaffScanPage from './pages/staff/StaffScanPage.jsx'
@@ -43,6 +44,8 @@ const router = createBrowserRouter([
     children: [
       // Public browsing: guests and every role except Gate Staff (they go back to the scanner)
       { path: '/', element: guard(PUBLIC, <HomePage />) },
+      // U-06 search + filters
+      { path: '/movies', element: guard(PUBLIC, <SearchPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

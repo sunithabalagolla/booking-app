@@ -5,6 +5,7 @@ import { User } from '../models/User.js'
 import { sendEmail } from '../services/email/index.js'
 import { ownerDecisionTemplate } from '../services/email/templates.js'
 import { AppError } from '../utils/AppError.js'
+import { escapeRegex } from '../utils/escapeRegex.js'
 
 // A-03 owner approvals (api.md Section 10) + owner block / unblock.
 // Allowed changes (decided 2026-10-01):
@@ -13,7 +14,6 @@ import { AppError } from '../utils/AppError.js'
 //   an approved owner is not rejected; the admin blocks them instead
 
 const clientUrl = () => process.env.CLIENT_URL || 'http://localhost:5173'
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this owner.')
 
 function publicOwner(user) {

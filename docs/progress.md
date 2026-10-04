@@ -3,6 +3,16 @@
 ## Last session
 
 - Date: 2026-10-04
+- You asked if the wider layout + side curtains were done: yes, already in commit `49a3d7c` (nothing redone).
+- **U-06 Search + filters, SF-08** with your 5 decisions: search box at the top of Home opens the Search page `/movies` (header unchanged); language for Now showing = a show in that language in the city (Coming soon: the movie's languages); several languages / genres = any of them, different filters = AND; Coming soon in the results, hidden while a format / special show filter is on; up to 50 results, no paging.
+  - Server: `GET /api/movies` now takes `q` (part of the title, any case, regex-safe), `language` and `genre` (comma separated, fixed lists), `format`, `subtitles`, `wheelchair`, `parentBaby` (`true`). Show filters must all match the **same** show. New shared `utils/escapeRegex.js` (admin movie + owner searches use it too).
+  - Client: `SearchPage.jsx` at `/movies` (search box with a 300 ms pause while typing, Language / Genre tick boxes, Format Any / 2D / 3D, Special shows, "Clear search and filters", results as film-strip sepia cards under "Now showing in [city] (n)" and "Coming soon (n)", UI-44 "This reel is not in our cans. Try another name."). Phones: filters fold into "Filters (n)"; laptops: a column on the left. Everything is in the page address (`search.js` helpers), so Back and shared links work. Home has the search box above the banner.
+  - Checked in Chrome: Home search "ka" → 2 movies; Tamil → 1, Tamil + Subtitles → none (UI-44 text), Clear → all 6, 3D → Coming soon hidden with a note; 360 px: "Filters (1)" folded, opens on tap, no sideways scroll; a shared link with `?language=Telugu` opens with Telugu ticked. No console errors. My test click opened the city picker by mistake and changed your city to Bengaluru; I set it back to Hyderabad.
+  - Docs: `api.md` `/api/movies` updated.
+  - Tests: **392 pass** (client 114, server 278). Lint + build OK.
+
+## Earlier on 2026-10-04 (U-05 + wider layout)
+
 - Done: U-04 tested by you (ticked). **U-05 Home page** with your 5 decisions (Now showing = most shows in the city this week first, the first one in the banner; Coming soon = all Coming soon movies in every city; cards + "Book tickets" link to `/movies/:id` = U-07, "not found" until then; empty city text "No shows in [city] this week. The projector is resting."; up to 50 + 20, no paging) and **your extra: the banner movie's poster inside the marquee** (beside the text on wider screens, above it on phones). The theme test content is gone.
   - Server: `GET /api/movies?city=&status=` for guests (`controllers/movies.js`, `routes/movies.js`, `publicMoviesQuery` in `validation/movies.js`). Search + filters come with U-06.
   - Client: `api/movies.js`; Home = marquee banner (`MarqueeBanner.jsx`: maroon box, gold border, blinking bulb rows `MarqueeBulbs.jsx` (UI-14), poster in a film strip, "Now showing", title, certificate + languages, gold "Book tickets" (new `gold` button look)), "Now showing in [city]" grid (2 / 3 / 4 columns, `MovieCard.jsx`: poster in a film strip with sprocket holes top and bottom, title, certificate + languages), "Coming soon" row that scrolls sideways with "From Sun 18 Oct". UI-46 sepia posters (`SepiaPoster.jsx`): colour fades in over sepia (opacity only, 600 ms) on hover / keyboard focus on desktop, by itself when scrolled into view on phones (stays in colour). Timings `bulbCycle` 1200 ms and `sepiaFade` 600 ms in `motion.js`; reduce motion (phone setting) = bulbs still, colour at once. Posters lazy loaded. No new npm package (plain CSS).
@@ -161,7 +171,8 @@
 ## Next step
 
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
-- **U-06 Search + filters, SF-08**: plan shown 2026-10-04, waiting for your answers.
+- Try U-06 by hand: search from Home, tick filters, share / reload a filtered address, phone filters panel.
+- Then **U-07 Movie details** (plan first).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -258,7 +269,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 ## Phase 3 – User browsing
 - [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
 - [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; tested in the browser by the developer 2026-10-04)
-- [ ] U-06 Search + filters, SF-08
+- [x] U-06 Search + filters, SF-08 (Search page `/movies`, filters in the address, same-show rule; checked in Chrome 2026-10-04)
 - [ ] U-07 Movie details
 - [ ] U-08 Age warning
 - [ ] U-09 Show list

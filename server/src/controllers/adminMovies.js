@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { Movie } from '../models/Movie.js'
 import { AppError } from '../utils/AppError.js'
 import { dateToIstDay, istDayToDate } from '../utils/time.js'
+import { escapeRegex } from '../utils/escapeRegex.js'
 
 // A-02 admin movies (api.md Section 10: /api/admin/movies)
 
@@ -33,9 +34,6 @@ function toDb(body) {
 }
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this movie.')
-
-// Regex special characters in the search text are taken as plain letters
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // GET /api/admin/movies?q=&status=&page=&limit=  (newest release first)
 export async function listMovies(req, res) {

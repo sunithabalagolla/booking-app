@@ -55,9 +55,29 @@ export const listMoviesQuery = z.object({
   ...pageQuery,
 })
 
-// GET /api/movies (U-05, public). The search and filters (U-06, SF-08) are added with U-06.
+// GET /api/movies (U-05 + U-06 + SF-08, public). Language and genre may hold several
+// values, comma separated ("Tamil,Telugu" = Tamil OR Telugu); different filters
+// combine with AND. Show filters (format, subtitles, wheelchair, parentBaby) only
+// accept "true" (off = left out).
+const listOf = (options, label) =>
+  z
+    .string()
+    .trim()
+    .max(300)
+    .transform((text) => text.split(',').map((v) => v.trim()).filter(Boolean))
+    .refine((values) => values.every((v) => options.includes(v)), { error: `Unknown ${label}.` })
+    .optional()
+const onlyTrue = z.enum(['true']).transform(() => true).optional()
+
 export const publicMoviesQuery = z.object({
   city: z.string({ error: 'Please pick a city.' }).trim().min(1, { error: 'Please pick a city.' }).max(50),
   status: z.enum(['now_showing', 'coming_soon']).default('now_showing'),
+  q: z.string().trim().max(100).optional(), // part of the title, any case
+  language: listOf(LANGUAGES, 'language'),
+  genre: listOf(GENRES, 'genre'),
+  format: z.enum(['2D', '3D']).optional(),
+  subtitles: onlyTrue,
+  wheelchair: onlyTrue,
+  parentBaby: onlyTrue,
   ...pageQuery,
 })
