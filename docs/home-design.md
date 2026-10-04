@@ -8,7 +8,7 @@ Works in Day show and Night show; this spec describes Night show (stage dark). I
 
 - **Background:** stage dark #1E140E with a soft warm spotlight glow at the top centre (very light radial glow, gold at about 13% opacity).
 - **Top pelmet (valance), full width:** a 34 px tall velvet band (maroon folds, see "Velvet" below) with a 3 px gold (#D9A441) line under it, and a row of small half-circle scallops under that (dark maroon #5E1515, gold border).
-- **Side curtains:** about 130 px wide at 1440 px screens, only on screens 1280 px and wider (hidden on smaller screens). Velvet folds, shaped like a curtain that is gathered: straight at the top, pulled in towards the edge at about 55% height, and flaring out again at the bottom (CSS clip-path).
+- **Side curtains** (changed 2026-10-04: at most 180 px and 12% of the screen each, smooth curved gather, darker velvet, a rope on both curtains): about 130 px wide at 1440 px screens, only on screens 1280 px and wider (hidden on smaller screens). Velvet folds, shaped like a curtain that is gathered: straight at the top, pulled in towards the edge at about 55% height, and flaring out again at the bottom (CSS clip-path).
 - **Gold rope tie-backs:** a short gold bar with a small tassel at the gather point on each curtain.
 - **Velvet:** vertical folds made with a repeating linear gradient: #4E1010 → #8E2626 → #6A1818 → #A0302E → #4E1010, about 32 px per fold.
 - **No hard borders** around the content area (remove the old gold side lines).
