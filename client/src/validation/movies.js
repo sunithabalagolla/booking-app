@@ -74,7 +74,14 @@ export function formatDay(day) {
 // "UA · Hindi, English" (certificate + languages, UI-15 cards and banner)
 export const movieMeta = (movie) => `${movie.certificate} · ${movie.languages.join(', ')}`
 
-// Coming soon card (U-05): "From Fri 9 Oct"; already out (or today) → "Out now"
+// Coming soon ticket tag (UI-15): "Releases Fri 9 Oct"; already out (or today) → "Out now"
 export function releaseLabel(releaseDate, today) {
-  return releaseDate > today ? `From ${formatShortDay(releaseDate)}` : 'Out now'
+  return releaseDate > today ? `Releases ${formatShortDay(releaseDate)}` : 'Out now'
+}
+
+// 156 → "2h 36m", 120 → "2h", 45 → "45m"
+export function formatDuration(minutes) {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return [h && `${h}h`, m && `${m}m`].filter(Boolean).join(' ')
 }

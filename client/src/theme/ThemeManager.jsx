@@ -20,6 +20,11 @@ export default function ThemeManager() {
     root.setProperty('--sepia-fade', `${motion.sepiaFade}ms`) // UI-46
     root.setProperty('--curtain-sway', `${motion.curtainSway}ms`) // UI-15
     root.setProperty('--grain-jitter', `${motion.grainJitter}ms`) // UI-45
+    root.setProperty('--ticker-loop', `${motion.tickerLoop}ms`) // UI-26
+    root.setProperty('--spotlight-sweep', `${motion.spotlightSweep}ms`) // UI-15
+    root.setProperty('--neon-flicker', `${motion.neonFlicker}ms`) // UI-15
+    root.setProperty('--rise-in', `${motion.riseIn}ms`) // UI-15
+    root.setProperty('--rise-stagger', `${motion.riseStagger}ms`) // UI-15
   }, [])
 
   useEffect(() => {

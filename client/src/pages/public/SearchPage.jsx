@@ -155,7 +155,7 @@ function CitySearch({ city }) {
             <ResultSection title="Coming soon" count={soonItems.length}>
               {soonItems.map((movie) => (
                 <li key={movie.id}>
-                  <MovieCard movie={movie} note={releaseLabel(movie.releaseDate, today)} />
+                  <MovieCard movie={movie} tag={releaseLabel(movie.releaseDate, today)} />
                 </li>
               ))}
             </ResultSection>

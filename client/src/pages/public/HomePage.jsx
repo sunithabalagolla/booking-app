@@ -1,16 +1,20 @@
+import { useId } from 'react'
+import { Link } from 'react-router'
 import { useCurrentCity } from '../../api/cities.js'
 import { useMovies } from '../../api/movies.js'
 import CityChooser from '../../components/ui/CityChooser.jsx'
 import MarqueeBanner from '../../components/ui/MarqueeBanner.jsx'
 import MovieCard from '../../components/ui/MovieCard.jsx'
+import Ticker from '../../components/ui/Ticker.jsx'
 import { releaseLabel } from '../../validation/movies.js'
 import { istToday } from '../../validation/shows.js'
-import { bannerMovie, COMING_SOON_LIMIT, noShowsText, NOW_SHOWING_LIMIT } from './home.js'
+import { bannerMovie, COMING_SOON_LIMIT, noShowsText, NOW_SHOWING_LIMIT, tickerMessages } from './home.js'
 
-// U-05 Home (UI-15): first the city (U-04, flow 9.2), then the marquee banner with the
-// city's busiest movie, the "Now showing" grid and the "Coming soon" row.
-// Later: ticker strip (UI-26) and admin banners (A-11) in Phase 10; bottom navigation
-// when Ticket album + Profile exist.
+// U-05 Home, "Stage" design (UI-15, docs/home-design.md): first the city (U-04, flow
+// 9.2); then the coming soon ticker (UI-26), the hero banner with the city's busiest
+// movie, "Now showing in [city]" and "Coming soon". The stage frame and the header
+// (with the search box) are in SiteLayout. Later: deals and admin messages in the
+// ticker (A-11); bottom navigation when Ticket album + Profile exist.
 export default function HomePage() {
   const { city, cities, setCity } = useCurrentCity()
 
@@ -32,45 +36,68 @@ export default function HomePage() {
   return <CityHome key={city.code} city={city} />
 }
 
+// Title row: Rye heading + a thin gold line filling the row + ✦ (+ "See all →").
+// Phones: the heading may wrap and the line is left out, so nothing sticks out.
+function SectionTitle({ id, children, seeAll }) {
+  return (
+    <div className="flex items-center gap-3">
+      <h2 id={id} className="min-w-0 font-heading text-2xl text-maroon sm:shrink-0 sm:text-[2rem] dark:text-gold">
+        {children}
+      </h2>
+      <span aria-hidden="true" className="hidden h-px flex-1 bg-gold/70 sm:block" />
+      <span aria-hidden="true" className="ml-auto text-gold sm:ml-0">
+        ✦
+      </span>
+      {seeAll && (
+        <Link to={seeAll} className="inline-flex min-h-11 shrink-0 items-center font-type font-bold text-maroon underline dark:text-gold">
+          See all →
+        </Link>
+      )}
+    </div>
+  )
+}
+
 function CityHome({ city }) {
   const nowShowing = useMovies({ city: city.code, status: 'now_showing', limit: NOW_SHOWING_LIMIT })
   const comingSoon = useMovies({ city: city.code, status: 'coming_soon', limit: COMING_SOON_LIMIT })
   const featured = bannerMovie(nowShowing.data?.items ?? [])
   const today = istToday()
+  const nowId = useId()
+  const soonId = useId()
 
   return (
-    <div className="space-y-10 py-6">
+    <div className="space-y-10 pb-10">
       <h1 className="sr-only">Movies in {city.name}</h1>
 
-      {featured && <MarqueeBanner movie={featured} />}
+      <Ticker messages={tickerMessages(comingSoon.data?.items ?? [], today)} />
 
-      <section aria-labelledby="now-showing" className="space-y-4">
-        <h2 id="now-showing" className="font-heading text-3xl text-maroon dark:text-gold">
+      {featured && <MarqueeBanner movie={featured} city={city} />}
+
+      <section aria-labelledby={nowId} className="space-y-5">
+        <SectionTitle id={nowId} seeAll="/movies">
           Now showing in {city.name}
-        </h2>
+        </SectionTitle>
         <ListState query={nowShowing} empty={noShowsText(city.name)} />
         {nowShowing.data?.items.length > 0 && (
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {nowShowing.data.items.map((movie) => (
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-3 lg:grid-cols-4">
+            {nowShowing.data.items.map((movie, i) => (
               <li key={movie.id}>
-                <MovieCard movie={movie} />
+                <MovieCard movie={movie} index={i} />
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section aria-labelledby="coming-soon" className="space-y-4">
-        <h2 id="coming-soon" className="font-heading text-3xl text-maroon dark:text-gold">
-          Coming soon
-        </h2>
+      <section aria-labelledby={soonId} className="space-y-5">
+        <SectionTitle id={soonId}>Coming soon</SectionTitle>
         <ListState query={comingSoon} empty="No new movies announced yet." />
         {comingSoon.data?.items.length > 0 && (
           // A row that scrolls sideways by itself; the page never scrolls sideways
-          <ul className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3">
-            {comingSoon.data.items.map((movie) => (
-              <li key={movie.id} className="w-32 shrink-0 snap-start sm:w-36">
-                <MovieCard movie={movie} note={releaseLabel(movie.releaseDate, today)} />
+          <ul className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pt-2 pb-3">
+            {comingSoon.data.items.map((movie, i) => (
+              <li key={movie.id} className="w-40 shrink-0 snap-start sm:w-[190px]">
+                <MovieCard movie={movie} index={i} tag={releaseLabel(movie.releaseDate, today)} />
               </li>
             ))}
           </ul>
@@ -93,4 +120,3 @@ function ListState({ query, empty }) {
   if (query.data.items.length === 0) return <p className="font-type">{empty}</p>
   return null
 }
-

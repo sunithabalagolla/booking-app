@@ -154,20 +154,31 @@
   background-position: 0 center;
 }
 
-/* UI-46 sepia poster: the colour picture fades in over the sepia one (opacity only).
-   Desktop: hover / keyboard focus on the card. Phones (no hover): when it scrolls
-   into view (data-inview, set by SepiaPoster.jsx). */
-.poster-colour {
+/* UI-46 vintage poster (changed with the "Stage" design): colour with a light warm tint;
+   a bright layer fades in on top (opacity only). Desktop: hover / keyboard focus on the
+   card, plus a small lift. Phones (no hover): bright once scrolled into view
+   (data-inview, set by VintagePoster.jsx). */
+.poster-tint {
+  filter: sepia(0.35) saturate(0.85);
+}
+.poster-bright {
   opacity: 0;
   transition: opacity var(--sepia-fade, 600ms) ease;
 }
+.poster-lift {
+  transition: transform var(--sepia-fade, 600ms) ease;
+}
 @media (hover: hover) {
-  .group:hover .poster-colour,
-  .group:focus-visible .poster-colour {
+  .group:hover .poster-bright,
+  .group:focus-visible .poster-bright {
     opacity: 1;
   }
+  .group:hover .poster-lift,
+  .group:focus-visible .poster-lift {
+    transform: translateY(-6px);
+  }
 }
-.poster-colour[data-inview="true"] {
+.poster-bright[data-inview="true"] {
   opacity: 1;
 }
 
@@ -176,8 +187,12 @@
   .bulb {
     animation: none;
   }
-  .poster-colour {
+  .poster-bright {
     transition: none;
+  }
+  .poster-lift {
+    transition: none;
+    transform: none !important;
   }
 }
 
@@ -316,6 +331,100 @@
     animation: none !important;
   }
   .film-grain {
+    display: none;
+  }
+}
+
+/* ===== Home "Stage" content (docs/home-design.md Sections 3, 4, 8) ===== */
+
+/* UI-26 ticker: the message list is there twice, so moving by half loops smoothly.
+   Pauses on hover / tap / keyboard focus. */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker var(--ticker-loop, 30000ms) linear infinite;
+}
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Banner spotlight: a soft light patch moving left → right and back, with dust floating up */
+.spotlight {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 38%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgb(255 236 190 / 0.16), transparent 65%);
+  animation: spotlight-sweep var(--spotlight-sweep, 9000ms) ease-in-out infinite alternate;
+}
+@keyframes spotlight-sweep {
+  from { transform: translateX(-30%); }
+  to { transform: translateX(210%); }
+}
+.dust {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f3e9d2;
+  opacity: 0;
+  animation: dust-float var(--dust-time, 6s) ease-in-out infinite;
+  animation-delay: var(--dust-delay, 0s);
+}
+@keyframes dust-float {
+  0% { opacity: 0; transform: translateY(0); }
+  30% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(-90px); }
+}
+
+/* "NOW SHOWING" kicker: short opacity dips like an old neon sign */
+.neon-flicker {
+  animation: neon-flicker var(--neon-flicker, 5000ms) linear infinite;
+}
+@keyframes neon-flicker {
+  0%, 88%, 92%, 96%, 100% { opacity: 1; }
+  90% { opacity: 0.35; }
+  94% { opacity: 0.6; }
+}
+
+/* Rise in: chips and cards fade up one after another on page load (--i = position) */
+.rise-in {
+  animation: rise-in var(--rise-in, 700ms) ease-out both;
+  animation-delay: calc(var(--i, 0) * var(--rise-stagger, 120ms));
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Small cream ticket (show-time chips, "Releases …" tags): notched sides */
+@utility ticket-chip {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  border-radius: 3px;
+  -webkit-mask: radial-gradient(circle 5px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 5px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 5px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 5px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+
+/* UI-41 / NF-05: reduce motion stops all of them; the ticker shows the first message */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track,
+  .spotlight,
+  .neon-flicker,
+  .rise-in {
+    animation: none;
+  }
+  .ticker-item:not(:first-child),
+  .dust {
     display: none;
   }
 }

@@ -1,6 +1,8 @@
 import { Movie } from '../models/Movie.js'
 import { Show } from '../models/Show.js'
+import { AppError } from '../utils/AppError.js'
 import { escapeRegex } from '../utils/escapeRegex.js'
+import { istParts } from '../utils/showTime.js'
 import { dateToIstDay, istDayToDate, istToday } from '../utils/time.js'
 
 // Public movie lists for users and guests (api.md Section 5: GET /api/movies).
@@ -84,4 +86,55 @@ export async function listMovies(req, res) {
     (a, b) => showsOf.get(String(b._id)) - showsOf.get(String(a._id)) || b.releaseDate - a.releaseDate || a.title.localeCompare(b.title, 'en'),
   )
   res.json({ items: movies.slice(skip, skip + limit).map(listMovie), page, limit, total: movies.length })
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// GET /api/movies/:id/shows?city=&date= (U-09, api.md Section 5). The shows of one movie
+// in a city on one IST day (today … +6), grouped by theatre (A to Z), in time order.
+// Shows that already started are left out. Same show filters as the movie list.
+export async function listMovieShows(req, res) {
+  const { city, date, language } = req.valid.query
+  const movie = await Movie.findById(req.valid.params.id)
+  if (!movie || movie.status === 'inactive') throw new AppError(404, 'NOT_FOUND', 'We could not find this movie.')
+  if (date < istToday() || date > istToday(6)) {
+    throw new AppError(400, 'VALIDATION_ERROR', 'Please check the form.', { date: 'Please pick a day in the next 7 days.' })
+  }
+
+  const dayStart = istDayToDate(date)
+  const shows = await Show.find({
+    movieId: movie._id,
+    cityCode: city,
+    status: 'scheduled',
+    startAt: { $gte: new Date(Math.max(Date.now(), dayStart.getTime())), $lt: new Date(dayStart.getTime() + DAY_MS) },
+    ...showFilters(req.valid.query),
+    ...(language?.length && { language: { $in: language } }),
+  })
+    .sort({ startAt: 1 })
+    .populate('theatreId', 'name address amenities status')
+
+  const groups = new Map()
+  for (const show of shows) {
+    const theatre = show.theatreId
+    if (!theatre || theatre.status !== 'approved') continue // ROLE-04
+    const key = String(theatre._id)
+    if (!groups.has(key)) {
+      groups.set(key, { theatre: { id: key, name: theatre.name, address: theatre.address, amenities: theatre.amenities }, shows: [] })
+    }
+    groups.get(key).shows.push({
+      id: String(show._id),
+      startAt: show.startAt,
+      startTime: istParts(show.startAt).time, // HH:mm IST
+      label: show.label,
+      language: show.language,
+      format: show.format,
+      subtitles: show.subtitles,
+      tags: show.tags ?? [],
+      housefull: show.bookedCount >= show.totalSeats,
+      deal: { active: Boolean(show.deal?.active), percent: show.deal?.active ? show.deal.percent : null },
+      minPricePaise: Math.min(...show.prices.map((p) => p.pricePaise)),
+    })
+  }
+  const items = [...groups.values()].sort((a, b) => a.theatre.name.localeCompare(b.theatre.name, 'en'))
+  res.json({ date, items })
 }

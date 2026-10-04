@@ -6,6 +6,8 @@
 - **Home "Stage" redesign** (`docs/home-design.md`, approved by you). Requirements updated (U-05, UI-15, UI-26, UI-46, A-02, 16.4 note). Your 5 decisions: film grain stays at 3–4% (UI-04 / UI-45); poster titles in Georgia bold (SVG in `<img>` cannot load Rye); "Today in [city]" chips use the U-09 endpoint `GET /api/movies/:id/shows`, built now; the header search box replaces the Home and Search page boxes; content 1120 px, side curtains from 1280 px screens. Built in 3 steps:
   - **Step 1 (data):** optional movie `tagline` (max 120; model, admin API + form field, public list, seed); public list items also have `trailerUrl`. 6 new colourful sample posters (`seed/posters.js`, design Section 9: rain + lightning, haunted house + gulmohar, sunset road + bus, sea + boat, planet + rocket, moon + train). Checked all 6 in Chrome. Tests: 395 pass.
   - **Step 2 (stage frame + header, all public pages):** spotlight glow, velvet pelmet (in front of the curtains) with gold line + scallops, side curtains (thin 12 px velvet edges below 1280 px; from 1280 px gathered curtains with gold rope tie-back + tassel, sway ±0.7° / 7 s), film grain (UI-45, 3.5%, jitter 0.4 s, off with reduce motion), content 1120 px, gold dotted footer line. One-line header: logo, round gold city button, ticket-stub search box ("Search movies, languages, genres…"), Log in + gold Sign up / account links, theme. Below 1024 px: logo + city + ☰ menu (account + theme inside), search box on its own line (**fixes the 2-line phone header**). The header box replaces the Home and Search page boxes: Enter opens `/movies?q=`; on `/movies` it updates the results as you type and keeps the filters. Server: `q` now also matches a movie's languages and genres. Checked in Chrome: 2304 / 1300 / 360 / 320 px (no sideways scroll), header search from Home and on the Search page, Day and Night show. Fixes found: pelmet was behind the curtains; phone header overflowed at 360 px (smaller logo / city button). Tests: 398 pass.
+  - **Step 3 (Home content):** ticker under the header (UI-26: coming soon movies + dates, ~30 s loop, pauses on hover / tap / focus). Hero banner: bulbs on all 4 sides chasing round, gold inner line, poster 250 px in a film strip, flickering kicker "✦ NOW SHOWING · MOST SHOWS THIS WEEK ✦", Rye title 62 px (phones 34 px), tagline, info chips (certificate · languages · "2h 36m" · genres), "TODAY / TOMORROW IN [CITY]" ticket chips (from the new U-09 endpoint `GET /api/movies/:id/shows`, same label + time once, max 6, link to the movie), Book tickets, ▶ Watch trailer (only with a trailer link; the sample movies have none), spotlight sweep with dust. Section title rows (gold line, ✦, "See all →"), 4 posters per row on laptops (fills the width), 2 on phones. UI-46 changed: `VintagePoster.jsx` (light tint `sepia(.35) saturate(.85)`, bright layer + 6 px lift on hover / focus, bright when scrolled into view on phones). Coming soon cards 190 px with "Releases Sun 18 Oct" ticket tags. Rise-in for chips and cards. Timings in `motion.js`; everything stops with reduce motion (phone setting). Checked in Chrome: wide screen, hover (bright + lift), 360 / 320 px (fix: the section title row stuck out on phones), all animations running, no console errors. Tests: 406 pass (client 120, server 286).
+  - Not checked by hand: the reduce-motion look (needs the phone / OS setting), the phone "bright when scrolled into view" part, the Watch trailer button (no sample trailers).
 
 ## Earlier on 2026-10-04 (U-06)
 
@@ -176,10 +178,9 @@
 
 ## Next step
 
+- Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
+- Then **U-07 Movie details** (plan first). The cards, chips and "Book tickets" already link to `/movies/:id`.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
-- Try U-06 by hand: search from Home, tick filters, share / reload a filtered address, phone filters panel.
-- Then **U-07 Movie details** (plan first).
-- Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -191,7 +192,7 @@
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
 
-- Client build warns that the main JS file is over 500 kB (550 kB after O-05, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
+- Client build warns that the main JS file is over 500 kB (571 kB after the Stage Home, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 

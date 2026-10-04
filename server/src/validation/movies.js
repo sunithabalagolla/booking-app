@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { CERTIFICATES, GENRES, LANGUAGES, MOVIE_STATUSES } from '../config/movieOptions.js'
-import { dayField, imageUrlField, pageQuery } from './common.js'
+import { dayField, idParams, imageUrlField, pageQuery } from './common.js'
 
 // A-02 movie fields (api.md Section 10). Lists come from config/movieOptions.js.
 
@@ -81,4 +81,16 @@ export const publicMoviesQuery = z.object({
   wheelchair: onlyTrue,
   parentBaby: onlyTrue,
   ...pageQuery,
+})
+
+// GET /api/movies/:id/shows (U-09; first used by the Home banner "Today in [city]" chips)
+export const movieShowsParams = idParams
+export const movieShowsQuery = z.object({
+  city: z.string({ error: 'Please pick a city.' }).trim().min(1, { error: 'Please pick a city.' }).max(50),
+  date: dayField, // IST day, today … +6 (checked in the controller)
+  language: listOf(LANGUAGES, 'language'),
+  format: z.enum(['2D', '3D']).optional(),
+  subtitles: onlyTrue,
+  wheelchair: onlyTrue,
+  parentBaby: onlyTrue,
 })
