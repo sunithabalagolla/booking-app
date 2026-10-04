@@ -3,6 +3,15 @@
 ## Last session
 
 - Date: 2026-10-04
+- Done: U-04 tested by you (ticked). **U-05 Home page** with your 5 decisions (Now showing = most shows in the city this week first, the first one in the banner; Coming soon = all Coming soon movies in every city; cards + "Book tickets" link to `/movies/:id` = U-07, "not found" until then; empty city text "No shows in [city] this week. The projector is resting."; up to 50 + 20, no paging) and **your extra: the banner movie's poster inside the marquee** (beside the text on wider screens, above it on phones). The theme test content is gone.
+  - Server: `GET /api/movies?city=&status=` for guests (`controllers/movies.js`, `routes/movies.js`, `publicMoviesQuery` in `validation/movies.js`). Search + filters come with U-06.
+  - Client: `api/movies.js`; Home = marquee banner (`MarqueeBanner.jsx`: maroon box, gold border, blinking bulb rows `MarqueeBulbs.jsx` (UI-14), poster in a film strip, "Now showing", title, certificate + languages, gold "Book tickets" (new `gold` button look)), "Now showing in [city]" grid (2 / 3 / 4 columns, `MovieCard.jsx`: poster in a film strip with sprocket holes top and bottom, title, certificate + languages), "Coming soon" row that scrolls sideways with "From Sun 18 Oct". UI-46 sepia posters (`SepiaPoster.jsx`): colour fades in over sepia (opacity only, 600 ms) on hover / keyboard focus on desktop, by itself when scrolled into view on phones (stays in colour). Timings `bulbCycle` 1200 ms and `sepiaFade` 600 ms in `motion.js`; reduce motion (phone setting) = bulbs still, colour at once. Posters lazy loaded. No new npm package (plain CSS).
+  - Checked in Chrome: Hyderabad shows the 4 sample movies, Operation Monsoon in the banner, hover turns a poster to colour, Coming soon row with dates, Day and Night show, 360 px phone (poster above the banner text, 2 columns, no sideways scroll), no console errors. Your own movie "new" is not listed (it has no shows). **Not checked on a real phone:** the "colour when scrolled into view" part (the laptop browser has hover); please look on your phone.
+  - Docs: `api.md` `/api/movies` updated.
+  - Tests: **380 pass** (client 109, server 271). Lint + build OK.
+
+## Earlier on 2026-10-04 (U-04)
+
 - Done: O-05 tested by you, **Phase 2 done** (separate commit). Then 2 small fixes you asked about (they were not in progress.md before, so they had not been done; separate commit):
   - Show date messages name days like "Sun 4 Oct" (server "cannot be used" message, release day in the client form and the movie picker).
   - No light-blue browser autofill on inputs: autofilled inputs keep cream paper + ink text (`theme.css`). Not checked by hand: Chrome only autofills with saved logins, please look at the login page.
@@ -149,8 +158,9 @@
 
 ## Next step
 
-- Try U-04 by hand (as a guest too): pick a city on Home, change it in the header, reload. Also check the login page autofill colour.
-- Then **U-05 Home page** (plan first).
+- Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
+- Try U-05 by hand: Home in each city, change city, hover posters, Day / Night show; **on your phone**: posters turn to colour when they scroll into view.
+- Then **U-06 Search + filters, SF-08** (plan first).
 - Try the layout by hand: phone width (360 px) and laptop, Day and Night show, each seed login, keyboard Tab → "Skip to content".
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -243,8 +253,8 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] T-08 test (overlap cases, touching edges, cleaning break, all-or-none dates, two saves at the same moment)
 
 ## Phase 3 – User browsing
-- [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; checked in Chrome 2026-10-04)
-- [ ] U-05 Home
+- [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
+- [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; checked in Chrome 2026-10-04)
 - [ ] U-06 Search + filters, SF-08
 - [ ] U-07 Movie details
 - [ ] U-08 Age warning
@@ -310,7 +320,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [ ] UI-26 Ticker + A-11 Banners
 - [ ] UI-40 Sound, UI-41 Reduce motion
 - [ ] UI-45 Film grain + flicker
-- [ ] UI-46 Sepia posters (full colour on hover / on scroll into view on phones)
+- [x] UI-46 Sepia posters (built early with U-05 on 2026-10-04; profile "reduce motion" setting comes with UI-41)
 - [ ] UI-47 "Behind the scenes" blueprint page (footer link)
 
 ## Phase 11 – Extras

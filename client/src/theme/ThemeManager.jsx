@@ -12,9 +12,12 @@ export default function ThemeManager() {
   const refreshAuto = useThemeStore((state) => state.refreshAuto)
   const userId = useAuthStore((state) => state.user?.id)
 
-  // Fade time from motion.js, used by the CSS in theme.css
+  // Timings from motion.js, used by the CSS in theme.css
   useEffect(() => {
-    document.documentElement.style.setProperty('--theme-fade', `${motion.themeFade}ms`)
+    const root = document.documentElement.style
+    root.setProperty('--theme-fade', `${motion.themeFade}ms`)
+    root.setProperty('--bulb-cycle', `${motion.bulbCycle}ms`) // UI-14
+    root.setProperty('--sepia-fade', `${motion.sepiaFade}ms`) // UI-46
   }, [])
 
   useEffect(() => {

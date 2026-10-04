@@ -132,3 +132,51 @@
   padding: 0.1rem 0.6rem;
   transform: rotate(-8deg);
 }
+
+/* UI-14 marquee bulbs: gold bulbs blink one after another (opacity only).
+   --bulb-cycle comes from motion.js; each bulb waits a little longer (--i). */
+@keyframes bulb-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.bulb {
+  animation: bulb-blink var(--bulb-cycle, 1200ms) ease-in-out infinite;
+  animation-delay: calc(var(--i) * var(--bulb-cycle, 1200ms) / var(--n));
+}
+
+/* UI-15 film strip: dark band with cream sprocket holes, top and bottom of a poster */
+@utility film-holes {
+  height: 12px;
+  background-color: var(--color-stage);
+  background-image: repeating-linear-gradient(to right, transparent 0 5px, var(--color-cream) 5px 11px, transparent 11px 16px);
+  background-size: 16px 6px;
+  background-repeat: repeat-x;
+  background-position: 0 center;
+}
+
+/* UI-46 sepia poster: the colour picture fades in over the sepia one (opacity only).
+   Desktop: hover / keyboard focus on the card. Phones (no hover): when it scrolls
+   into view (data-inview, set by SepiaPoster.jsx). */
+.poster-colour {
+  opacity: 0;
+  transition: opacity var(--sepia-fade, 600ms) ease;
+}
+@media (hover: hover) {
+  .group:hover .poster-colour,
+  .group:focus-visible .poster-colour {
+    opacity: 1;
+  }
+}
+.poster-colour[data-inview="true"] {
+  opacity: 1;
+}
+
+/* UI-41 / NF-05: reduce motion = bulbs on and still, colour change at once */
+@media (prefers-reduced-motion: reduce) {
+  .bulb {
+    animation: none;
+  }
+  .poster-colour {
+    transition: none;
+  }
+}

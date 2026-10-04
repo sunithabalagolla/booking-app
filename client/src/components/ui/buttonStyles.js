@@ -3,10 +3,12 @@
 //   primary   maroon button (main action)
 //   secondary outline: ink on light paper, cream on the Night show page (--outline in theme.css)
 //   light     cream outline, for dark wood / ink surfaces (sidebar, staff bar)
+//   gold      gold button on maroon (marquee banner "Book tickets", UI-15)
 const looks = {
   primary: 'bg-maroon text-cream hover:bg-maroon/90',
   secondary: 'border border-(--outline) bg-transparent text-(--outline) hover:bg-(--outline-hover)',
   light: 'border border-cream bg-transparent text-cream hover:bg-stage',
+  gold: 'bg-gold text-ink font-bold hover:bg-gold/90 focus:outline-cream',
 }
 
 export function buttonClass(variant = 'primary', className = '') {

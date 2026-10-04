@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { CERTIFICATES, GENRES, LANGUAGES, MOVIE_STATUSES } from '../config/movieOptions.js'
+import { formatShortDay } from './shows.js'
 
 // A-02 movie form. Same rules as the server (server/src/validation/movies.js);
 // the server checks again.
@@ -65,4 +66,12 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export function formatDay(day) {
   const [y, m, d] = day.split('-').map(Number)
   return `${d} ${MONTHS[m - 1]} ${y}`
+}
+
+// "UA · Hindi, English" (certificate + languages, UI-15 cards and banner)
+export const movieMeta = (movie) => `${movie.certificate} · ${movie.languages.join(', ')}`
+
+// Coming soon card (U-05): "From Fri 9 Oct"; already out (or today) → "Out now"
+export function releaseLabel(releaseDate, today) {
+  return releaseDate > today ? `From ${formatShortDay(releaseDate)}` : 'Out now'
 }

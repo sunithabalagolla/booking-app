@@ -54,3 +54,10 @@ export const listMoviesQuery = z.object({
   status: z.enum(MOVIE_STATUSES).optional(),
   ...pageQuery,
 })
+
+// GET /api/movies (U-05, public). The search and filters (U-06, SF-08) are added with U-06.
+export const publicMoviesQuery = z.object({
+  city: z.string({ error: 'Please pick a city.' }).trim().min(1, { error: 'Please pick a city.' }).max(50),
+  status: z.enum(['now_showing', 'coming_soon']).default('now_showing'),
+  ...pageQuery,
+})
