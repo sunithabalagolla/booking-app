@@ -95,12 +95,14 @@ describe('GET /api/movies/:id/shows (U-09)', () => {
 
   it('show filters work like the movie list', async () => {
     await makeShow(chandni, istDateTime(TOMORROW, '13:00'), { format: '3D', subtitles: true })
-    await makeShow(chandni, istDateTime(TOMORROW, '18:00'), { language: 'Tamil', tags: ['parent_baby'] })
+    await makeShow(chandni, istDateTime(TOMORROW, '18:00'), { language: 'Tamil', tags: ['parent_baby'], wheelchairFriendly: true })
     const times = async (q) => (await list(`city=hyderabad&date=${TOMORROW}&${q}`)).body.items.flatMap((g) => g.shows.map((s) => s.startTime))
     expect(await times('format=3D')).toEqual(['13:00'])
     expect(await times('subtitles=true')).toEqual(['13:00'])
     expect(await times('language=Tamil')).toEqual(['18:00'])
     expect(await times('parentBaby=true')).toEqual(['18:00'])
+    expect(await times('wheelchair=true')).toEqual(['18:00'])
+    expect(await times('format=3D&language=Tamil')).toEqual([]) // filters combine
   })
 
   it('a day outside today … +6 → 400; inactive or unknown movie → 404', async () => {

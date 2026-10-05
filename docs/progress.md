@@ -2,12 +2,24 @@
 
 ## Last session
 
+- Date: 2026-10-05 (second part)
+- U-07 + U-08 tested in the browser by you: ticked.
+- **U-09 Show list (UI-17)** with your 3 decisions: SF-08 filter chips on the show list; "Join waitlist" hidden until U-22 (Housefull shows only get the stamp); "from ₹120" on each theatre card.
+  - Fills the "Show times" section on `/movies/:id` (no new page). 7 day buttons (Today, Tomorrow, Wed … in IST; scroll sideways on small phones). Filter chips: the movie's languages (only when it has more than one), 2D / 3D, Subtitles, Wheelchair-friendly screen, Parent-and-baby show (one language and one format at a time) + "Clear filters". Day and filters live in the address (`?date=…&format=3D&subtitles=1`; today and empty values left out).
+  - Theatre paper cards (A to Z): name, "from ₹120" (lowest price of the day), address, amenities, show times as ticket buttons "Matinee · 2:30 PM" (BR-22) with small tags (language, 3D, Subtitles, Parent & baby). Housefull = grey dashed button with a "Housefull" stamp, not clickable. Deal shows = green "Special offer" stamp. Empty day: "No shows today. The projector is resting." (UI-44); with filters: "No shows match these filters on this day." No city picked: city buttons.
+  - A show time opens `/shows/:id` (the U-10 seat page, "not found" until Phase 4). "A" movies ask U-08 first if not answered yet, then open the show.
+  - Files: `pages/public/ShowList.jsx`, `showList.js` (+ tests), `api/shows.js` (filters, old list stays while loading), `ticket-shape` in `theme.css`, `MovieDetailsPage.jsx`. Server: no change (API built 2026-10-04); one more test (wheelchair filter, filters combine).
+  - Checked in Chrome: Hyderabad list, A-movie age question on a show time → `/shows/:id`, `?format=3D` from the address, 360 px (no sideways page scroll), Night show, no console errors. Not seen on screen: Housefull and Special offer (no sample show has them).
+  - Tests: **420 pass** (client 131: show list 7 new; server 289). Lint + build OK.
+
+## Earlier on 2026-10-05 (U-07 + U-08)
+
 - Date: 2026-10-05
 - **U-07 Movie details + U-08 Age warning** (started 2026-10-04, stopped by the usage limit; checked and finished today). Requirements UI-16 updated (title in Rye, tagline in Special Elite, light vintage tint, trailer opens a new tab, "A" asks once per movie per browser visit).
   - Server: `GET /api/movies/:id` for guests (`getMovie` in `controllers/movies.js`): list fields + `cast` (`photoUrl` or `null`), `ratingAvg`, `ratingCount`. Inactive / unknown → `404 NOT_FOUND`, bad ID → `400`.
   - Client: `useMovie(id)` (`api/movies.js`); `MovieDetailsPage.jsx` at `/movies/:id`: poster in a film-strip frame, title + certificate stamp (U green, UA mustard, A maroon), tagline, chips (languages, duration, genres, release date for Coming soon), rating, gold "Book tickets", "▶ Watch trailer" (new tab), cast photo cards (silhouette when no photo), "Show times" section (filled by U-09 next), "Reviews" note ("No reviews yet", U-23 later). Missing / inactive movie → "Movie not found" card (UI-36).
   - U-08: `AgeWarningDialog.jsx` (native `<dialog>`, focus stays inside, Escape = Go back, "Go back" has focus first). Only "A" movies ask; "Yes, continue" is remembered per movie in `sessionStorage` (`movie.js`; blocked storage = asks again). Then the page scrolls to Show times.
-  - Tests: **413 pass** (client 124: movie helpers 3 new; server 289: movie details 3 new). Lint + build OK. Not checked in the browser yet.
+  - Tests: **413 pass** (client 124: movie helpers 3 new; server 289: movie details 3 new). Lint + build OK. Tested in the browser by you: works.
 
 ## Earlier on 2026-10-04 (Home "Stage")
 
@@ -189,8 +201,8 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Try **U-07 + U-08** by hand: open a movie from Home, trailer button, cast cards, Night show, phone width; the "A" movie asks before Book tickets (once per visit; Escape = Go back).
-- Then **U-09 Show list** (plan first): fills the "Show times" section on the details page (the API is already built).
+- Try **U-09** by hand: days, filter chips, an "A" movie show time, your phone. To see Housefull / Special offer, make a show full or give it a deal (or tell me to add one to the seed).
+- Then **Phase 4 – Seats**, first UI-20 Box office window + UI-21 chair seats, then U-10 live seat map (plan first).
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -287,9 +299,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
 - [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; tested in the browser by the developer 2026-10-04)
 - [x] U-06 Search + filters, SF-08 (Search page `/movies`, filters in the address, same-show rule; checked in Chrome 2026-10-04)
-- [x] U-07 Movie details (`/movies/:id`, `GET /api/movies/:id`; done 2026-10-05, not checked by hand yet)
-- [x] U-08 Age warning (in-page dialog for "A" movies, once per movie per browser visit; done 2026-10-05)
-- [ ] U-09 Show list (the API `GET /api/movies/:id/shows` is already built and tested, 2026-10-04, for the Home banner chips; the show list page is still to do)
+- [x] U-07 Movie details (`/movies/:id`, `GET /api/movies/:id`; done 2026-10-05, tested in the browser by the developer 2026-10-05)
+- [x] U-08 Age warning (in-page dialog for "A" movies, once per movie per browser visit; done + tested in the browser by the developer 2026-10-05)
+- [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome)
 
 ## Phase 4 – Seats
 - [ ] UI-20 Box office window
@@ -338,7 +350,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [ ] SF-01 Show timing insights
 - [ ] SF-02 Ticket transfer
 - [ ] SF-03 Smart seat pick
-- [ ] SF-04 Waitlist, JOB-03
+- [ ] SF-04 Waitlist (U-22), JOB-03. **Note (2026-10-05):** the U-09 show list hides "Join waitlist" for now; Housefull shows only get the stamp. Add the "Join waitlist" link to Housefull show times in `ShowList.jsx` here (UI-17).
 - [ ] SF-05 Seat view preview
 - [ ] SF-06 Food pickup time
 - [ ] SF-07 Last-minute deals, JOB-05

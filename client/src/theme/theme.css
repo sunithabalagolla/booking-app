@@ -426,6 +426,17 @@
     radial-gradient(circle 5px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
 }
 
+/* U-09 show time buttons (UI-17): the same notched ticket shape, colours set by the
+   button (Tailwind classes), so hover and Housefull can change them. The mask also
+   clips outlines, so the focus ring goes on the outer link, not on this shape. */
+@utility ticket-shape {
+  border-radius: 3px;
+  -webkit-mask: radial-gradient(circle 6px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 6px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+
 /* UI-41 / NF-05: reduce motion stops all of them; the ticker shows the first message */
 @media (prefers-reduced-motion: reduce) {
   .ticker-track,

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { useMovie } from '../../api/movies.js'
 import AgeWarningDialog from '../../components/ui/AgeWarningDialog.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -10,10 +10,11 @@ import VintagePoster from '../../components/ui/VintagePoster.jsx'
 import { formatDuration, releaseLabel } from '../../validation/movies.js'
 import { istToday } from '../../validation/shows.js'
 import { CERTIFICATE_TONES, hasAgeOk, needsAgeCheck, ratingText, saveAgeOk } from './movie.js'
+import ShowList from './ShowList.jsx'
 
 // U-07 movie details (UI-16) + U-08 age warning, inside the "Stage" frame.
 // Book tickets: "A" movies ask first (once per movie per browser visit), then go to
-// the show times. The show list (U-09) fills that section next; reviews come with U-23.
+// the show times (U-09 show list). Picking a show time asks too. Reviews come with U-23.
 export default function MovieDetailsPage() {
   const { id } = useParams()
   const movie = useMovie(id)
@@ -56,7 +57,9 @@ function Silhouette() {
 }
 
 function MovieDetails({ movie }) {
-  const [askAge, setAskAge] = useState(false)
+  // U-08: where to go after "Yes, continue": 'times' (Book tickets) or a show link. null = closed.
+  const [ageNext, setAgeNext] = useState(null)
+  const navigate = useNavigate()
   const showTimesRef = useRef(null)
   const today = istToday()
   const comingSoon = movie.status === 'coming_soon'
@@ -67,9 +70,18 @@ function MovieDetails({ movie }) {
   }
 
   // U-08: "A" movies ask once per movie per visit
+  const mustAskAge = () => needsAgeCheck(movie) && !hasAgeOk(movie.id)
+
   function bookTickets() {
-    if (needsAgeCheck(movie) && !hasAgeOk(movie.id)) setAskAge(true)
+    if (mustAskAge()) setAgeNext('times')
     else goToShowTimes()
+  }
+
+  // A show time link: stop it and ask first (the link works normally after a "yes")
+  function pickShow(event, href) {
+    if (!mustAskAge()) return
+    event.preventDefault()
+    setAgeNext(href)
   }
 
   return (
@@ -140,12 +152,13 @@ function MovieDetails({ movie }) {
         </section>
       )}
 
-      {/* Show times: the U-09 show list fills this next */}
+      {/* Show times: U-09 show list (UI-17) */}
       <section ref={showTimesRef} tabIndex={-1} aria-labelledby="times-title" className="scroll-mt-6 space-y-3 focus:outline-none">
         <h2 id="times-title" className="font-heading text-2xl text-maroon sm:text-[2rem] dark:text-gold">
           Show times
         </h2>
-        <p className="font-type">{comingSoon ? `Bookings open closer to the release (${releaseLabel(movie.releaseDate, today).toLowerCase()}).` : 'The list of theatres and show times comes here next.'}</p>
+        {comingSoon && movie.releaseDate > today && <p className="font-type">{releaseLabel(movie.releaseDate, today)}. Shows appear here once theatres add them.</p>}
+        <ShowList movie={movie} onPickShow={pickShow} />
       </section>
 
       {/* Reviews as typewritten notes (UI-16); writing reviews comes with U-23 */}
@@ -157,13 +170,14 @@ function MovieDetails({ movie }) {
       </section>
 
       <AgeWarningDialog
-        open={askAge}
+        open={ageNext !== null}
         movieTitle={movie.title}
-        onCancel={() => setAskAge(false)}
+        onCancel={() => setAgeNext(null)}
         onConfirm={() => {
           saveAgeOk(movie.id)
-          setAskAge(false)
-          goToShowTimes()
+          setAgeNext(null)
+          if (ageNext === 'times') goToShowTimes()
+          else navigate(ageNext)
         }}
       />
     </article>
