@@ -138,3 +138,18 @@ export async function listMovieShows(req, res) {
   const items = [...groups.values()].sort((a, b) => a.theatre.name.localeCompare(b.theatre.name, 'en'))
   res.json({ date, items })
 }
+
+// GET /api/movies/:id (U-07): all movie fields for the details page.
+// Inactive or unknown → 404 (users and guests never see inactive movies).
+export async function getMovie(req, res) {
+  const movie = await Movie.findById(req.valid.params.id)
+  if (!movie || movie.status === 'inactive') throw new AppError(404, 'NOT_FOUND', 'We could not find this movie.')
+  res.json({
+    movie: {
+      ...listMovie(movie),
+      cast: (movie.cast ?? []).map((c) => ({ name: c.name, photoUrl: c.photoUrl ?? null })),
+      ratingAvg: movie.ratingAvg,
+      ratingCount: movie.ratingCount,
+    },
+  })
+}

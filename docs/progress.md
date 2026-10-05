@@ -2,6 +2,15 @@
 
 ## Last session
 
+- Date: 2026-10-05
+- **U-07 Movie details + U-08 Age warning** (started 2026-10-04, stopped by the usage limit; checked and finished today). Requirements UI-16 updated (title in Rye, tagline in Special Elite, light vintage tint, trailer opens a new tab, "A" asks once per movie per browser visit).
+  - Server: `GET /api/movies/:id` for guests (`getMovie` in `controllers/movies.js`): list fields + `cast` (`photoUrl` or `null`), `ratingAvg`, `ratingCount`. Inactive / unknown → `404 NOT_FOUND`, bad ID → `400`.
+  - Client: `useMovie(id)` (`api/movies.js`); `MovieDetailsPage.jsx` at `/movies/:id`: poster in a film-strip frame, title + certificate stamp (U green, UA mustard, A maroon), tagline, chips (languages, duration, genres, release date for Coming soon), rating, gold "Book tickets", "▶ Watch trailer" (new tab), cast photo cards (silhouette when no photo), "Show times" section (filled by U-09 next), "Reviews" note ("No reviews yet", U-23 later). Missing / inactive movie → "Movie not found" card (UI-36).
+  - U-08: `AgeWarningDialog.jsx` (native `<dialog>`, focus stays inside, Escape = Go back, "Go back" has focus first). Only "A" movies ask; "Yes, continue" is remembered per movie in `sessionStorage` (`movie.js`; blocked storage = asks again). Then the page scrolls to Show times.
+  - Tests: **413 pass** (client 124: movie helpers 3 new; server 289: movie details 3 new). Lint + build OK. Not checked in the browser yet.
+
+## Earlier on 2026-10-04 (Home "Stage")
+
 - Date: 2026-10-04
 - **Home "Stage" redesign** (`docs/home-design.md`, approved by you). Requirements updated (U-05, UI-15, UI-26, UI-46, A-02, 16.4 note). Your 5 decisions: film grain stays at 3–4% (UI-04 / UI-45); poster titles in Georgia bold (SVG in `<img>` cannot load Rye); "Today in [city]" chips use the U-09 endpoint `GET /api/movies/:id/shows`, built now; the header search box replaces the Home and Search page boxes; content 1120 px, side curtains from 1280 px screens. Built in 3 steps:
   - **Step 1 (data):** optional movie `tagline` (max 120; model, admin API + form field, public list, seed); public list items also have `trailerUrl`. 6 new colourful sample posters (`seed/posters.js`, design Section 9: rain + lightning, haunted house + gulmohar, sunset road + bus, sea + boat, planet + rocket, moon + train). Checked all 6 in Chrome. Tests: 395 pass.
@@ -180,7 +189,8 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Then **U-07 Movie details** (plan first). The cards, chips and "Book tickets" already link to `/movies/:id`.
+- Try **U-07 + U-08** by hand: open a movie from Home, trailer button, cast cards, Night show, phone width; the "A" movie asks before Book tickets (once per visit; Escape = Go back).
+- Then **U-09 Show list** (plan first): fills the "Show times" section on the details page (the API is already built).
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -277,8 +287,8 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
 - [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; tested in the browser by the developer 2026-10-04)
 - [x] U-06 Search + filters, SF-08 (Search page `/movies`, filters in the address, same-show rule; checked in Chrome 2026-10-04)
-- [ ] U-07 Movie details
-- [ ] U-08 Age warning
+- [x] U-07 Movie details (`/movies/:id`, `GET /api/movies/:id`; done 2026-10-05, not checked by hand yet)
+- [x] U-08 Age warning (in-page dialog for "A" movies, once per movie per browser visit; done 2026-10-05)
 - [ ] U-09 Show list (the API `GET /api/movies/:id/shows` is already built and tested, 2026-10-04, for the Home banner chips; the show list page is still to do)
 
 ## Phase 4 – Seats

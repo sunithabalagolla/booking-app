@@ -14,3 +14,8 @@ export function useMovies({ city, status, limit, filters = {}, enabled = true })
     placeholderData: keepPreviousData,
   })
 }
+
+// U-07: one movie with all its fields (inactive / unknown → 404 NOT_FOUND)
+export function useMovie(id) {
+  return useQuery({ queryKey: ['movie', id], queryFn: async () => (await apiFetch(`/movies/${id}`)).movie, enabled: Boolean(id), retry: false })
+}

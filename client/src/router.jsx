@@ -24,6 +24,7 @@ import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage.jsx'
 import HomePage from './pages/public/HomePage.jsx'
 import LoginPage from './pages/public/LoginPage.jsx'
+import MovieDetailsPage from './pages/public/MovieDetailsPage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
 import SearchPage from './pages/public/SearchPage.jsx'
@@ -46,6 +47,8 @@ const router = createBrowserRouter([
       { path: '/', element: guard(PUBLIC, <HomePage />) },
       // U-06 search + filters
       { path: '/movies', element: guard(PUBLIC, <SearchPage />) },
+      // U-07 movie details (+ U-08 age warning)
+      { path: '/movies/:id', element: guard(PUBLIC, <MovieDetailsPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

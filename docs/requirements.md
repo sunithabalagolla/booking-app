@@ -647,7 +647,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 - Footer: dotted gold line, "For theatre owners", "© Talkies".
 - Bottom navigation (Home, Ticket album, Profile): added when Ticket album and Profile exist.
 
-**UI-16 Movie details**: poster in a thin film-strip frame, sepia tint; title in Special Elite; certificate stamp; trailer button; cast as small "photo cards"; reviews as typewritten notes.
+**UI-16 Movie details**: poster in a thin film-strip frame with the light vintage tint (UI-46); title in Rye (changed 2026-10-04 to match the Home "Stage" banner), tagline in Special Elite; certificate stamp; trailer button (opens the link in a new tab); cast as small "photo cards"; reviews as typewritten notes. Book tickets: "A" movies ask U-08 first (once per movie per browser visit).
 
 **UI-17 Show list**: theatres as cards; each show time is a small ticket-shaped button with its label ("Matinee · 2:30 PM"); full shows are grey with a small "Housefull" stamp and a "Join waitlist" link; deal shows have a "Special offer" stamp.
 
