@@ -2,6 +2,13 @@
 
 ## Last session
 
+- Date: 2026-10-05 (end of session)
+- Step 2 (seat hold + timer, Interval card, Give up seats) tested in the browser by you: works. Ticked.
+- End of session: all tests run: **446 pass** (client 141, server 305).
+- Done today in short: U-07, U-08, U-09 (+ sample Housefull / deal shows), Phase 3 done; Phase 4 Step 1 (seat page, box office window, chair seats, NF-04) with your flip + wheelchair mark fixes; Phase 4 Step 2 (U-12 hold, T-02, T-03).
+
+## Earlier on 2026-10-05 (Phase 4 Step 2)
+
 - Date: 2026-10-05 (sixth part)
 - **Phase 4 Step 2 done: seat hold + timer** (U-12, UI-33, T-02, T-03):
   - Server: `bookings` model (`models/Booking.js`, the pending-hold part of database.md 5.11; `pricing.ticketsPaise` only until U-14). `services/seatHold.js`: `holdSeats` = one transaction: give back the user's older hold for this show, clear expired holds on these seats (slow TTL), create the pending booking + one `showseats` document per seat (the unique index decides who wins). Someone faster → `409 SEAT_TAKEN` "Seat D3 was just taken. Please pick another seat." and nothing is held. More than `maxSeatsPerBooking` → `400 RULE_BROKEN` (BR-02); blocked / unknown seat → 400; started or cancelled show → `400 RULE_BROKEN`. Booking number `TK` + 8 easy characters (S-02), random `qrNonce`. Routes: `POST /api/bookings/hold`, `GET /api/bookings/:id` (own; an expired hold is released when read), `DELETE /api/bookings/:id/hold` (Give up seats; again = fine). `GET /api/shows/:id/seats` now also sends `myHold` (timer after a refresh; counts down from `remainingSeconds`, so a wrong phone clock does not matter). `api.md` + `database.md` updated.
@@ -237,8 +244,11 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Check **Phase 4 Step 2** in the browser: Proceed → timer, refresh, Give up seats, two browsers (or two logins) on the same seat. To see the Interval card without waiting 10 minutes, set `holdMinutes` to 1 in admin Settings (and back to 10 afterwards).
-- Then **Step 3: U-10 live** (Socket.io rooms, `seats:update`) + JOB-01 with `node-cron`.
+- **Phase 4 Step 3: live seat map (U-10) + JOB-01** (plan first, then wait for your OK):
+  - Socket.io on the same server and port (`socket.io` + `socket.io-client`, OK'd by you); room `show:<id>` (`show:join` / `show:leave`); `seats:update` after hold, give up and time over (api.md Section 12).
+  - JOB-01 every minute with `node-cron` (in Section 2, OK'd by you): delete expired holds, mark their bookings `released`, push `seats:update`.
+  - Check: two browsers on the same show, one holds, the other sees the seat turn green with a lock at once.
+- Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -342,10 +352,10 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome; tested in the browser by the developer 2026-10-05)
 
 ## Phase 4 – Seats
-- [x] UI-20 Box office window (Step 1, 2026-10-05; waiting for your check)
-- [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; waiting for your check)
+- [x] UI-20 Box office window (Step 1, 2026-10-05; checked in the browser by the developer)
+- [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; checked by the developer, clearer flip + plain wheelchair mark fixed the same day)
 - [ ] U-10 Live seat map (Socket.io) (seat page + taken seats done in Step 1; live updates = Step 3)
-- [x] U-12 Seat hold + timer (Step 2, 2026-10-05; Interval card UI-33, Give up seats; waiting for your check)
+- [x] U-12 Seat hold + timer (Step 2, 2026-10-05; Interval card UI-33, Give up seats; tested in the browser by the developer 2026-10-05)
 - [ ] JOB-01
 - [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
 - [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
