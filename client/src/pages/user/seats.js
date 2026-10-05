@@ -5,7 +5,7 @@ import { formatRupees } from '../../validation/food.js'
 export const SEAT_STATES = ['available', 'selected', 'booked', 'held']
 
 // NF-04: every state has a mark, not only a colour. The legend uses the same marks.
-export const SEAT_MARKS = { available: '', selected: '✓', booked: '✕', held: '🔒', blocked: '–' }
+export const SEAT_MARKS = { available: '', selected: '✓', booked: '✕', held: '🔒', blocked: '–', wheelchair: '♿︎' } // U+FE0E after ♿ = plain text mark, not a coloured emoji (like the screen editor)
 export const STATE_NAMES = { available: 'available', selected: 'selected', booked: 'booked', held: 'held by someone' }
 
 // taken: [{ seatId, status }] from GET /api/shows/:id/seats → Map seatId → 'held' | 'booked'

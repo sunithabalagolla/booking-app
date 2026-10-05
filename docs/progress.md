@@ -2,6 +2,14 @@
 
 ## Last session
 
+- Date: 2026-10-05 (fifth part)
+- **Step 1 check by you:** chair size, 10-seat limit and total OK. Fixed your 2 points:
+  - Cushion flip clearer (UI-21): folded UP = thin darker raised strip right under the backrest (clearly empty); picked = swings DOWN to a full flat gold seat in **400 ms** with a small bounce (goes about 8° past flat, then settles) and a small shadow under it when it lands. Closer CSS perspective. Reduce motion: colour change only. `motion.js` seatFlip 280 → 400.
+  - Wheelchair mark: plain ink ♿ text mark (U+FE0E, like the screen editor), not the blue emoji, on seats and in the legend.
+  - Checked in Chrome: measured the cushion angle during the flip (72° → −8° → 0° in 400 ms), shadow at the end, both end states and the legend zoomed in.
+
+## Earlier on 2026-10-05 (Phase 4 Step 1)
+
 - Date: 2026-10-05 (fourth part)
 - **Phase 4 plan** agreed (3 steps, you check each one). Your decisions: `node-cron` is in Section 2 (Background jobs), added in Step 3 with JOB-01; Socket.io packages OK (Step 3); after a hold (Step 2) the seat page shows the timer, the held seats and "Give up seats"; seat class names stay fixed (**UI-22 updated** in requirements).
 - **Step 1 done: seat page** (UI-20, UI-21, UI-22, NF-04; part of U-10):

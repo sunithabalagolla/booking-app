@@ -12,7 +12,7 @@ import { formatRupees } from '../../validation/food.js'
 import { CLASS_NAMES, formatShortDay } from '../../validation/shows.js'
 import { hasAgeOk, needsAgeCheck, saveAgeOk } from '../public/movie.js'
 import { showTimeText } from '../public/showList.js'
-import { classSections, dropTaken, seatInfo, seatLabel, seatState, selectionSummary, takenMap, toggleSeat } from './seats.js'
+import { classSections, dropTaken, SEAT_MARKS, seatInfo, seatLabel, seatState, selectionSummary, takenMap, toggleSeat } from './seats.js'
 
 // U-10 seat selection at /shows/:id (login needed, 9.2), inside the UI-20 box office
 // window with UI-21 chair seats and the NF-04 legend.
@@ -230,7 +230,10 @@ function Legend() {
         </li>
       ))}
       <li className="flex items-center gap-2 text-sm">
-        <span aria-hidden="true">♿</span> Wheelchair space
+        <span aria-hidden="true" className="font-bold text-ink dark:text-cream">
+          {SEAT_MARKS.wheelchair}
+        </span>{' '}
+        Wheelchair space
       </li>
     </ul>
   )

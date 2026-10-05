@@ -1,7 +1,7 @@
 import { SEAT_MARKS } from '../../pages/user/seats.js'
 
 // UI-21 chair seat: backrest, cushion (hinged at its top edge) and 2 wooden armrests.
-// Available = cushion folded up, cream. Selected = cushion flips down, gold, tick.
+// Available = cushion folded up (thin strip), cream. Selected = cushion swings down, gold, tick.
 // Booked = maroon, cushion down, ✕. Held = green, cushion up, lock. (NF-04 marks)
 // Booked / held are not clickable (aria-disabled, still readable by screen readers).
 // Styles: `.seat*` in theme.css (CSS 3D; reduce motion = no flip animation).
@@ -19,7 +19,7 @@ export default function Seat({ state, wheelchair, label, onClick }) {
     >
       <span className="seat-arm seat-arm-left" aria-hidden="true" />
       <span className="seat-back" aria-hidden="true">
-        {SEAT_MARKS[state] || (wheelchair ? '♿' : '')}
+        {SEAT_MARKS[state] || (wheelchair ? SEAT_MARKS.wheelchair : '')}
       </span>
       <span className="seat-cushion" aria-hidden="true" />
       <span className="seat-arm seat-arm-right" aria-hidden="true" />
