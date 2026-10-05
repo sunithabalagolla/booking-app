@@ -14,6 +14,7 @@ import meRoutes from './routes/me.js'
 import movieRoutes from './routes/movies.js'
 import ownerRoutes from './routes/owner.js'
 import settingsRoutes from './routes/settings.js'
+import showRoutes from './routes/shows.js'
 import staffRoutes from './routes/staff.js'
 import uploadRoutes from './routes/uploads.js'
 
@@ -43,6 +44,7 @@ app.use('/api/me', meRoutes)
 app.use('/api/settings', settingsRoutes) // A-05 public values
 app.use('/api/cities', cityRoutes) // U-04 city picker
 app.use('/api/movies', movieRoutes) // U-05 movie lists
+app.use('/api/shows', showRoutes) // U-10 seat page
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)

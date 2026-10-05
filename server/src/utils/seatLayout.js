@@ -10,6 +10,8 @@
 // - wheelchair-friendly = at least 1 wheelchair space (automatic)
 
 export const SEAT_CLASSES = ['balcony', 'first', 'second']
+// UI-22: fixed class names (owners cannot rename them, decided 2026-10-05)
+export const CLASS_NAMES = { balcony: 'Balcony', first: 'First class', second: 'Second class' }
 export const CELL_TYPES = ['seat', 'aisle', 'blocked']
 export const MAX_ROWS = 26 // A to Z
 export const MAX_COLS = 40

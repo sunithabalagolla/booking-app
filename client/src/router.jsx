@@ -31,6 +31,7 @@ import SearchPage from './pages/public/SearchPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 import StaffScanPage from './pages/staff/StaffScanPage.jsx'
+import SeatPage from './pages/user/SeatPage.jsx'
 import { PUBLIC } from './store/authStore.js'
 
 // All app routes live here. More pages are added phase by phase.
@@ -49,6 +50,8 @@ const router = createBrowserRouter([
       { path: '/movies', element: guard(PUBLIC, <SearchPage />) },
       // U-07 movie details (+ U-08 age warning)
       { path: '/movies/:id', element: guard(PUBLIC, <MovieDetailsPage />) },
+      // U-10 seat selection (UI-20): login needed from here on (9.2), users only
+      { path: '/shows/:id', element: guard(['user'], <SeatPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

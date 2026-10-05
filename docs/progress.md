@@ -2,6 +2,16 @@
 
 ## Last session
 
+- Date: 2026-10-05 (fourth part)
+- **Phase 4 plan** agreed (3 steps, you check each one). Your decisions: `node-cron` is in Section 2 (Background jobs), added in Step 3 with JOB-01; Socket.io packages OK (Step 3); after a hold (Step 2) the seat page shows the timer, the held seats and "Give up seats"; seat class names stay fixed (**UI-22 updated** in requirements).
+- **Step 1 done: seat page** (UI-20, UI-21, UI-22, NF-04; part of U-10):
+  - Server: new `showseats` model (`models/ShowSeat.js`: unique `{ showId, seatId }` lock, TTL on `expiresAt`, `takenNow()` also checks `expiresAt > now`). `GET /api/shows/:id` (guests: show, movie, theatre, screen, layout, prices with class names) and `GET /api/shows/:id/seats` (users only: taken seats; expired holds count as free). Cancelled / started / unknown show, inactive movie, unapproved theatre → 404. `CLASS_NAMES` moved to `utils/seatLayout.js`. `api.md` updated.
+  - Client: `/shows/:id` (users only; guests go to Log in and come back; owners / admins go to their home). Header: back link, title, "Tue 6 Oct · Matinee · 2:30 PM · theatre", screen · language · format. Box office window: wooden frame with arched top, dark window with iron grille, swinging "TICKETS" board on gold strings, cream seat area with "FIRST CLASS · ₹230" headings, row letters both sides, aisles, walkways, curved "SCREEN THIS WAY", ledge with a half-moon slot. Chair seats (`components/ui/Seat.jsx` + `.seat*` CSS): backrest, cushion, armrests; cushion flips down when picked (280 ms bounce); NF-04 marks (✓ ✕ lock, dashed "–" for blocked, ♿); legend. Bottom bar (sticky): "2 seats: E5, E6", "Tickets ₹460", up to 10 seats (BR-02, from settings), Proceed shown but off ("Holding seats comes in the next step"). "A" movies opened straight from a link ask U-08 first ("Go back" = movie page). Housefull show: stamp + "Pick another show" instead of the map. Reduce motion: no cushion flip, no board swing.
+  - Checked in Chrome (as the seed test user): age question, picking 2 seats + summary, booked / held look (2 temporary seat records, removed afterwards), 360 px (map scrolls sideways inside the window, starts in the middle; no sideways page scroll), Night show, no console errors. **Your Chrome is now logged in as the test user**, not the owner.
+  - Tests: **433 pass** (client 138: seat helpers 7 new; server 295: show + seats 5 new). Lint + build OK.
+
+## Earlier on 2026-10-05 (seed stamps)
+
 - Date: 2026-10-05 (third part)
 - U-09 tested in the browser by you: ticked. **Phase 3 done.**
 - **Seed: stamp sample shows** (your request): the `shows` step now marks 1 upcoming sample show Housefull (tomorrow 8:00 PM, Chandni Talkies (Sample), Screen 1) and gives 1 a 20% deal (tomorrow 4:30 PM, same screen). Only when no upcoming sample show has it, so running the seed again adds no more. Housefull is only the counter (`bookedCount = totalSeats`), no seats are really booked (see Notes for later). Ran on Docker; both show in the API.
@@ -209,7 +219,9 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Then **Phase 4 – Seats**, first UI-20 Box office window + UI-21 chair seats, then U-10 live seat map (plan first).
+- Check **Phase 4 Step 1** (seat page) in the browser: a show time → seats, pick / unpick, the 10-seat limit, an "A" movie, your phone, Night show.
+- Then **Step 2: U-12 hold + timer** (`bookings` model, `POST /api/bookings/hold` in one transaction, timer after refresh, Interval card UI-33, "Give up seats", T-02, T-03).
+- Then **Step 3: U-10 live** (Socket.io rooms, `seats:update`) + JOB-01 with `node-cron`.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -313,12 +325,12 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome; tested in the browser by the developer 2026-10-05)
 
 ## Phase 4 – Seats
-- [ ] UI-20 Box office window
-- [ ] UI-21 Chair seat + UI-22 class names
-- [ ] U-10 Live seat map (Socket.io)
+- [x] UI-20 Box office window (Step 1, 2026-10-05; waiting for your check)
+- [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; waiting for your check)
+- [ ] U-10 Live seat map (Socket.io) (seat page + taken seats done in Step 1; live updates = Step 3)
 - [ ] U-12 Seat hold + timer
 - [ ] JOB-01
-- [ ] NF-04 colour-blind marks
+- [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
 - [ ] T-02, T-03 tests
 
 ## Phase 5 – Booking + payment

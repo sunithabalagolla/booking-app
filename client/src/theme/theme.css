@@ -450,3 +450,195 @@
     display: none;
   }
 }
+
+/* ===== Phase 4 seat page (UI-20 box office window, UI-21 chair seat, NF-04) ===== */
+
+/* UI-21 chair seat, about 30 × 32 px (34 × 36 from 640 px screens), 3 px gap */
+.seat {
+  --seat: var(--color-cream);
+  --seat-line: var(--color-ink);
+  --mark: var(--color-ink);
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 32px;
+  flex: none;
+  perspective: 120px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+@media (min-width: 640px) {
+  .seat {
+    width: 34px;
+    height: 36px;
+  }
+}
+.seat:focus-visible {
+  outline: 2px solid var(--color-maroon);
+  outline-offset: 2px;
+}
+.seat[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+.seat[data-state='selected'] {
+  --seat: var(--color-gold);
+}
+.seat[data-state='booked'] {
+  --seat: var(--color-maroon);
+  --mark: var(--color-cream);
+}
+.seat[data-state='held'] {
+  --seat: var(--color-green);
+  --mark: var(--color-cream);
+}
+.seat-back {
+  position: absolute;
+  inset: 0 4px auto;
+  height: 62%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--seat-line);
+  border-radius: 7px 7px 2px 2px;
+  background: var(--seat);
+  color: var(--mark);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+/* Hinged at its top edge: folded up (thin strip) or down (a full cushion) */
+.seat-cushion {
+  position: absolute;
+  inset: 58% 3px auto;
+  height: 36%;
+  border: 1.5px solid var(--seat-line);
+  border-radius: 2px 2px 5px 5px;
+  background: var(--seat);
+  transform-origin: top;
+  transform: rotateX(78deg);
+  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1); /* small bounce (motion.js seatFlip) */
+}
+.seat[data-state='selected'] .seat-cushion,
+.seat[data-state='booked'] .seat-cushion {
+  transform: rotateX(0deg);
+}
+.seat-arm {
+  position: absolute;
+  bottom: 3px;
+  width: 3px;
+  height: 52%;
+  border-radius: 1px;
+  background: var(--color-wood);
+}
+.seat-arm-left {
+  left: 0;
+}
+.seat-arm-right {
+  right: 0;
+}
+.seat-blocked {
+  display: inline-flex;
+  width: 30px;
+  height: 32px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed color-mix(in srgb, var(--color-ink) 55%, transparent);
+  border-radius: 6px;
+  color: var(--color-ink);
+  font-size: 12px;
+}
+@media (min-width: 640px) {
+  .seat-blocked {
+    width: 34px;
+    height: 36px;
+  }
+}
+
+/* UI-20 box office window: wooden frame with an arched top */
+.box-office {
+  background-color: var(--color-wood);
+  /* light wood-grain stripes */
+  background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 9px, rgb(0 0 0 / 0.07) 9px 11px, transparent 11px 19px);
+  border-top-left-radius: 50% 110px;
+  border-top-right-radius: 50% 110px;
+  padding: 14px 14px 0;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.4);
+}
+@media (min-width: 640px) {
+  .box-office {
+    border-top-left-radius: 50% 160px;
+    border-top-right-radius: 50% 160px;
+    padding: 20px 20px 0;
+  }
+}
+/* Dark window in the arch with iron grille bars (only here, never over the seats) */
+.box-office-arch {
+  position: relative;
+  height: 96px;
+  border-top-left-radius: 50% 96px;
+  border-top-right-radius: 50% 96px;
+  background-color: var(--color-stage);
+  background-image:
+    linear-gradient(to bottom, transparent calc(55% - 2px), #8a8a86 calc(55% - 2px) calc(55% + 2px), transparent calc(55% + 2px)),
+    repeating-linear-gradient(90deg, transparent 0 calc(100% / 14 - 4px), #8a8a86 calc(100% / 14 - 4px) calc(100% / 14));
+  border-bottom: 3px solid #4a3220;
+}
+@media (min-width: 640px) {
+  .box-office-arch {
+    height: 140px;
+    border-top-left-radius: 50% 140px;
+    border-top-right-radius: 50% 140px;
+  }
+}
+/* "TICKETS" board on two gold strings, gently swinging (motion.js ticketsSwing) */
+.tickets-board {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  translate: -50% 0;
+  transform-origin: 50% 0;
+  animation: tickets-swing 4s ease-in-out infinite;
+}
+@media (min-width: 640px) {
+  .tickets-board {
+    top: 22px;
+  }
+}
+@keyframes tickets-swing {
+  0%, 100% { rotate: -3deg; }
+  50% { rotate: 3deg; }
+}
+/* Counter ledge with a half-moon ticket slot */
+.box-office-ledge {
+  position: relative;
+  height: 30px;
+  margin: 0 -14px;
+  background: #4a3220;
+  border-top: 3px solid #8a6440;
+}
+@media (min-width: 640px) {
+  .box-office-ledge {
+    margin: 0 -20px;
+  }
+}
+.box-office-ledge::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 96px;
+  height: 20px;
+  translate: -50% 0;
+  border-radius: 48px 48px 0 0;
+  background: var(--color-stage);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-cushion {
+    transition: none; /* colour change only (UI-21) */
+  }
+  .tickets-board {
+    animation: none;
+  }
+}

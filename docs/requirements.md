@@ -669,7 +669,7 @@ Approved preview (private link, only for the developer to look at): https://clau
 - Booked: maroon, cushion down, ✕ mark, not clickable. Held: bottle green, cushion up, lock mark, not clickable. Blocked: not drawn (empty space) or dashed outline.
 - About 30 × 32 px on phones, 3 px gap. CSS 3D (perspective on button, rotateX on cushion). Reduce motion: colour change only.
 
-**UI-22 Seat class names**: owner sets a class name for each seat type: Balcony, First class, Second class. Seat map, ticket and invoice show the class name.
+**UI-22 Seat class names** (changed 2026-10-05): the 3 seat types have **fixed** class names: Balcony, First class, Second class. Owners pick the type of each seat (O-04) but cannot rename the classes. Seat map, ticket and invoice show the class name.
 
 **UI-23 Booking summary**: looks like an old handwritten bill on ruled paper: lines for tickets, food, fee, GST, discount, total in bold.
 

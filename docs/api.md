@@ -134,7 +134,7 @@ All errors have the same shape:
 | GET | `/api/movies/:id` | Guest | — | All movie fields (U-07). `inactive` → `404` |
 | GET | `/api/movies/:id/reviews` | Guest | page | Not hidden only (A-12) |
 | GET | `/api/movies/:id/shows` | Guest | `city, date` (IST day, today … +6), `language?, format?, subtitles?, wheelchair?, parentBaby?` (like `/api/movies`) | U-09 (**built 2026-10-04**, first used by the Home banner "Today / Tomorrow in [city]" chips): `{ date, items: [{ theatre: { id, name, address, amenities }, shows: [{ id, startAt, startTime` (`HH:mm` IST)`, label, language, format, subtitles, tags, housefull, deal: { active, percent }, minPricePaise }] }] }`. Theatres A to Z (approved only), shows in time order; shows that already started are left out. Day outside today … +6 → `400`; inactive / unknown movie → `404` |
-| GET | `/api/shows/:id` | Guest | — | Show + movie + theatre + screen name + `layout` + `prices` (with class names). No seat states |
+| GET | `/api/shows/:id` | Guest | — | UI-20 (**built 2026-10-05**): `{ show: { id, startAt, date` (IST day)`, startTime` (`HH:mm` IST)`, label, language, format, subtitles, tags, housefull, deal: { active, percent }, movie: { id, title, certificate, posterUrl, durationMinutes }, theatre: { id, name, address }, screen: { name }, layout: { rows, cols, grid: [{ label, cells: [{ type, seatId?, seatClass?, wheelchair? }] }] }, prices: [{ seatClass, className, pricePaise }] } }`. Class names are fixed (UI-22). No seat states. Cancelled, already started, unknown show, inactive movie or unapproved theatre → `404` |
 | GET | `/api/theatres/:id/food` | Guest | — | Canteen menu, in-stock items first (U-13, UI-24) |
 
 ---
@@ -145,7 +145,7 @@ Login is needed from seat selection on (9.2).
 
 | Method | Path | Who | Body / query | Result / notes |
 | --- | --- | --- | --- | --- |
-| GET | `/api/shows/:id/seats` | User | — | `{ taken: [{ seatId, status }] }` with `status` `held` · `booked`. Expired holds are shown as free (`expiresAt > now` check, database.md Section 3). Live changes come by Socket.io (Section 12) |
+| GET | `/api/shows/:id/seats` | User | — | (**built 2026-10-05**, role `user` only, else `403`; same `404` rules as above) `{ taken: [{ seatId, status }] }` with `status` `held` · `booked`. Expired holds are shown as free (`expiresAt > now` check, database.md Section 3). Live changes come by Socket.io (Section 12) |
 | POST | `/api/shows/:id/seat-suggestion` | User | `count` (1–10), `seatClass` | SF-03 / U-11: `{ groups: [[seatIds]] }` (1 group, or the best 2). Only a suggestion, nothing held (Phase 9) |
 | POST | `/api/bookings/hold` | User | `showId, seatIds[]` | U-12. `201 { booking }` with `status: pending`, `holdExpiresAt`. One transaction: all seats or none. `409 SEAT_TAKEN` (`details.seatIds`). Max seats BR-02. Blocked / non-existing seat → `400`. Show started, cancelled or not live → `400 RULE_BROKEN`. If the user already has a `pending` booking for this show, it is released first |
 | GET | `/api/bookings/:id` | User (own) | — | Full booking: seats, food, `pricing` (U-14 summary, always recalculated by the backend), `holdExpiresAt` (timer after refresh). Confirmed: also `qrDataUrl` and `bookingNumber` (U-17) |

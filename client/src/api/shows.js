@@ -13,3 +13,13 @@ export function useMovieShows({ movieId, city, date, filters = {}, enabled = tru
     placeholderData: keepPreviousData, // the old list stays while a new day / filter loads
   })
 }
+
+// UI-20 seat page: one show with its layout and prices (cancelled / started → 404 NOT_FOUND)
+export function useShow(id) {
+  return useQuery({ queryKey: ['show', id], queryFn: async () => (await apiFetch(`/shows/${id}`)).show, enabled: Boolean(id), retry: false })
+}
+
+// U-10: the seats taken right now (held / booked). Live updates by Socket.io come in Step 3.
+export function useShowSeats(id, { enabled = true } = {}) {
+  return useQuery({ queryKey: ['show-seats', id], queryFn: async () => (await apiFetch(`/shows/${id}/seats`)).taken, enabled: Boolean(id) && enabled })
+}

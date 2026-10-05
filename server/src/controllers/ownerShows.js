@@ -5,7 +5,7 @@ import { Screen } from '../models/Screen.js'
 import { Show } from '../models/Show.js'
 import { Theatre } from '../models/Theatre.js'
 import { AppError } from '../utils/AppError.js'
-import { SEAT_CLASSES } from '../utils/seatLayout.js'
+import { CLASS_NAMES, SEAT_CLASSES } from '../utils/seatLayout.js'
 import { formatShortDay, istParts, istDateTime, showEnd, showLabel } from '../utils/showTime.js'
 import { dateToIstDay, istDayToDate, istToday } from '../utils/time.js'
 import { MAX_DAYS_AHEAD } from '../validation/shows.js'
@@ -22,7 +22,6 @@ import { MAX_DAYS_AHEAD } from '../validation/shows.js'
 // - edit only while the show has no bookings; no delete (cancel = O-06)
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const CLASS_NAMES = { balcony: 'Balcony', first: 'First class', second: 'Second class' }
 
 const fieldErrors = (details) => new AppError(400, 'VALIDATION_ERROR', 'Please check the form.', details)
 
