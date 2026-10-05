@@ -22,7 +22,7 @@ import {
 
 // U-09 show list (UI-17) inside the "Show times" section of the movie details page:
 // 7 day buttons, SF-08 filter chips, then one paper card per theatre (A to Z) with its
-// show times as ticket buttons. A show time opens the seat page /shows/:id (U-10).
+// show times as ticket buttons (stamps sit beside the button, never over the time). A show time opens the seat page /shows/:id (U-10).
 // `onPickShow(event, href)` lets the page ask the U-08 age question first.
 // "Join waitlist" is hidden until U-22 (decided 2026-10-05): Housefull shows only get the stamp.
 
@@ -167,7 +167,7 @@ function TheatreCard({ theatre, shows, movie, onPickShow }) {
       </div>
       <ul aria-label={`Show times at ${theatre.name}`} className="flex flex-wrap gap-x-3 gap-y-4 pt-1">
         {shows.map((show) => (
-          <li key={show.id} className="relative">
+          <li key={show.id} className="flex items-center gap-2">
             <ShowTime show={show} movie={movie} onPickShow={onPickShow} />
           </li>
         ))}
@@ -189,10 +189,10 @@ function ShowTime({ show, movie, onPickShow }) {
   // Housefull (UI-17): grey, not clickable, small stamp. Join waitlist comes with U-22.
   if (show.housefull) {
     return (
-      <span className="block">
+      <>
         <span className={`${shapeClass} border-dashed border-ink/60 text-ink/75`}>{inside}</span>
-        <Stamp className="absolute -top-3 -right-2 bg-cream-light text-[0.65rem]">Housefull</Stamp>
-      </span>
+        <Stamp className="text-[0.7rem]">Housefull</Stamp>
+      </>
     )
   }
 
@@ -207,7 +207,7 @@ function ShowTime({ show, movie, onPickShow }) {
         <span className={`${shapeClass} border-ink/60 bg-cream text-ink group-hover:bg-gold`}>{inside}</span>
       </Link>
       {show.deal.active && (
-        <Stamp tone="green" className="pointer-events-none absolute -top-3 -right-2 bg-cream-light text-[0.65rem]">
+        <Stamp tone="green" className="text-[0.7rem]">
           Special offer
         </Stamp>
       )}

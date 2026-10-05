@@ -7,7 +7,7 @@ import { User } from '../src/models/User.js'
 import moviesStep from '../src/seed/steps/movies.js'
 import screensStep from '../src/seed/steps/screens.js'
 import settingsStep from '../src/seed/steps/settings.js'
-import showsStep, { SEED_DAYS } from '../src/seed/steps/shows.js'
+import showsStep, { SAMPLE_DEAL_PERCENT, SEED_DAYS } from '../src/seed/steps/shows.js'
 import theatresStep from '../src/seed/steps/theatres.js'
 import usersStep from '../src/seed/steps/users.js'
 import { showLabel } from '../src/utils/showTime.js'
@@ -49,5 +49,20 @@ describe('seed step: shows (15.5)', () => {
     }
     expect(await Show.countDocuments({ tags: 'parent_baby' })).toBeGreaterThan(0)
     expect(await Show.countDocuments({ subtitles: true })).toBeGreaterThan(0)
+  })
+
+  it('1 upcoming Housefull show and 1 upcoming deal show (U-09 stamps); running again adds no more', async () => {
+    await showsStep.run()
+    await showsStep.run()
+    const upcoming = { startAt: { $gt: new Date() } }
+    const housefull = await Show.find({ ...upcoming, $expr: { $gte: ['$bookedCount', '$totalSeats'] } })
+    const deals = await Show.find({ ...upcoming, 'deal.active': true })
+    expect(housefull).toHaveLength(1)
+    expect(deals).toHaveLength(1)
+    expect(deals[0].deal.percent).toBe(SAMPLE_DEAL_PERCENT)
+    expect(String(housefull[0]._id)).not.toBe(String(deals[0]._id))
+    for (const show of [...housefull, ...deals]) expect(show.isSample).toBe(true)
+    // everything else stays normal
+    expect(await Show.countDocuments({ bookedCount: { $gt: 0 } })).toBe(1)
   })
 })

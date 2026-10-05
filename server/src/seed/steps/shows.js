@@ -13,6 +13,7 @@ import { SAMPLE } from '../sample.js'
 // Some shows have subtitles or the parent-and-baby tag (never on an "A" movie), for SF-08.
 // Existing shows are never changed ($setOnInsert): running the seed on another day only
 // adds the new days. A time that would overlap a show made by hand is skipped.
+// Plus 1 Housefull show and 1 deal show, so the show list stamps can be seen (U-09).
 
 export const SHOW_TIMES = {
   'Screen 1': ['09:30', '13:00', '16:30', '20:00'],
@@ -94,6 +95,37 @@ export default {
     }
     const lines = [`Shows: ${added} new sample shows (next ${SEED_DAYS} days, 4 per screen per day)`]
     if (skipped) lines.push(`Shows: ${skipped} skipped (would overlap a show made by hand)`)
+    lines.push(...(await markStampShows(theatres, screens)))
     return lines
   },
+}
+
+export const SAMPLE_DEAL_PERCENT = 20
+
+// So the UI-17 stamps can be seen: 1 upcoming sample show is Housefull and 1 has a
+// deal (tomorrow's Second show and First show on Screen 1 of the first Hyderabad
+// sample theatre). Only when no upcoming sample show has it yet, so running the seed
+// again does not add more. Housefull is only the counter (bookedCount = totalSeats):
+// no seats are really booked (fine until bookings exist, Phase 5).
+async function markStampShows(theatres, screens) {
+  const theatre = theatres.filter((t) => t.cityCode === 'hyderabad').sort((a, b) => a.name.localeCompare(b.name, 'en'))[0]
+  const screen = theatre && screens.find((s) => String(s.theatreId) === String(theatre._id) && s.name === 'Screen 1')
+  if (!screen) return []
+
+  const upcoming = { isSample: true, status: 'scheduled', startAt: { $gt: new Date() } }
+  const [secondShow, firstShow] = [3, 2].map((slot) => ({ isSample: true, status: 'scheduled', screenId: screen._id, startAt: istDateTime(istToday(1), SHOW_TIMES['Screen 1'][slot]) }))
+  const lines = []
+
+  if (!(await Show.exists({ ...upcoming, $expr: { $gte: ['$bookedCount', '$totalSeats'] } }))) {
+    const show = await Show.findOne(secondShow)
+    if (show) {
+      await Show.updateOne({ _id: show._id }, { $set: { bookedCount: show.totalSeats } })
+      lines.push(`Shows: 1 sample show marked Housefull (${theatre.name}, tomorrow ${SHOW_TIMES['Screen 1'][3]})`)
+    }
+  }
+  if (!(await Show.exists({ ...upcoming, 'deal.active': true }))) {
+    const { modifiedCount } = await Show.updateOne(firstShow, { $set: { deal: { enabled: true, active: true, percent: SAMPLE_DEAL_PERCENT } } })
+    if (modifiedCount) lines.push(`Shows: 1 sample show with a ${SAMPLE_DEAL_PERCENT}% deal (${theatre.name}, tomorrow ${SHOW_TIMES['Screen 1'][2]})`)
+  }
+  return lines
 }

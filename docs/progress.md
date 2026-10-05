@@ -2,6 +2,14 @@
 
 ## Last session
 
+- Date: 2026-10-05 (third part)
+- U-09 tested in the browser by you: ticked. **Phase 3 done.**
+- **Seed: stamp sample shows** (your request): the `shows` step now marks 1 upcoming sample show Housefull (tomorrow 8:00 PM, Chandni Talkies (Sample), Screen 1) and gives 1 a 20% deal (tomorrow 4:30 PM, same screen). Only when no upcoming sample show has it, so running the seed again adds no more. Housefull is only the counter (`bookedCount = totalSeats`), no seats are really booked (see Notes for later). Ran on Docker; both show in the API.
+- Fix found while looking at them in Chrome: the Housefull stamp covered part of the time ("8:00 PM"). Both stamps now sit beside the button, never on top.
+- Tests: **421 pass** (client 131, server 290: seed stamp shows 1 new). Lint + build OK.
+
+## Earlier on 2026-10-05 (U-09)
+
 - Date: 2026-10-05 (second part)
 - U-07 + U-08 tested in the browser by you: ticked.
 - **U-09 Show list (UI-17)** with your 3 decisions: SF-08 filter chips on the show list; "Join waitlist" hidden until U-22 (Housefull shows only get the stamp); "from ₹120" on each theatre card.
@@ -201,7 +209,6 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Try **U-09** by hand: days, filter chips, an "A" movie show time, your phone. To see Housefull / Special offer, make a show full or give it a deal (or tell me to add one to the seed).
 - Then **Phase 4 – Seats**, first UI-20 Box office window + UI-21 chair seats, then U-10 live seat map (plan first).
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -211,6 +218,8 @@
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
 ## Notes for later
+
+- **Sample Housefull show (seed, 2026-10-05):** only `bookedCount` is set to `totalSeats`; no seats are booked. When U-10 / U-12 / bookings come, decide: book its seats in the seed too, or leave it (it cannot be clicked, so nobody reaches its seat map).
 
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
@@ -295,13 +304,13 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
   - [x] ROLE-04: a show can be live only when its theatre is approved (pending / rejected theatre → refuse, tested)
 - [x] T-08 test (overlap cases, touching edges, cleaning break, all-or-none dates, two saves at the same moment)
 
-## Phase 3 – User browsing
+## Phase 3 – User browsing ✅ done (guests browse real shows by city; tested by the developer 2026-10-05)
 - [x] U-04 City (header picker + first visit card, saved in the browser, only cities with approved theatres; tested in the browser by the developer 2026-10-04)
 - [x] U-05 Home (marquee banner with poster + bulbs, film-strip posters, Now showing grid, Coming soon row, UI-46 sepia; tested in the browser by the developer 2026-10-04)
 - [x] U-06 Search + filters, SF-08 (Search page `/movies`, filters in the address, same-show rule; checked in Chrome 2026-10-04)
 - [x] U-07 Movie details (`/movies/:id`, `GET /api/movies/:id`; done 2026-10-05, tested in the browser by the developer 2026-10-05)
 - [x] U-08 Age warning (in-page dialog for "A" movies, once per movie per browser visit; done + tested in the browser by the developer 2026-10-05)
-- [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome)
+- [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome; tested in the browser by the developer 2026-10-05)
 
 ## Phase 4 – Seats
 - [ ] UI-20 Box office window
