@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { usePublicSettings } from '../../api/settings.js'
+import { useGiveUpHold, useHoldSeats } from '../../api/bookings.js'
 import { useShow, useShowSeats } from '../../api/shows.js'
 import AgeWarningDialog from '../../components/ui/AgeWarningDialog.jsx'
 import Button from '../../components/ui/Button.jsx'
 import ButtonLink from '../../components/ui/ButtonLink.jsx'
+import IntervalCard from '../../components/ui/IntervalCard.jsx'
 import PaperCard from '../../components/ui/PaperCard.jsx'
 import Seat, { BlockedSeat, LegendSeat } from '../../components/ui/Seat.jsx'
 import Stamp from '../../components/ui/Stamp.jsx'
@@ -12,12 +14,14 @@ import { formatRupees } from '../../validation/food.js'
 import { CLASS_NAMES, formatShortDay } from '../../validation/shows.js'
 import { hasAgeOk, needsAgeCheck, saveAgeOk } from '../public/movie.js'
 import { showTimeText } from '../public/showList.js'
-import { classSections, dropTaken, SEAT_MARKS, seatInfo, seatLabel, seatState, selectionSummary, takenMap, toggleSeat } from './seats.js'
+import { classSections, clockWords, dropTaken, formatClock, SEAT_MARKS, secondsLeft, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
 
 // U-10 seat selection at /shows/:id (login needed, 9.2), inside the UI-20 box office
 // window with UI-21 chair seats and the NF-04 legend.
-// Step 1 of Phase 4: pick seats. "Proceed" (hold + timer, U-12) and live updates
-// (Socket.io, U-10) come in the next steps.
+// Pick seats → "Proceed" holds them for BR-01 (U-12): the page then shows the held seats,
+// the timer and "Give up seats"; when the time is over, the Interval card (UI-33).
+// After a refresh the running hold comes back with the seat list (myHold).
+// Food and payment come in Phase 5; live updates (Socket.io) in Step 3.
 export default function SeatPage() {
   const { id } = useParams()
   const show = useShow(id)
@@ -52,19 +56,57 @@ function SeatSelection({ show }) {
   // U-08: an "A" movie opened straight from a link still asks first
   const [askAge, setAskAge] = useState(() => needsAgeCheck(show.movie) && !hasAgeOk(show.movie.id))
 
-  const taken = useMemo(() => takenMap(seats.data), [seats.data])
+  const [timeUp, setTimeUp] = useState(false)
+  const holdSeats = useHoldSeats(show.id)
+  const giveUp = useGiveUpHold(show.id)
+
+  const myHold = seats.data?.myHold ?? null
+  const taken = useMemo(() => takenMap(seats.data?.taken, myHold?.seatIds), [seats.data, myHold])
   const info = useMemo(() => seatInfo(show.layout.grid, show.prices), [show])
   const sections = useMemo(() => classSections(show.layout.grid), [show])
   const priceOf = Object.fromEntries(show.prices.map((p) => [p.seatClass, p.pricePaise]))
   const max = settings.data?.maxSeatsPerBooking ?? 10 // BR-02
 
-  // A picked seat that someone else took meanwhile (fresh seat list) drops out
-  const selected = dropTaken(picked, taken)
+  // A picked seat that someone else took meanwhile (fresh seat list) drops out.
+  // While a hold runs, the held seats are the pick and the map cannot change.
+  const selected = myHold ? myHold.seatIds : dropTaken(picked, taken)
 
   function pick(seatId) {
-    const result = toggleSeat(selected, seatId, taken, max)
-    setPicked(result.selected)
-    setMessage(result.error)
+    if (myHold) {
+      setMessage('Give up these seats first to pick other ones.')
+      return
+    }
+    // Works from the latest pick, so two quick clicks never lose one
+    setPicked((current) => {
+      const result = toggleSeat(dropTaken(current, taken), seatId, taken, max)
+      setMessage(result.error)
+      return result.selected
+    })
+  }
+
+  // U-12 "Proceed": hold the picked seats (409 = someone was faster: the fresh seat list
+  // shows it and the seat drops out of the pick)
+  function proceed() {
+    holdSeats.mutate(selected, {
+      onSuccess: () => {
+        setPicked([])
+        setMessage(null)
+      },
+      onError: (error) => setMessage(error.message),
+    })
+  }
+
+  function giveUpSeats() {
+    giveUp.mutate(myHold.bookingId, {
+      onSuccess: () => setMessage('Seats given back.'),
+      onError: (error) => setMessage(error.message),
+    })
+  }
+
+  // Time over: the seats are already free on the server; also mark the booking released
+  function onTimeUp() {
+    setTimeUp(true)
+    if (myHold) giveUp.mutate(myHold.bookingId)
   }
 
   const summary = selectionSummary(selected, info)
@@ -110,20 +152,39 @@ function SeatSelection({ show }) {
 
           <Legend />
 
-          {/* Bottom bar (UI-20): seat summary, total, Proceed */}
+          {/* Bottom bar (UI-20): seat summary, total, hold timer, Proceed / Give up seats */}
           <div className="paper sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-t-card border border-ink bg-cream-light px-4 py-3 text-ink shadow-[0_-6px_16px_rgb(0_0_0/0.25)]">
             <div aria-live="polite">
-              <p className="font-type font-bold">{summary.text}</p>
+              <p className="font-type font-bold">{myHold ? `Held for you: ${sortSeatIds(selected).join(', ')}` : summary.text}</p>
               {summary.totalText && <p className="text-sm">{summary.totalText}</p>}
               {message && <p className="text-sm font-bold text-maroon">{message}</p>}
             </div>
-            <div className="text-right">
-              <Button disabled>Proceed</Button>
-              <p className="mt-1 text-xs">Holding seats comes in the next step.</p>
-            </div>
+            {myHold ? (
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <HoldTimer key={`${myHold.bookingId}-${seats.dataUpdatedAt}`} remainingSeconds={myHold.remainingSeconds} fetchedAt={seats.dataUpdatedAt} onTimeUp={onTimeUp} />
+                <div className="text-right">
+                  <Button variant="secondary" onClick={giveUpSeats} disabled={giveUp.isPending}>
+                    Give up seats
+                  </Button>
+                  <p className="mt-1 text-xs">Food and payment come next.</p>
+                </div>
+              </div>
+            ) : (
+              <Button onClick={proceed} disabled={selected.length === 0 || holdSeats.isPending || !seats.isSuccess}>
+                {holdSeats.isPending ? 'Holding…' : 'Proceed'}
+              </Button>
+            )}
           </div>
         </>
       )}
+
+      <IntervalCard
+        open={timeUp}
+        onPickAgain={() => {
+          setTimeUp(false)
+          setMessage(null)
+        }}
+      />
 
       <AgeWarningDialog
         open={askAge}
@@ -236,5 +297,36 @@ function Legend() {
         Wheelchair space
       </li>
     </ul>
+  )
+}
+
+// U-12 hold timer: "9:41 left". Counts down every second from the server's
+// remainingSeconds; at 0 it calls onTimeUp once.
+function HoldTimer({ remainingSeconds, fetchedAt, onTimeUp }) {
+  const [left, setLeft] = useState(() => secondsLeft(remainingSeconds, fetchedAt))
+  const doneRef = useRef(false)
+  const onTimeUpRef = useRef(onTimeUp)
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp
+  })
+
+  useEffect(() => {
+    const tick = () => {
+      const now = secondsLeft(remainingSeconds, fetchedAt)
+      setLeft(now)
+      if (now === 0 && !doneRef.current) {
+        doneRef.current = true
+        onTimeUpRef.current()
+      }
+    }
+    tick()
+    const timer = setInterval(tick, 1000)
+    return () => clearInterval(timer)
+  }, [remainingSeconds, fetchedAt])
+
+  return (
+    <p role="timer" aria-label={`Seats held for ${clockWords(left)} more`} className={`font-type text-2xl font-bold tabular-nums ${left <= 60 ? 'text-maroon' : ''}`}>
+      {formatClock(left)} <span className="text-sm font-normal">left</span>
+    </p>
   )
 }

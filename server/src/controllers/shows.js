@@ -3,16 +3,26 @@ import { ShowSeat, takenNow } from '../models/ShowSeat.js'
 import { AppError } from '../utils/AppError.js'
 import { CLASS_NAMES } from '../utils/seatLayout.js'
 import { istParts } from '../utils/showTime.js'
+import { currentHold } from '../services/seatHold.js'
 
 // /api/shows (api.md Sections 5 + 6): one show for the seat page (U-10, UI-20)
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this show. It may have started or been cancelled.')
 
-// A show users may open: scheduled, not started yet, movie not inactive, theatre approved (ROLE-04)
-async function findOpenShow(id) {
+// A show with its movie, theatre and screen. `problem`: null (open for users),
+// 'missing' (unknown, inactive movie, theatre not approved: ROLE-04) or
+// 'closed' (cancelled or already started). Also used by the seat hold (U-12).
+export async function loadShowForUsers(id) {
   const show = await Show.findById(id).populate('movieId', 'title certificate posterUrl durationMinutes status').populate('theatreId', 'name address status').populate('screenId', 'name')
-  if (!show || show.status !== 'scheduled' || show.startAt <= new Date()) throw notFound()
-  if (!show.movieId || show.movieId.status === 'inactive' || show.theatreId?.status !== 'approved') throw notFound()
+  if (!show || !show.movieId || show.movieId.status === 'inactive' || show.theatreId?.status !== 'approved') return { show, problem: 'missing' }
+  if (show.status !== 'scheduled' || show.startAt <= new Date()) return { show, problem: 'closed' }
+  return { show, problem: null }
+}
+
+// The seat page shows "not found" for both problems
+async function findOpenShow(id) {
+  const { show, problem } = await loadShowForUsers(id)
+  if (problem) throw notFound()
   return show
 }
 
@@ -52,10 +62,13 @@ export async function getShow(req, res) {
   })
 }
 
-// GET /api/shows/:id/seats (logged in users): the taken seats right now.
+// GET /api/shows/:id/seats (logged in users): the taken seats right now + the user's own hold.
 // Expired holds count as free even before the TTL monitor deletes them (database.md 3).
 export async function getShowSeats(req, res) {
   const show = await findOpenShow(req.valid.params.id)
-  const seats = await ShowSeat.find({ showId: show._id, ...takenNow() }, 'seatId status').sort({ seatId: 1 })
-  res.json({ taken: seats.map((s) => ({ seatId: s.seatId, status: s.status })) })
+  const now = new Date()
+  const [seats, myHold] = await Promise.all([ShowSeat.find({ showId: show._id, ...takenNow(now) }, 'seatId status').sort({ seatId: 1 }), currentHold(show._id, req.user._id, now)])
+  // myHold: the user's own running hold (U-12), so the timer works after a refresh.
+  // Its seats are in `taken` too (held).
+  res.json({ taken: seats.map((s) => ({ seatId: s.seatId, status: s.status })), myHold })
 }

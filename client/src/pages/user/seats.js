@@ -8,8 +8,9 @@ export const SEAT_STATES = ['available', 'selected', 'booked', 'held']
 export const SEAT_MARKS = { available: '', selected: '✓', booked: '✕', held: '🔒', blocked: '–', wheelchair: '♿︎' } // U+FE0E after ♿ = plain text mark, not a coloured emoji (like the screen editor)
 export const STATE_NAMES = { available: 'available', selected: 'selected', booked: 'booked', held: 'held by someone' }
 
-// taken: [{ seatId, status }] from GET /api/shows/:id/seats → Map seatId → 'held' | 'booked'
-export const takenMap = (taken = []) => new Map(taken.map((t) => [t.seatId, t.status]))
+// taken: [{ seatId, status }] from GET /api/shows/:id/seats → Map seatId → 'held' | 'booked'.
+// The user's own held seats (myHold, U-12) are left out: they show as their pick.
+export const takenMap = (taken = [], mySeatIds = []) => new Map(taken.filter((t) => !mySeatIds.includes(t.seatId)).map((t) => [t.seatId, t.status]))
 
 export function seatState(seatId, taken, selected) {
   if (taken.has(seatId)) return taken.get(seatId)
@@ -71,4 +72,18 @@ export function selectionSummary(selected, info) {
   const ids = sortSeatIds(selected)
   const total = ids.reduce((sum, id) => sum + (info.get(id)?.pricePaise ?? 0), 0)
   return { text: `${ids.length} seat${ids.length === 1 ? '' : 's'}: ${ids.join(', ')}`, totalText: `Tickets ${formatRupees(total)}` }
+}
+
+// U-12 hold timer. The server sends remainingSeconds; we count down from the moment the
+// answer arrived (fetchedAt), so a wrong phone clock does not matter.
+export const secondsLeft = (remainingSeconds, fetchedAt, now = Date.now()) => Math.max(0, Math.ceil(remainingSeconds - (now - fetchedAt) / 1000))
+
+// 545 → "9:05"
+export const formatClock = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+
+// Screen readers: "9 minutes 5 seconds"
+export function clockWords(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return [m && `${m} minute${m === 1 ? '' : 's'}`, (s || !m) && `${s} second${s === 1 ? '' : 's'}`].filter(Boolean).join(' ')
 }

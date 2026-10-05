@@ -10,6 +10,7 @@ export const motion = {
   neonFlicker: 5000, // UI-15 "NOW SHOWING" flicker: one dip every ~5 s
   riseIn: 700, // UI-15 chips and cards fade up on page load
   riseStagger: 120, // … one after another
+  intervalFade: 400, // UI-33 Interval card fades in (CSS .interval-card)
   seatFlip: 400, // UI-21 seat cushion swings down / up with a small bounce (changed 2026-10-05, was 280) (CSS in theme.css .seat-cushion)
   ticketsSwing: 4000, // UI-20 "TICKETS" board swings once back and forth (CSS .tickets-board)
 }

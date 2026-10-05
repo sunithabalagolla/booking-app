@@ -116,7 +116,7 @@ describe('GET /api/shows/:id/seats (U-10)', () => {
     const show = await makeShow()
     expect((await request(app).get(`/api/shows/${show._id}/seats`)).status).toBe(401)
     expect((await getAs(ownerToken, `/api/shows/${show._id}/seats`)).status).toBe(403)
-    expect((await getAs(userToken, `/api/shows/${show._id}/seats`)).body).toEqual({ taken: [] })
+    expect((await getAs(userToken, `/api/shows/${show._id}/seats`)).body).toEqual({ taken: [], myHold: null })
   })
 
   it('booked + held seats; an expired hold counts as free (no waiting for the TTL monitor)', async () => {

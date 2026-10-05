@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classSections, dropTaken, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
+import { classSections, clockWords, dropTaken, formatClock, secondsLeft, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
 
 // U-10 seat page helpers (UI-20, UI-21, NF-04, BR-02)
 const seat = (seatId, seatClass, wheelchair = false) => ({ type: 'seat', seatId, seatClass, wheelchair })
@@ -71,5 +71,28 @@ describe('bottom bar summary (UI-20)', () => {
     expect(selectionSummary([], info)).toEqual({ text: 'No seats picked yet', totalText: '' })
     expect(selectionSummary(['E1'], info)).toEqual({ text: '1 seat: E1', totalText: 'Tickets ₹250' })
     expect(selectionSummary(['C10', 'A1', 'C2'], info)).toEqual({ text: '3 seats: A1, C2, C10', totalText: 'Tickets ₹480' })
+  })
+})
+
+describe('hold timer (U-12)', () => {
+  it('own held seats are not "taken" for me', () => {
+    const taken = takenMap([{ seatId: 'A1', status: 'held' }, { seatId: 'A2', status: 'held' }], ['A1'])
+    expect([...taken.keys()]).toEqual(['A2'])
+  })
+
+  it('counts down from the server answer, never below 0', () => {
+    expect(secondsLeft(600, 1000, 1000)).toBe(600)
+    expect(secondsLeft(600, 1000, 1000 + 55_500)).toBe(545)
+    expect(secondsLeft(10, 0, 60_000)).toBe(0)
+  })
+
+  it('clock text', () => {
+    expect(formatClock(545)).toBe('9:05')
+    expect(formatClock(600)).toBe('10:00')
+    expect(formatClock(0)).toBe('0:00')
+    expect(clockWords(545)).toBe('9 minutes 5 seconds')
+    expect(clockWords(60)).toBe('1 minute')
+    expect(clockWords(1)).toBe('1 second')
+    expect(clockWords(0)).toBe('0 seconds')
   })
 })

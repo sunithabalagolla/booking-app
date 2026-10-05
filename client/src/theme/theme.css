@@ -657,3 +657,16 @@
     animation: none;
   }
 }
+
+/* UI-33 Interval card: fades in 400 ms (motion.js intervalFade). Opacity only, so the
+   reduce-motion fallback ("plain fade") is the same. */
+.interval-card[open] {
+  animation: interval-fade 400ms ease-out;
+}
+.interval-card[open]::backdrop {
+  animation: interval-fade 400ms ease-out;
+}
+@keyframes interval-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -399,6 +399,8 @@ See **Section 3** for the full locking rules.
 | `invoiceId` | ObjectId → invoices | | Set on confirm |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 
+> Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. The other fields come with their tasks (Phase 5+).
+
 **`pricing`** (all paise, plus the rates used):
 `ticketsPaise`, `foodPaise`, `ticketDiscountPaise` (coupon or deal, tickets only), `discountType` (`coupon` · `deal` · none), `dealPercent`, `convenienceFeePaise`, `gstLines` (per line: GST-inclusive amount, taxable value, rate, CGST, SGST, see Section 2a), `totalPaise`, and `rates` = copy of `commissionPercent`, GST rates, `convenienceFeePaise` per ticket and the refund percents at booking time.
 

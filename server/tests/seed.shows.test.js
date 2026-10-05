@@ -24,7 +24,9 @@ beforeEach(async () => {
 })
 afterAll(closeTestDB)
 
-describe('seed step: shows (15.5)', () => {
+// Heavy: about 336 shows with full seat layouts per run. On a busy laptop this can take
+// more than the 5 s default (seen 2026-10-05), so these tests get 30 s.
+describe('seed step: shows (15.5)', { timeout: 30_000 }, () => {
   it('makes 4 shows per screen per day for 7 days; running again adds nothing', async () => {
     await showsStep.run()
     await showsStep.run()

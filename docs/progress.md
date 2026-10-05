@@ -2,6 +2,16 @@
 
 ## Last session
 
+- Date: 2026-10-05 (sixth part)
+- **Phase 4 Step 2 done: seat hold + timer** (U-12, UI-33, T-02, T-03):
+  - Server: `bookings` model (`models/Booking.js`, the pending-hold part of database.md 5.11; `pricing.ticketsPaise` only until U-14). `services/seatHold.js`: `holdSeats` = one transaction: give back the user's older hold for this show, clear expired holds on these seats (slow TTL), create the pending booking + one `showseats` document per seat (the unique index decides who wins). Someone faster → `409 SEAT_TAKEN` "Seat D3 was just taken. Please pick another seat." and nothing is held. More than `maxSeatsPerBooking` → `400 RULE_BROKEN` (BR-02); blocked / unknown seat → 400; started or cancelled show → `400 RULE_BROKEN`. Booking number `TK` + 8 easy characters (S-02), random `qrNonce`. Routes: `POST /api/bookings/hold`, `GET /api/bookings/:id` (own; an expired hold is released when read), `DELETE /api/bookings/:id/hold` (Give up seats; again = fine). `GET /api/shows/:id/seats` now also sends `myHold` (timer after a refresh; counts down from `remainingSeconds`, so a wrong phone clock does not matter). `api.md` + `database.md` updated.
+  - Client: Proceed holds the picked seats; then the bottom bar shows "Held for you: E5, E6", the total, a big "9:41 left" timer (maroon in the last minute; screen readers: "Seats held for 9 minutes 41 seconds more"), "Give up seats" and "Food and payment come next." The map cannot change during a hold. At 0:00 the **Interval card** (UI-33: dark card, gold "INTERVAL" in Rye, "Your seat hold time is over. Seats are released.", "Pick seats again"; 400 ms fade). Fix found while testing: two very quick seat clicks could lose one; picking now always starts from the latest pick.
+  - Checked in Chrome: hold 2 seats → timer 9:59; refresh → hold + timer still there; time over (hold set to end in 8 s in the database) → Interval card, focus on "Pick seats again", booking `released`, seats free; Give up seats; someone faster (a hold put straight into the database) → the message, that seat turns "held by someone", the other one stays picked. Test data removed afterwards.
+  - Tests: **446 pass** (client 141: timer helpers 3 new; server 305: hold 10 new incl. **T-02** (10 rounds, two users at the same moment, exactly one wins, loser holds nothing) and **T-03** (fake "now" after 10 minutes: seats free, hold released, another user can hold them)). Lint + build OK.
+  - Test note: the 2 big seed-show tests (about 336 shows with seat layouts) went over the 5 s test limit on the busy laptop, also without today's changes (checked with `git stash`). They now have 30 s.
+
+## Earlier on 2026-10-05 (Step 1 fixes)
+
 - Date: 2026-10-05 (fifth part)
 - **Step 1 check by you:** chair size, 10-seat limit and total OK. Fixed your 2 points:
   - Cushion flip clearer (UI-21): folded UP = thin darker raised strip right under the backrest (clearly empty); picked = swings DOWN to a full flat gold seat in **400 ms** with a small bounce (goes about 8° past flat, then settles) and a small shadow under it when it lands. Closer CSS perspective. Reduce motion: colour change only. `motion.js` seatFlip 280 → 400.
@@ -227,8 +237,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- Check **Phase 4 Step 1** (seat page) in the browser: a show time → seats, pick / unpick, the 10-seat limit, an "A" movie, your phone, Night show.
-- Then **Step 2: U-12 hold + timer** (`bookings` model, `POST /api/bookings/hold` in one transaction, timer after refresh, Interval card UI-33, "Give up seats", T-02, T-03).
+- Check **Phase 4 Step 2** in the browser: Proceed → timer, refresh, Give up seats, two browsers (or two logins) on the same seat. To see the Interval card without waiting 10 minutes, set `holdMinutes` to 1 in admin Settings (and back to 10 afterwards).
 - Then **Step 3: U-10 live** (Socket.io rooms, `seats:update`) + JOB-01 with `node-cron`.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -336,10 +345,10 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] UI-20 Box office window (Step 1, 2026-10-05; waiting for your check)
 - [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; waiting for your check)
 - [ ] U-10 Live seat map (Socket.io) (seat page + taken seats done in Step 1; live updates = Step 3)
-- [ ] U-12 Seat hold + timer
+- [x] U-12 Seat hold + timer (Step 2, 2026-10-05; Interval card UI-33, Give up seats; waiting for your check)
 - [ ] JOB-01
 - [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
-- [ ] T-02, T-03 tests
+- [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
 
 ## Phase 5 – Booking + payment
 - [ ] U-13 Food
