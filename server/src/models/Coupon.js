@@ -21,6 +21,7 @@ const couponSchema = new Schema(
     usedCount: { type: Number, required: true, default: 0 },
     cityCodes: { type: [String], default: [] }, // empty = all cities
     theatreIds: { type: [{ type: Schema.Types.ObjectId, ref: 'Theatre' }], default: [] }, // empty = all theatres
+    isPublic: { type: Boolean, required: true, default: false }, // "Show to users": listed in Available offers (U-15); off = secret code
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // admin
     isSample: Boolean, // seeded test data (15.5)
   },
@@ -28,5 +29,7 @@ const couponSchema = new Schema(
 )
 
 couponSchema.index({ code: 1 }, { unique: true })
+couponSchema.index({ isPublic: 1, endAt: 1 }) // Available offers (U-15)
+couponSchema.index({ createdAt: -1 }) // admin register, newest first
 
 export const Coupon = mongoose.model('Coupon', couponSchema)

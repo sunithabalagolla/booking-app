@@ -33,7 +33,7 @@ describe('seed step: coupons (15.5)', () => {
       expect(String(c.createdBy)).toBe(String(admin._id))
       expect(c.startAt < now && c.endAt > now).toBe(true)
     }
-    expect(coupons[0]).toMatchObject({ discountType: 'flat', value: 5000, perUserLimit: 1, usedCount: 3 })
-    expect(coupons[1]).toMatchObject({ discountType: 'percent', value: 20, maxDiscountPaise: 10000, minAmountPaise: 20000 })
+    expect(coupons[0]).toMatchObject({ discountType: 'flat', value: 5000, perUserLimit: 1, usedCount: 3, isPublic: false }) // secret code
+    expect(coupons[1]).toMatchObject({ discountType: 'percent', value: 20, maxDiscountPaise: 10000, minAmountPaise: 20000, isPublic: true }) // in Available offers
   })
 })

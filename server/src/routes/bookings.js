@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { bookingLimiter } from '../config/rateLimits.js'
-import { deleteCoupon, getBooking, giveUpHold, hold, setCoupon, setFood } from '../controllers/bookings.js'
+import { deleteCoupon, getBooking, getOffers, giveUpHold, hold, setCoupon, setFood } from '../controllers/bookings.js'
 import { requireAuth } from '../middleware/auth.js'
 import { requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
@@ -18,5 +18,6 @@ router.delete('/:id/hold', validate({ params: idParams }), giveUpHold) // "Give 
 router.put('/:id/food', bookingLimiter, validate({ params: idParams, body: foodBody }), setFood) // U-13
 router.put('/:id/coupon', bookingLimiter, validate({ params: idParams, body: couponBody }), setCoupon) // U-15
 router.delete('/:id/coupon', bookingLimiter, validate({ params: idParams }), deleteCoupon)
+router.get('/:id/offers', validate({ params: idParams }), getOffers) // U-15 Available offers
 
 export default router

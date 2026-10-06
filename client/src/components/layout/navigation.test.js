@@ -41,6 +41,7 @@ describe('dashboardMenuFor (UI-30 sidebar)', () => {
       { to: '/admin/owners', label: 'Owners', count: 'pendingOwners' },
       { to: '/admin/theatres', label: 'Theatres', count: 'pendingTheatres' },
       { to: '/admin/movies', label: 'Movies' },
+      { to: '/admin/coupons', label: 'Coupons' },
       { to: '/admin/settings', label: 'Settings' },
     ])
   })

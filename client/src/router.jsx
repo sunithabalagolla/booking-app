@@ -3,6 +3,8 @@ import DashboardLayout from './components/layout/DashboardLayout.jsx'
 import SiteLayout from './components/layout/SiteLayout.jsx'
 import StaffLayout from './components/layout/StaffLayout.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
+import AdminCouponFormPage from './pages/admin/AdminCouponFormPage.jsx'
+import AdminCouponsPage from './pages/admin/AdminCouponsPage.jsx'
 import AdminHomePage from './pages/admin/AdminHomePage.jsx'
 import AdminMovieFormPage from './pages/admin/AdminMovieFormPage.jsx'
 import AdminMoviesPage from './pages/admin/AdminMoviesPage.jsx'
@@ -103,6 +105,10 @@ const router = createBrowserRouter([
       { path: '/admin/movies', element: guard(['admin'], <AdminMoviesPage />) },
       { path: '/admin/movies/new', element: guard(['admin'], <AdminMovieFormPage />) },
       { path: '/admin/movies/:id', element: guard(['admin'], <AdminMovieFormPage />) },
+      // A-06 coupons
+      { path: '/admin/coupons', element: guard(['admin'], <AdminCouponsPage />) },
+      { path: '/admin/coupons/new', element: guard(['admin'], <AdminCouponFormPage />) },
+      { path: '/admin/coupons/:id', element: guard(['admin'], <AdminCouponFormPage />) },
       // A-05 platform settings
       { path: '/admin/settings', element: guard(['admin'], <AdminSettingsPage />) },
     ],

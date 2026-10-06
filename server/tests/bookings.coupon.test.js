@@ -208,3 +208,48 @@ describe('PUT / DELETE /api/bookings/:id/coupon (U-15)', () => {
     expect((await meena.delete(`/api/bookings/${booking.id}/coupon`)).body.error.details.reason).toBe('hold_over')
   })
 })
+
+describe('GET /api/bookings/:id/offers (U-15 Available offers)', () => {
+  const offersOf = async (booking, api = meena) => (await api.get(`/api/bookings/${booking.id}/offers`)).body.offers
+
+  it('only public coupons that work for this booking; biggest saving first; the applied one is marked', async () => {
+    await makeCoupon({ code: 'BIG20', value: 20, isPublic: true }) // 20% of ₹500 = ₹100
+    await makeCoupon({ code: 'FLAT30', discountType: 'flat', value: 3000, isPublic: true, maxDiscountPaise: null })
+    await makeCoupon({ code: 'SECRET', value: 50 }) // not public
+    await makeCoupon({ code: 'BIGBUY', value: 10, minAmountPaise: 99900, isPublic: true }) // needs ₹999 of tickets
+    await makeCoupon({ code: 'CHENNAI', value: 10, cityCodes: ['chennai'], isPublic: true })
+    await makeCoupon({ code: 'OLD', startAt: new Date(Date.now() - 2 * DAY), endAt: new Date(Date.now() - DAY), isPublic: true })
+    await makeCoupon({ code: 'GONE', totalLimit: 1, usedCount: 1, isPublic: true })
+
+    const booking = await holdAs(meena, ['B1', 'B2']) // ₹500 of tickets
+    const offers = await offersOf(booking)
+    expect(offers).toEqual([
+      { code: 'BIG20', discountType: 'percent', value: 20, maxDiscountPaise: null, minAmountPaise: null, endAt: expect.any(String), savingPaise: 10000, applied: false },
+      { code: 'FLAT30', discountType: 'flat', value: 3000, maxDiscountPaise: null, minAmountPaise: null, endAt: expect.any(String), savingPaise: 3000, applied: false },
+    ])
+
+    await couponFor(booking, 'FLAT30')
+    expect((await offersOf(booking)).map((o) => [o.code, o.applied])).toEqual([
+      ['BIG20', false],
+      ['FLAT30', true],
+    ])
+  })
+
+  it('a used once-per-user coupon is not offered to that user any more', async () => {
+    const once = await makeCoupon({ code: 'ONCE', perUserLimit: 1, isPublic: true })
+    const booking = await holdAs(meena, ['A1'])
+    await CouponUsage.create({ couponId: once._id, userId: (await User.findOne({ email: 'meena@example.com' }))._id, bookingId: once._id })
+    expect(await offersOf(booking)).toEqual([])
+  })
+
+  it('deal show → no offers (BR-16); only own bookings; hold over → 400', async () => {
+    await makeCoupon({ code: 'BIG20', isPublic: true })
+    const dealShow = await makeShow({ deal: { enabled: true, active: true, percent: 10 } })
+    expect(await offersOf(await holdAs(meena, ['A1'], dealShow))).toEqual([])
+
+    const booking = await holdAs(meena, ['A2'])
+    expect((await ravi.get(`/api/bookings/${booking.id}/offers`)).status).toBe(404)
+    await meena.delete(`/api/bookings/${booking.id}/hold`)
+    expect((await meena.get(`/api/bookings/${booking.id}/offers`)).body.error.details.reason).toBe('hold_over')
+  })
+})

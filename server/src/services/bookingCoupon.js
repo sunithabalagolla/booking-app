@@ -63,3 +63,30 @@ export async function removeCoupon(booking, now = new Date()) {
   const pricing = await bookingPricing(booking, { discount: {} })
   return saveWhileHeld(booking, { $set: { pricing }, $unset: { couponId: 1, couponCode: 1 } }, now)
 }
+
+// U-15 "Available offers" (added 2026-10-06): the public coupons ("Show to users", A-06)
+// that work for this booking right now, checked with the same rules as Apply, so the
+// list never offers one that would be refused. None on a deal show (BR-16). Biggest
+// saving first, at most 10.
+const MAX_OFFERS = 10
+export async function availableOffers(booking, user, now = new Date()) {
+  if ((await releaseIfExpired(booking, now)).status !== 'pending') throw holdOver()
+  if (booking.pricing?.discountType === 'deal') return []
+
+  const candidates = await Coupon.find({ isPublic: true, startAt: { $lte: now }, endAt: { $gte: now } })
+  const offers = []
+  for (const coupon of candidates) {
+    if (await couponProblem(coupon, booking, user, now)) continue
+    offers.push({
+      code: coupon.code,
+      discountType: coupon.discountType,
+      value: coupon.value,
+      maxDiscountPaise: coupon.maxDiscountPaise ?? null,
+      minAmountPaise: coupon.minAmountPaise ?? null,
+      endAt: coupon.endAt,
+      savingPaise: couponDiscount(coupon, booking.pricing.ticketsPaise), // for this booking
+      applied: booking.couponCode === coupon.code,
+    })
+  }
+  return offers.sort((a, b) => b.savingPaise - a.savingPaise || a.code.localeCompare(b.code)).slice(0, MAX_OFFERS)
+}

@@ -1,6 +1,6 @@
 import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
-import { applyCoupon, removeCoupon } from '../services/bookingCoupon.js'
+import { applyCoupon, availableOffers, removeCoupon } from '../services/bookingCoupon.js'
 import { setBookingFood } from '../services/bookingFood.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
@@ -109,4 +109,9 @@ export async function setCoupon(req, res) {
 export async function deleteCoupon(req, res) {
   const booking = await removeCoupon(await findOwn(req))
   res.json({ booking: publicBooking(booking) })
+}
+
+// GET /api/bookings/:id/offers (U-15 Available offers): { offers } for this hold
+export async function getOffers(req, res) {
+  res.json({ offers: await availableOffers(await findOwn(req), req.user) })
 }

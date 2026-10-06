@@ -501,9 +501,12 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `usedCount` | Number | yes | Default 0. +1 in the confirm transaction, only if `usedCount < totalLimit`. Not given back when the booking is cancelled |
 | `cityCodes` / `theatreIds` | [String] / [ObjectId] | | Empty = everywhere |
 | `createdBy` | ObjectId → users | yes | Admin |
-| `isSample` | Boolean | | Seeded test data (15.5). Built 2026-10-06 with U-15 (model + seed `TALKIES20`, `FLAT50`); admin screens = A-06 |
+| `isPublic` | Boolean | yes | "Show to users" (added 2026-10-06, A-06): `true` = listed in Available offers on the bill (U-15); default `false` = secret code |
+| `isSample` | Boolean | | Seeded test data (15.5). Built 2026-10-06 with U-15 (model + seed `TALKIES20` public, `FLAT50` secret); admin screens A-06 built 2026-10-06 |
 
-**Indexes**: `{ code: 1 }` unique
+**Indexes**: `{ code: 1 }` unique · `{ isPublic: 1, endAt: 1 }` (Available offers) · `{ createdAt: -1 }` (admin register)
+
+- Dates are IST whole days in the admin form: `startAt` = 00:00 IST of the start day, `endAt` = 23:59:59.999 IST of the end day; "End now" sets `endAt` to that moment (decided 2026-10-06). No delete.
 
 ---
 

@@ -46,6 +46,7 @@ export function dashboardMenuFor(user) {
         { to: '/admin/owners', label: 'Owners', count: 'pendingOwners' }, // A-03 (count = waiting)
         { to: '/admin/theatres', label: 'Theatres', count: 'pendingTheatres' }, // A-04
         { to: '/admin/movies', label: 'Movies' }, // A-02
+        { to: '/admin/coupons', label: 'Coupons' }, // A-06
         { to: '/admin/settings', label: 'Settings' }, // A-05
       ]
     default:
