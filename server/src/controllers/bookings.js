@@ -1,14 +1,44 @@
 import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
+import { applyCoupon, removeCoupon } from '../services/bookingCoupon.js'
 import { setBookingFood } from '../services/bookingFood.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
 
-// /api/bookings (api.md Section 6): U-12 seat hold, U-13 food. Summary, payment etc. come next.
+// /api/bookings (api.md Section 6): U-12 seat hold, U-13 food, U-14 summary (pricing in every
+// answer), U-15 coupon. Payment etc. come next.
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this booking.')
 
-// What the API sends (more fields come with U-13 … U-17)
+// U-14 summary: every amount from the server (SEC-10). The rates copy stays inside
+// (commission is not for users); each line has its GST rate.
+function publicPricing(p) {
+  return {
+    ticketsPaise: p.ticketsPaise,
+    foodPaise: p.foodPaise ?? 0,
+    ticketDiscountPaise: p.ticketDiscountPaise ?? 0,
+    discountType: p.discountType ?? null, // 'deal' · 'coupon' · null
+    dealPercent: p.dealPercent ?? null,
+    couponCode: p.couponCode ?? null,
+    convenienceFeePaise: p.convenienceFeePaise ?? 0,
+    gstLines: (p.gstLines ?? []).map((l) => ({
+      kind: l.kind,
+      seatClass: l.seatClass ?? null, // ticket lines
+      description: l.description,
+      qty: l.qty,
+      unitPricePaise: l.unitPricePaise,
+      discountPaise: l.discountPaise,
+      amountPaise: l.amountPaise,
+      gstPercent: l.gstPercent,
+      taxablePaise: l.taxablePaise,
+      cgstPaise: l.cgstPaise,
+      sgstPaise: l.sgstPaise,
+    })),
+    totalPaise: p.totalPaise ?? p.ticketsPaise,
+  }
+}
+
+// What the API sends (more fields come with U-16, U-17)
 export function publicBooking(booking, now = new Date()) {
   const pending = booking.status === 'pending'
   return {
@@ -23,7 +53,7 @@ export function publicBooking(booking, now = new Date()) {
     seats: booking.seats.map((s) => ({ seatId: s.seatId, seatClass: s.seatClass, className: s.className, pricePaise: s.pricePaise })),
     food: (booking.food ?? []).map((f) => ({ foodItemId: String(f.foodItemId), name: f.name, isVeg: f.isVeg, unitPricePaise: f.unitPricePaise, qty: f.qty })),
     foodPickup: booking.foodPickup ?? null,
-    pricing: { ticketsPaise: booking.pricing.ticketsPaise, foodPaise: booking.pricing.foodPaise ?? 0 },
+    pricing: publicPricing(booking.pricing),
   }
 }
 
@@ -66,5 +96,17 @@ export async function giveUpHold(req, res) {
 // replaces the food list while the hold runs. Empty list = no food.
 export async function setFood(req, res) {
   const booking = await setBookingFood(await findOwn(req), req.valid.body)
+  res.json({ booking: publicBooking(booking) })
+}
+
+// PUT /api/bookings/:id/coupon { code } (U-15, BR-16): tickets only, while the hold runs
+export async function setCoupon(req, res) {
+  const booking = await applyCoupon(await findOwn(req), req.valid.body.code, req.user)
+  res.json({ booking: publicBooking(booking) })
+}
+
+// DELETE /api/bookings/:id/coupon: back to the price without the coupon
+export async function deleteCoupon(req, res) {
+  const booking = await removeCoupon(await findOwn(req))
   res.json({ booking: publicBooking(booking) })
 }

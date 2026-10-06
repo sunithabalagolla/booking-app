@@ -14,6 +14,7 @@ import { User } from '../src/models/User.js'
 import { buildLayout } from '../src/utils/seatLayout.js'
 import { istDayToDate, istToday } from '../src/utils/time.js'
 import { clearTestDB, closeTestDB, connectTestDB } from './helpers/db.js'
+import { createTestSettings } from './helpers/settings.js'
 import { createUser, TEST_PASSWORD } from './helpers/users.js'
 
 // U-13 food + SF-06 pickup time: canteen menu and PUT /api/bookings/:id/food
@@ -46,7 +47,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await clearTestDB()
   resetRateLimits()
-  await Settings.create({})
+  await createTestSettings()
   owner = await createUser({ email: 'owner@example.com', role: 'owner', phone: '9400000001', owner: { businessName: 'B', approvalStatus: 'approved' } })
   await createUser({ email: 'meena@example.com' })
   await createUser({ email: 'ravi@example.com' })

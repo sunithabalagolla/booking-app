@@ -1,6 +1,7 @@
 import { Booking } from '../models/Booking.js'
 import { FoodItem } from '../models/FoodItem.js'
 import { AppError } from '../utils/AppError.js'
+import { bookingPricing } from './bookingPrice.js'
 import { releaseIfExpired } from './seatHold.js'
 
 // U-13 food for a seat hold (SF-06 pickup time). The client sends only item IDs and
@@ -31,12 +32,11 @@ export async function setBookingFood(booking, { items, pickup }, now = new Date(
     const item = found.get(foodItemId)
     return { foodItemId: item._id, name: item.name, isVeg: item.isVeg, unitPricePaise: item.pricePaise, qty }
   })
-  const foodPaise = food.reduce((sum, f) => sum + f.unitPricePaise * f.qty, 0)
+  // U-14: the whole price again with the new food (the discount stays)
+  const pricing = await bookingPricing(booking, { food })
 
   // Saved only while the hold still runs (the time can end between the check and here)
-  const update = food.length
-    ? { $set: { food, foodPickup: pickup, 'pricing.foodPaise': foodPaise } }
-    : { $set: { food: [], 'pricing.foodPaise': 0 }, $unset: { foodPickup: 1 } }
+  const update = food.length ? { $set: { food, foodPickup: pickup, pricing } } : { $set: { food: [], pricing }, $unset: { foodPickup: 1 } }
   const saved = await Booking.findOneAndUpdate({ _id: booking._id, status: 'pending', holdExpiresAt: { $gt: now } }, update, { returnDocument: 'after' })
   if (!saved) throw holdOver()
   return saved

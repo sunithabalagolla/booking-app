@@ -399,7 +399,7 @@ See **Section 3** for the full locking rules.
 | `invoiceId` | ObjectId → invoices | | Set on confirm |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 
-> Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. Added 2026-10-06 (U-13): `food`, `foodPickup`, `pricing.foodPaise` (default 0). The other fields come with their tasks (Phase 5+).
+> Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. Added 2026-10-06 (U-13): `food`, `foodPickup`, `pricing.foodPaise` (default 0). Added 2026-10-06 (U-14, U-15): the full `pricing` below (`gstLines` also have `seatClass` on ticket lines, `discountPaise` per line, and `description` / `qty` / `unitPricePaise`; `couponCode` is also in `pricing`), `couponId` / `couponCode`. `pricing.rates` = copy at **hold** time (also `hsnSac`). A last-minute deal on at hold time is fixed for the hold (`dealPercent`, decided 2026-10-06). The discount is shared by the ticket lines by their amount; the last ticket line gets the paise left over (decided 2026-10-06). The other fields come with their tasks (Phase 5+).
 
 **`pricing`** (all paise, plus the rates used):
 `ticketsPaise`, `foodPaise`, `ticketDiscountPaise` (coupon or deal, tickets only), `discountType` (`coupon` · `deal` · none), `dealPercent`, `convenienceFeePaise`, `gstLines` (per line: GST-inclusive amount, taxable value, rate, CGST, SGST, see Section 2a), `totalPaise`, and `rates` = copy of `commissionPercent`, GST rates, `convenienceFeePaise` per ticket and the refund percents at booking time.
@@ -501,6 +501,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `usedCount` | Number | yes | Default 0. +1 in the confirm transaction, only if `usedCount < totalLimit`. Not given back when the booking is cancelled |
 | `cityCodes` / `theatreIds` | [String] / [ObjectId] | | Empty = everywhere |
 | `createdBy` | ObjectId → users | yes | Admin |
+| `isSample` | Boolean | | Seeded test data (15.5). Built 2026-10-06 with U-15 (model + seed `TALKIES20`, `FLAT50`); admin screens = A-06 |
 
 **Indexes**: `{ code: 1 }` unique
 

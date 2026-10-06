@@ -2,7 +2,18 @@
 
 ## Last session
 
-- Date: 2026-10-06 (second part)
+- Date: 2026-10-06 (third part)
+- **Phase 5 Step 2 built: U-14 Booking summary + U-15 coupon (T-05).** Waiting for your browser check (see Next step), then tick U-14 + U-15.
+  - Your decisions (2026-10-06): a deal is **fixed at hold time**; the discount is **shared by the seat-class lines** (last line gets the paise left over); **no GST rates = no hold** (503 `PRICES_NOT_READY`, server log line); **A-06 admin coupons = Step 3**.
+  - Server: `services/pricing.js` = the one place for money (T-05): GST worked back per line (database.md 2a), ticket lines per class, food lines per item, convenience fee line, deal or coupon on tickets only, total. Rates copied into the booking at hold (`pricing.rates`, A-05). The price is calculated again on hold, food and coupon changes (`services/bookingPrice.js`); every booking answer has the full `pricing` (not the rates). `PUT / DELETE /api/bookings/:id/coupon` (`services/bookingCoupon.js`): checks deal, dates, total uses, own uses, min amount, city, theatre (+ `not_found`), only while the hold runs; same rate limit as hold + food. New models `Coupon`, `CouponUsage` (usage written at confirm, U-16). Seed step `coupons`: `TALKIES20` (20%, max ₹100, min tickets ₹200), `FLAT50` (₹50, once per user), 90 days. Ran the seed on Docker (it also added 48 shows for the new days).
+  - Client: `/bookings/:id/summary` (`SummaryPage.jsx`): UI-23 bill on ruled paper with a red margin line (`.bill-paper`): booking number, ticket lines per class with seat numbers, "Special offer" stamp + line or "Coupon CODE" line (green, minus), food lines, pickup time, convenience fee, double-ruled **Total**, box "GST included in the total" (taxable, CGST, SGST per kind and rate). Coupon box: code (uppercase), Apply, server message on a wrong code, "applied: −₹100" + Remove; with a deal: "coupons cannot be used". Bottom bar: "To pay", hold timer, "Pay ₹…" off ("Payment comes next."). Canteen Continue / Skip food now open the summary. Shared parts: `BookingGate.jsx` (loads the booking) and `useHoldEnd.jsx` (Interval card + fresh seat list).
+  - Checked in Chrome (wide screen, seed Sample User): 2 × Balcony → ₹500 + fee ₹60 = ₹560, GST ₹423.73 taxable; `talkies20` → −₹100 (the max), total ₹460; Remove; `NOPE` → "We could not find this coupon code."; deal show 2 × First class → ₹360 − ₹72 + ₹60 = ₹348 with the stamp, coupon box closed. No console errors. Phone width not checked.
+  - Your "Seat hold time" is still **1 minute** in Settings.
+  - api.md + database.md updated.
+  - Tests: **498 pass** (client 156: summary bill 5; server 342: T-05 `t05.pricing.test.js` 10, `bookings.coupon.test.js` 9, `seed.coupons.test.js` 1; hold / live / food tests now use `tests/helpers/settings.js` with test GST rates). Lint + build OK.
+
+## Earlier on 2026-10-06 (U-13 Food)
+
 - **Phase 5 Step 1 done: U-13 Food (canteen page, UI-24, SF-06).** Tested in the browser by you (2026-10-06): works. Ticked.
   - Your decisions (2026-10-06): most **10 per item** (fixed in code, `MAX_FOOD_QTY`, sent with the menu as `maxQtyPerItem`); **Proceed goes straight to the canteen**; pickup **"Before movie" picked first**; rate limit added now.
   - Server: `GET /api/theatres/:id/food` (guests too; approved theatres only, else 404; in stock first, then A to Z). `PUT /api/bookings/:id/food` (`services/bookingFood.js`): replaces the food list, names + prices read from the database and copied into the booking (SEC-10); sold out → 400 `sold_out`; another theatre / deleted item → 400; pickup needed with food; empty list = no food; only while the hold runs (saved with a `holdExpiresAt > now` check, so the time cannot end in between) → else 400 `hold_over`. Booking model: `food`, `foodPickup`, `pricing.foodPaise`. `GET /api/bookings/:id` now also sends `theatreId`, `food`, `foodPickup`, `foodPaise`. Rate limit "seat hold, food, coupon" 30 / 10 min per user (`bookingLimiter`, hold + food together).
@@ -267,7 +278,12 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Phase 5 Step 2: U-14 Booking summary + U-15 coupon (+ A-06 admin coupons)** (plan shown to you 2026-10-06, waiting for your OK).
+- **Check U-14 + U-15 in the browser** (set "Seat hold time" back to 10 minutes first):
+  - Seats → canteen → Continue / Skip food → summary bill: lines, fee (₹30 per ticket), total, GST box.
+  - Coupons: `TALKIES20` (needs tickets ₹200+, max ₹100 off), `FLAT50` (₹50 off), a wrong code, Remove. A deal show (seed: "Special offer" stamp in the show list) shows the deal and refuses coupons.
+  - Add food, go back to the summary: the coupon stays, the total changes.
+  - On your phone: the bill, the coupon box and the bottom bar fit.
+  - After that: tick U-14 + U-15. Next: Phase 5 Step 3, A-06 admin coupons (API + register page) — plan first.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -382,14 +398,14 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 5 – Booking + payment
 - [x] U-13 Food (Phase 5 Step 1, 2026-10-06; tested in the browser by the developer 2026-10-06)
-- [ ] U-14 Summary
-- [ ] U-15 + A-06 Coupons
+- [ ] U-14 Summary (built 2026-10-06, Phase 5 Step 2; waiting for the developer's browser check)
+- [ ] U-15 + A-06 Coupons (U-15 built 2026-10-06 in Step 2, waiting for the check; A-06 admin = Step 3)
 - [ ] U-16 Mock payment (PAY-01 to PAY-04)
 - [ ] U-17 QR ticket + PDF
 - [ ] GST invoice (11.3)
 - [ ] E-01 to E-03 emails
 - [ ] JOB-02
-- [ ] T-04, T-05 tests
+- [ ] T-04, T-05 tests (T-05 done 2026-10-06: `server/tests/t05.pricing.test.js`; T-04 with U-16)
 
 ## Phase 6 – Album + cancellations
 - [ ] U-18 Ticket album

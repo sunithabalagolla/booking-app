@@ -15,6 +15,7 @@ import { BOOKING_NUMBER_CHARS } from '../src/utils/bookingNumber.js'
 import { buildLayout } from '../src/utils/seatLayout.js'
 import { istDayToDate, istToday } from '../src/utils/time.js'
 import { clearTestDB, closeTestDB, connectTestDB } from './helpers/db.js'
+import { createTestSettings } from './helpers/settings.js'
 import { createUser, TEST_PASSWORD } from './helpers/users.js'
 
 // U-12 seat hold (9.2, 9.3) + T-02 (two users, same seat, same moment: exactly one wins)
@@ -69,7 +70,7 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   await clearTestDB()
-  await Settings.create({}) // defaults: holdMinutes 10 (BR-01), maxSeatsPerBooking 10 (BR-02)
+  await createTestSettings() // defaults: holdMinutes 10 (BR-01), maxSeatsPerBooking 10 (BR-02)
   await createUser({ email: 'owner@example.com', role: 'owner', phone: '9400000001', owner: { businessName: 'B', approvalStatus: 'approved' } })
   await createUser({ email: 'meena@example.com' })
   await createUser({ email: 'ravi@example.com' })

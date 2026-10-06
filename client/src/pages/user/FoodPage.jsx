@@ -1,54 +1,34 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
-import { useBooking, useGiveUpHold, useSetFood } from '../../api/bookings.js'
+import { Link, useNavigate } from 'react-router'
+import { useSetFood } from '../../api/bookings.js'
 import { useCanteenMenu } from '../../api/theatres.js'
 import Button from '../../components/ui/Button.jsx'
-import ButtonLink from '../../components/ui/ButtonLink.jsx'
-import IntervalCard from '../../components/ui/IntervalCard.jsx'
-import PaperCard from '../../components/ui/PaperCard.jsx'
 import VegMark from '../../components/ui/VegMark.jsx'
 import { formatRupees } from '../../validation/food.js'
 import { bookingShowText, cartFromBooking, cartLines, changeQty, DEFAULT_PICKUP, foodTotal, itemCountText, PICKUPS } from './food.js'
 import HoldTimer from './HoldTimer.jsx'
+import BookingGate from './BookingGate.jsx'
+import useHoldEnd from './useHoldEnd.jsx'
 import { sortSeatIds } from './seats.js'
 
 // U-13 food and snacks at /bookings/:id/food, after the seats are held (9.2).
 // UI-24 canteen chalkboard: photo, veg / non-veg mark, price, + / −. Food is optional.
 // Pickup "Before movie" / "Interval" (SF-06) shows once food is added (Before movie
 // is picked first). The hold timer keeps running; time over = Interval card (UI-33).
-// "Continue" / "Skip food" save the food list on the server (prices from the server).
-// The summary (U-14) comes next.
+// "Continue" / "Skip food" save the food list on the server (prices from the server)
+// and open the booking summary (U-14).
 export default function FoodPage() {
-  const { id } = useParams()
-  const booking = useBooking(id)
-
-  if (booking.isPending) return <p role="status" className="py-6">Loading…</p>
-  if (booking.isError) {
-    return (
-      <PaperCard title={booking.error.code === 'NOT_FOUND' || booking.error.code === 'VALIDATION_ERROR' ? 'Booking not found' : 'Something went wrong'}>
-        <div className="space-y-4">
-          <p>{booking.error.code === 'NOT_FOUND' ? 'We could not find this booking.' : booking.error.message}</p>
-          <ButtonLink to="/">Go to home</ButtonLink>
-        </div>
-      </PaperCard>
-    )
-  }
-  return <Canteen key={id} booking={booking.data} fetchedAt={booking.dataUpdatedAt} />
+  return <BookingGate>{(booking, fetchedAt) => <Canteen key={booking.id} booking={booking} fetchedAt={fetchedAt} />}</BookingGate>
 }
 
 function Canteen({ booking, fetchedAt }) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const menu = useCanteenMenu(booking.theatreId)
   const setFood = useSetFood(booking.id)
-  const giveUp = useGiveUpHold(booking.showId)
+  const { timeUp, endNow, onTimeUp, intervalCard } = useHoldEnd(booking)
   const [cart, setCart] = useState(() => cartFromBooking(booking.food))
   const [pickup, setPickup] = useState(booking.foodPickup ?? DEFAULT_PICKUP)
   const [message, setMessage] = useState(null)
-  const [saved, setSaved] = useState(false)
-  // A hold that already ended (e.g. an old link) shows the Interval card at once
-  const [timeUp, setTimeUp] = useState(booking.status !== 'pending')
 
   const items = menu.data?.items ?? []
   const max = menu.data?.maxQtyPerItem ?? 10
@@ -57,7 +37,6 @@ function Canteen({ booking, fetchedAt }) {
   const seatsLink = `/shows/${booking.showId}`
 
   function change(itemId, delta) {
-    setSaved(false)
     setMessage(null)
     setCart((current) => changeQty(current, itemId, delta, max))
   }
@@ -67,21 +46,13 @@ function Canteen({ booking, fetchedAt }) {
     const body = withFood && lines.length ? { items: lines, pickup } : { items: [] }
     if (!withFood) setCart({})
     setFood.mutate(body, {
-      onSuccess: () => {
-        setSaved(true)
-        setMessage(body.items.length ? 'Food added. The booking summary comes next.' : 'No food. The booking summary comes next.')
-      },
+      onSuccess: () => navigate(`/bookings/${booking.id}/summary`),
       onError: (error) => {
-        if (error.details?.reason === 'hold_over') setTimeUp(true)
+        if (error.details?.reason === 'hold_over') endNow()
         else setMessage(error.message)
         if (error.details?.reason === 'sold_out') menu.refetch() // show the new stock
       },
     })
-  }
-
-  function onTimeUp() {
-    setTimeUp(true)
-    giveUp.mutate(booking.id) // the seats are already free; also mark the booking released
   }
 
   return (
@@ -130,10 +101,7 @@ function Canteen({ booking, fetchedAt }) {
                     name="pickup"
                     value={p.value}
                     checked={pickup === p.value}
-                    onChange={() => {
-                      setPickup(p.value)
-                      setSaved(false)
-                    }}
+                    onChange={() => setPickup(p.value)}
                     className="h-4 w-4 accent-gold"
                   />
                   {p.label}
@@ -151,7 +119,7 @@ function Canteen({ booking, fetchedAt }) {
           <p className="text-sm">
             Tickets {formatRupees(booking.pricing.ticketsPaise)} · Food {formatRupees(foodPaise)}
           </p>
-          {message && <p className={`text-sm font-bold ${saved ? 'text-green' : 'text-maroon'}`}>{message}</p>}
+          {message && <p className="text-sm font-bold text-maroon">{message}</p>}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           {booking.status === 'pending' && <HoldTimer key={`${booking.id}-${fetchedAt}`} remainingSeconds={booking.remainingSeconds} fetchedAt={fetchedAt} onTimeUp={onTimeUp} />}
@@ -164,15 +132,7 @@ function Canteen({ booking, fetchedAt }) {
         </div>
       </div>
 
-      <IntervalCard
-        open={timeUp}
-        onPickAgain={() => {
-          // Forget the cached seat list: it still has the old hold, whose timer would
-          // show the Interval card again on the seat page
-          queryClient.removeQueries({ queryKey: ['show-seats', booking.showId] })
-          navigate(seatsLink)
-        }}
-      />
+      {intervalCard}
     </div>
   )
 }

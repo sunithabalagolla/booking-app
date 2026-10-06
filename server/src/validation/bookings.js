@@ -35,3 +35,13 @@ export const foodBody = z
     pickup: z.enum(FOOD_PICKUPS, { error: 'Please choose Before movie or Interval.' }).optional(),
   })
   .refine((body) => body.items.length === 0 || body.pickup, { error: 'Please choose Before movie or Interval.', path: ['pickup'] })
+
+// PUT /api/bookings/:id/coupon: the code as typed (any case, spaces around are fine)
+export const couponBody = z.object({
+  code: z
+    .string({ error: 'Please type a coupon code.' })
+    .trim()
+    .min(1, { error: 'Please type a coupon code.' })
+    .max(30, { error: 'This coupon code is too long.' })
+    .transform((code) => code.toUpperCase()),
+})

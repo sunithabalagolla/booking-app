@@ -3,6 +3,7 @@ import { Booking } from '../models/Booking.js'
 import { getSettings } from '../models/Settings.js'
 import { ShowSeat, takenNow } from '../models/ShowSeat.js'
 import { emitSeatsUpdate } from '../sockets/index.js'
+import { calculatePricing, dealDiscount, ratesFromSettings } from './pricing.js'
 import { AppError } from '../utils/AppError.js'
 import { newBookingNumber, newQrNonce } from '../utils/bookingNumber.js'
 import { CLASS_NAMES } from '../utils/seatLayout.js'
@@ -65,7 +66,9 @@ export async function currentHold(showId, userId, now = new Date()) {
 
 // show: populated and open (loadShowForUsers). seatIds: unique, already checked by Zod.
 export async function holdSeats({ show, user, seatIds, now = new Date() }) {
-  const { holdMinutes, maxSeatsPerBooking } = await getSettings()
+  const settings = await getSettings()
+  const { holdMinutes, maxSeatsPerBooking } = settings
+  const rates = ratesFromSettings(settings) // GST rates must be set (503 PRICES_NOT_READY)
   if (seatIds.length > maxSeatsPerBooking) {
     throw new AppError(400, 'RULE_BROKEN', `You can pick up to ${maxSeatsPerBooking} seats in one booking.`, { rule: 'BR-02' })
   }
@@ -83,6 +86,12 @@ export async function holdSeats({ show, user, seatIds, now = new Date() }) {
     return { seatId, seatClass, className: CLASS_NAMES[seatClass], pricePaise: priceOf.get(seatClass) }
   })
   const expiresAt = new Date(now.getTime() + holdMinutes * 60 * 1000)
+
+  // U-14 prices. A last-minute deal that is on now stays for this hold (decided 2026-10-06)
+  const ticketsPaise = seats.reduce((sum, s) => sum + s.pricePaise, 0)
+  const dealPercent = show.deal?.active && show.deal.percent > 0 ? show.deal.percent : null
+  const discount = dealPercent ? { type: 'deal', paise: dealDiscount(ticketsPaise, dealPercent), dealPercent } : {}
+  const pricing = calculatePricing({ seats, rates, discount })
 
   for (let attempt = 1; ; attempt++) {
     try {
@@ -128,7 +137,7 @@ export async function holdSeats({ show, user, seatIds, now = new Date() }) {
                 format: show.format,
               },
               seats,
-              pricing: { ticketsPaise: seats.reduce((sum, s) => sum + s.pricePaise, 0) },
+              pricing,
               qrNonce: newQrNonce(),
             },
           ],

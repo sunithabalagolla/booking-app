@@ -16,6 +16,7 @@ import { attachSockets, closeSockets } from '../src/sockets/index.js'
 import { buildLayout } from '../src/utils/seatLayout.js'
 import { istDayToDate, istToday } from '../src/utils/time.js'
 import { clearTestDB, closeTestDB, connectTestDB } from './helpers/db.js'
+import { createTestSettings } from './helpers/settings.js'
 import { createUser, TEST_PASSWORD } from './helpers/users.js'
 
 // U-10 live seat map (api.md Section 12) + JOB-01 (release expired holds, push updates).
@@ -92,7 +93,7 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   await clearTestDB()
-  await Settings.create({})
+  await createTestSettings()
   await createUser({ email: 'owner@example.com', role: 'owner', phone: '9400000001', owner: { businessName: 'B', approvalStatus: 'approved' } })
   await createUser({ email: 'meena@example.com' })
   await createUser({ email: 'ravi@example.com' })

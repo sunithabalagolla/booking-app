@@ -33,6 +33,7 @@ import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 import StaffScanPage from './pages/staff/StaffScanPage.jsx'
 import FoodPage from './pages/user/FoodPage.jsx'
 import SeatPage from './pages/user/SeatPage.jsx'
+import SummaryPage from './pages/user/SummaryPage.jsx'
 import { PUBLIC } from './store/authStore.js'
 
 // All app routes live here. More pages are added phase by phase.
@@ -55,6 +56,8 @@ const router = createBrowserRouter([
       { path: '/shows/:id', element: guard(['user'], <SeatPage />) },
       // U-13 canteen after the seat hold
       { path: '/bookings/:id/food', element: guard(['user'], <FoodPage />) },
+      // U-14 booking summary + U-15 coupon
+      { path: '/bookings/:id/summary', element: guard(['user'], <SummaryPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

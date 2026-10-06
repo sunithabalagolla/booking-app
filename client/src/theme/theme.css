@@ -725,3 +725,19 @@
 .chalk-btn:disabled {
   opacity: 0.35;
 }
+
+/* UI-23 booking summary: an old bill on ruled paper with a red margin line.
+   Same in Day and Night show (paper is always cream). */
+.bill-paper {
+  --rule: 2rem; /* one ruled line = one bill row */
+  background-color: var(--color-cream);
+  background-image:
+    linear-gradient(to right, transparent 2.75rem, rgb(123 30 30 / 0.55) 2.75rem, rgb(123 30 30 / 0.55) calc(2.75rem + 2px), transparent calc(2.75rem + 2px)),
+    repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule) - 1px), rgb(59 42 32 / 0.16) calc(var(--rule) - 1px) var(--rule));
+  color: var(--color-ink);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.3);
+}
+/* Total: double rule above, like a hand-ruled bill */
+.bill-total {
+  border-top: 4px double var(--color-ink);
+}

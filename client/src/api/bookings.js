@@ -32,3 +32,12 @@ export function useSetFood(bookingId) {
     onSuccess: ({ booking }) => queryClient.setQueryData(['booking', bookingId], booking),
   })
 }
+
+// U-15 PUT /api/bookings/:id/coupon { code } / DELETE: the answer is the booking with the
+// new pricing. 400 COUPON_INVALID has details.reason and a message for the user.
+function useCouponMutation(bookingId, mutationFn) {
+  const queryClient = useQueryClient()
+  return useMutation({ mutationFn, onSuccess: ({ booking }) => queryClient.setQueryData(['booking', bookingId], booking) })
+}
+export const useApplyCoupon = (bookingId) => useCouponMutation(bookingId, (code) => apiFetch(`/bookings/${bookingId}/coupon`, { method: 'PUT', body: { code } }))
+export const useRemoveCoupon = (bookingId) => useCouponMutation(bookingId, () => apiFetch(`/bookings/${bookingId}/coupon`, { method: 'DELETE' }))
