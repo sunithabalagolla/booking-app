@@ -14,16 +14,18 @@ import Stamp from '../../components/ui/Stamp.jsx'
 import { formatRupees } from '../../validation/food.js'
 import { CLASS_NAMES, formatShortDay } from '../../validation/shows.js'
 import { hasAgeOk, needsAgeCheck, saveAgeOk } from '../public/movie.js'
+import HoldTimer from './HoldTimer.jsx'
 import { showTimeText } from '../public/showList.js'
-import { classSections, clockWords, dropTaken, formatClock, SEAT_MARKS, secondsLeft, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
+import { classSections, dropTaken, SEAT_MARKS, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
 
 // U-10 seat selection at /shows/:id (login needed, 9.2), inside the UI-20 box office
 // window with UI-21 chair seats and the NF-04 legend.
-// Pick seats → "Proceed" holds them for BR-01 (U-12): the page then shows the held seats,
-// the timer and "Give up seats"; when the time is over, the Interval card (UI-33).
+// Pick seats → "Proceed" holds them for BR-01 (U-12) and opens the canteen (U-13).
+// Coming back while the hold runs, the page shows the held seats, the timer,
+// "Continue to canteen" and "Give up seats"; when the time is over, the Interval card (UI-33).
 // After a refresh the running hold comes back with the seat list (myHold).
 // Live: other people's holds and freed seats arrive by Socket.io at once (U-10).
-// Food and payment come in Phase 5.
+// Summary and payment come next (U-14, U-16).
 export default function SeatPage() {
   const { id } = useParams()
   const show = useShow(id)
@@ -90,14 +92,11 @@ function SeatSelection({ show }) {
     })
   }
 
-  // U-12 "Proceed": hold the picked seats (409 = someone was faster: the fresh seat list
-  // shows it and the seat drops out of the pick)
+  // U-12 "Proceed": hold the picked seats, then the canteen (U-13). 409 = someone was
+  // faster: the fresh seat list shows it and the seat drops out of the pick.
   function proceed() {
     holdSeats.mutate(selected, {
-      onSuccess: () => {
-        setPicked([])
-        setMessage(null)
-      },
+      onSuccess: ({ booking }) => navigate(`/bookings/${booking.id}/food`),
       onError: (error) => setMessage(error.message),
     })
   }
@@ -168,12 +167,10 @@ function SeatSelection({ show }) {
             {myHold ? (
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <HoldTimer key={`${myHold.bookingId}-${seats.dataUpdatedAt}`} remainingSeconds={myHold.remainingSeconds} fetchedAt={seats.dataUpdatedAt} onTimeUp={onTimeUp} />
-                <div className="text-right">
-                  <Button variant="secondary" onClick={giveUpSeats} disabled={giveUp.isPending}>
-                    Give up seats
-                  </Button>
-                  <p className="mt-1 text-xs">Food and payment come next.</p>
-                </div>
+                <Button variant="secondary" onClick={giveUpSeats} disabled={giveUp.isPending}>
+                  Give up seats
+                </Button>
+                <ButtonLink to={`/bookings/${myHold.bookingId}/food`}>Continue to canteen</ButtonLink>
               </div>
             ) : (
               <Button onClick={proceed} disabled={selected.length === 0 || holdSeats.isPending || !seats.isSuccess}>
@@ -303,36 +300,5 @@ function Legend() {
         Wheelchair space
       </li>
     </ul>
-  )
-}
-
-// U-12 hold timer: "9:41 left". Counts down every second from the server's
-// remainingSeconds; at 0 it calls onTimeUp once.
-function HoldTimer({ remainingSeconds, fetchedAt, onTimeUp }) {
-  const [left, setLeft] = useState(() => secondsLeft(remainingSeconds, fetchedAt))
-  const doneRef = useRef(false)
-  const onTimeUpRef = useRef(onTimeUp)
-  useEffect(() => {
-    onTimeUpRef.current = onTimeUp
-  })
-
-  useEffect(() => {
-    const tick = () => {
-      const now = secondsLeft(remainingSeconds, fetchedAt)
-      setLeft(now)
-      if (now === 0 && !doneRef.current) {
-        doneRef.current = true
-        onTimeUpRef.current()
-      }
-    }
-    tick()
-    const timer = setInterval(tick, 1000)
-    return () => clearInterval(timer)
-  }, [remainingSeconds, fetchedAt])
-
-  return (
-    <p role="timer" aria-label={`Seats held for ${clockWords(left)} more`} className={`font-type text-2xl font-bold tabular-nums ${left <= 60 ? 'text-maroon' : ''}`}>
-      {formatClock(left)} <span className="text-sm font-normal">left</span>
-    </p>
   )
 }

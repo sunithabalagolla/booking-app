@@ -31,6 +31,7 @@ import SearchPage from './pages/public/SearchPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 import StaffScanPage from './pages/staff/StaffScanPage.jsx'
+import FoodPage from './pages/user/FoodPage.jsx'
 import SeatPage from './pages/user/SeatPage.jsx'
 import { PUBLIC } from './store/authStore.js'
 
@@ -52,6 +53,8 @@ const router = createBrowserRouter([
       { path: '/movies/:id', element: guard(PUBLIC, <MovieDetailsPage />) },
       // U-10 seat selection (UI-20): login needed from here on (9.2), users only
       { path: '/shows/:id', element: guard(['user'], <SeatPage />) },
+      // U-13 canteen after the seat hold
+      { path: '/bookings/:id/food', element: guard(['user'], <FoodPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

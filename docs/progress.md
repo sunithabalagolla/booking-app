@@ -2,7 +2,18 @@
 
 ## Last session
 
-- Date: 2026-10-06
+- Date: 2026-10-06 (second part)
+- **Phase 5 Step 1 built: U-13 Food (canteen page, UI-24, SF-06).** Waiting for your browser check (see Next step), then tick U-13.
+  - Your decisions (2026-10-06): most **10 per item** (fixed in code, `MAX_FOOD_QTY`, sent with the menu as `maxQtyPerItem`); **Proceed goes straight to the canteen**; pickup **"Before movie" picked first**; rate limit added now.
+  - Server: `GET /api/theatres/:id/food` (guests too; approved theatres only, else 404; in stock first, then A to Z). `PUT /api/bookings/:id/food` (`services/bookingFood.js`): replaces the food list, names + prices read from the database and copied into the booking (SEC-10); sold out → 400 `sold_out`; another theatre / deleted item → 400; pickup needed with food; empty list = no food; only while the hold runs (saved with a `holdExpiresAt > now` check, so the time cannot end in between) → else 400 `hold_over`. Booking model: `food`, `foodPickup`, `pricing.foodPaise`. `GET /api/bookings/:id` now also sends `theatreId`, `food`, `foodPickup`, `foodPaise`. Rate limit "seat hold, food, coupon" 30 / 10 min per user (`bookingLimiter`, hold + food together).
+  - Client: `/bookings/:id/food` (`FoodPage.jsx`, users only). Chalkboard: dark green board (new colour `--color-chalkboard` #1F3B33: cream 10.0:1, gold 5.4:1) in a wooden frame, chalk-white text with a soft smudge (no new font), "✦ TODAY'S MENU ✦", photo, veg / non-veg mark, Combo tag, gold chalk price, round chalk − / + buttons (44 px), sold out = crossed out + "Sold out", no buttons. Pickup choice shows once food is added. Bottom bar: "3 items", "Tickets ₹250 · Food ₹370", the same hold timer (`HoldTimer.jsx`, now shared with the seat page), Skip food / Continue. After saving: "Food added. The booking summary comes next." (U-14 is the next step). Time over → Interval card → "Pick seats again" = back to the seat page. Seat page: Proceed opens the canteen; with a running hold it shows "Continue to canteen" + "Give up seats".
+  - Checked in Chrome (wide screen, seed Sample User): Proceed → canteen; +/− and totals right; Continue saved (checked in the database: 2 × Butter Popcorn + 1 Chicken Puff, Before movie); Skip food; Interval card at time over. **Bug found and fixed:** after "Pick seats again" the seat page showed the Interval card a second time (its cached seat list still had the old hold); the canteen now clears that cache first. No console errors. Phone width not checked (the browser window could not be resized).
+  - Your "Seat hold time" setting is still **1 minute** (from your JOB-01 check). Set it back to 10 in admin Settings when you are done testing.
+  - api.md + database.md updated.
+  - Tests: **473 pass** (client 151: food helpers 6; server 322: `tests/bookings.food.test.js` 9 = menu order + theatre rules, save with server prices, replace / empty list, refusals, 10 per item, hold over / given up, other user / owner / guest, rate limit). Lint + build OK.
+
+## Earlier on 2026-10-06 (Phase 4 Step 3)
+
 - **Phase 4 Step 3 done: live seat map (U-10) + JOB-01.** Tested in the browser by you with two users (2026-10-06): works. Ticked. **Phase 4 done.**
   - Packages (OK'd by you): server `socket.io`, `node-cron`, dev `socket.io-client` (for tests); client `socket.io-client`.
   - Server: `src/sockets/index.js`: Socket.io on the same HTTP server and port (`server.js` now uses `http.createServer(app)`), CORS from `CLIENT_URL`. `show:join` / `show:leave` `{ showId }` → room `show:<id>`, optional ack `{ ok }` (bad ID = `false`), no login needed (api.md 12). `emitSeatsUpdate` sends `seats:update { showId, seats: [{ seatId, status }] }`; it does nothing when Socket.io is not running (tests, seed).
@@ -256,7 +267,12 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Phase 5 Step 1: U-13 Food** (plan shown to you 2026-10-06, waiting for your OK).
+- **Check U-13 Food in the browser** (set "Seat hold time" back to 10 minutes in admin Settings first):
+  - Pick seats → Proceed opens the canteen chalkboard. + / − change the count (up to 10), the totals change; the pickup choice shows with "Before movie" picked.
+  - Continue → "Food added…". Go "← Back to seats" → "Continue to canteen" → your food is still there.
+  - Skip food works; a sold-out item (mark one "Out of stock" as owner) shows crossed out without buttons.
+  - On your phone: the board, the buttons and the bottom bar fit.
+  - After that: tick U-13. Next: Phase 5 Step 2, U-14 Booking summary (plan first).
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -370,7 +386,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
 
 ## Phase 5 – Booking + payment
-- [ ] U-13 Food
+- [ ] U-13 Food (built 2026-10-06, Phase 5 Step 1; waiting for the developer's browser check)
 - [ ] U-14 Summary
 - [ ] U-15 + A-06 Coupons
 - [ ] U-16 Mock payment (PAY-01 to PAY-04)

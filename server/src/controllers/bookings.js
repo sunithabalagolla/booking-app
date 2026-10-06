@@ -1,9 +1,10 @@
 import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
+import { setBookingFood } from '../services/bookingFood.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
 
-// /api/bookings (api.md Section 6): U-12 seat hold. Payment etc. come in Phase 5.
+// /api/bookings (api.md Section 6): U-12 seat hold, U-13 food. Summary, payment etc. come next.
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this booking.')
 
@@ -15,11 +16,14 @@ export function publicBooking(booking, now = new Date()) {
     bookingNumber: booking.bookingNumber,
     status: booking.status,
     showId: String(booking.showId),
+    theatreId: String(booking.theatreId), // U-13: the canteen menu of this theatre
     holdExpiresAt: pending ? booking.holdExpiresAt : null,
     remainingSeconds: pending ? Math.max(0, Math.round((booking.holdExpiresAt - now) / 1000)) : null,
     show: booking.show,
     seats: booking.seats.map((s) => ({ seatId: s.seatId, seatClass: s.seatClass, className: s.className, pricePaise: s.pricePaise })),
-    pricing: { ticketsPaise: booking.pricing.ticketsPaise },
+    food: (booking.food ?? []).map((f) => ({ foodItemId: String(f.foodItemId), name: f.name, isVeg: f.isVeg, unitPricePaise: f.unitPricePaise, qty: f.qty })),
+    foodPickup: booking.foodPickup ?? null,
+    pricing: { ticketsPaise: booking.pricing.ticketsPaise, foodPaise: booking.pricing.foodPaise ?? 0 },
   }
 }
 
@@ -56,4 +60,11 @@ export async function giveUpHold(req, res) {
   }
   await releaseBooking(booking._id)
   res.json({ booking: publicBooking(await Booking.findById(booking._id)) })
+}
+
+// PUT /api/bookings/:id/food { items: [{ foodItemId, qty }], pickup } (U-13, SF-06):
+// replaces the food list while the hold runs. Empty list = no food.
+export async function setFood(req, res) {
+  const booking = await setBookingFood(await findOwn(req), req.valid.body)
+  res.json({ booking: publicBooking(booking) })
 }

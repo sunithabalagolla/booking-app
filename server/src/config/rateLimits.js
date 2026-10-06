@@ -11,6 +11,7 @@ export const LIMITS = {
   resendVerify: { windowMs: HOUR, limit: 3 }, // per email (U-01)
   login: { windowMs: 15 * MINUTE, limit: 5 }, // wrong logins per email + IP (BR-17)
   forgotPassword: { windowMs: HOUR, limit: 3 }, // per email (start value, U-03)
+  booking: { windowMs: 10 * MINUTE, limit: 30 }, // seat hold + food (+ coupon later) together, per user (start value)
   general: { windowMs: 15 * MINUTE, limit: 300 }, // every /api call per IP, except /api/health (start value)
 }
 
@@ -55,6 +56,11 @@ export const loginLimiter = makeLimiter(LIMITS.login, {
   keyGenerator: (req) => `login:${emailOf(req)}|${ipKeyGenerator(req.ip)}`,
   requestWasSuccessful: (req, res) => res.statusCode !== 401,
   skipSuccessfulRequests: true,
+})
+
+// Seat hold, food, coupon (api.md 1.7): per logged-in user. Mounted after requireAuth.
+export const bookingLimiter = makeLimiter(LIMITS.booking, {
+  keyGenerator: (req) => `booking:${req.user._id}`,
 })
 
 // Tests only: forget all counts

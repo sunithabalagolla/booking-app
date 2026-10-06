@@ -17,6 +17,7 @@ import ownerRoutes from './routes/owner.js'
 import settingsRoutes from './routes/settings.js'
 import showRoutes from './routes/shows.js'
 import staffRoutes from './routes/staff.js'
+import theatreRoutes from './routes/theatres.js'
 import uploadRoutes from './routes/uploads.js'
 
 // Builds the Express app. It does not start listening here, so tests
@@ -46,6 +47,7 @@ app.use('/api/settings', settingsRoutes) // A-05 public values
 app.use('/api/cities', cityRoutes) // U-04 city picker
 app.use('/api/movies', movieRoutes) // U-05 movie lists
 app.use('/api/shows', showRoutes) // U-10 seat page
+app.use('/api/theatres', theatreRoutes) // U-13 canteen menu
 app.use('/api/bookings', bookingRoutes) // U-12 seat hold
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)

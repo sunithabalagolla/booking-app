@@ -18,6 +18,7 @@
   --color-mustard-card: #7D5100; /* mustard on light cards: 4.9:1 on light cream */
   --color-green-night: #7FB89F;  /* bottle green for Night show: 8.0:1 on stage dark */
   --color-mustard-night: #E8B25C; /* mustard for Night show: 9.4:1 on stage dark */
+  --color-chalkboard: #1F3B33;   /* UI-24 canteen board: dark bottle green (cream 10.0:1, gold 5.4:1) */
 
   --font-heading: "Rye", Georgia, serif;
   --font-type: "Special Elite", "Courier New", monospace;
@@ -669,4 +670,58 @@
 @keyframes interval-fade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* UI-24 canteen chalkboard (U-13): dark green board in a wooden frame, chalk-white text.
+   Same in Day and Night show. Chalk = cream with a soft smudge (no extra font). */
+.chalkboard {
+  background-color: var(--color-chalkboard);
+  /* faint wiped-chalk clouds */
+  background-image:
+    radial-gradient(ellipse at 18% 25%, rgb(255 255 255 / 0.06), transparent 45%),
+    radial-gradient(ellipse at 80% 75%, rgb(255 255 255 / 0.05), transparent 50%);
+  color: var(--color-cream);
+  border: 10px solid var(--color-wood);
+  border-radius: 6px;
+  box-shadow: inset 0 0 40px rgb(0 0 0 / 0.45), 0 14px 30px rgb(0 0 0 / 0.4);
+}
+@media (min-width: 640px) {
+  .chalkboard {
+    border-width: 14px;
+  }
+}
+.chalk {
+  text-shadow: 0 0 1px rgb(243 233 210 / 0.7), 0 0 6px rgb(243 233 210 / 0.15);
+}
+.chalk-price {
+  color: var(--color-gold);
+  text-shadow: 0 0 1px rgb(217 164 65 / 0.7);
+}
+/* dashed chalk line between items */
+.chalk-rule {
+  border-bottom: 1px dashed rgb(243 233 210 / 0.35);
+}
+/* round chalk-drawn + / − buttons (44 px touch target) */
+.chalk-btn {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgb(243 233 210 / 0.8);
+  border-radius: 9999px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-cream);
+}
+.chalk-btn:hover:not(:disabled) {
+  background-color: rgb(243 233 210 / 0.12);
+}
+.chalk-btn:focus-visible,
+.chalkboard input:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+.chalk-btn:disabled {
+  opacity: 0.35;
 }

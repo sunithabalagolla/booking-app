@@ -2,11 +2,12 @@ import mongoose from 'mongoose'
 import { SEAT_CLASSES } from '../utils/seatLayout.js'
 
 // bookings collection (database.md 5.11). U-12 (Phase 4) makes `pending` bookings
-// (seats held) and releases them. Food, coupon, full pricing with GST lines, payment,
+// (seats held) and releases them; U-13 adds food. Coupon, full pricing with GST lines, payment,
 // QR, check-in, cancel and transfer fields come with their tasks (Phase 5+).
 const { Schema } = mongoose
 
 export const BOOKING_STATUSES = ['pending', 'confirmed', 'cancelled', 'cancelled_by_theatre', 'released']
+export const FOOD_PICKUPS = ['before_movie', 'interval'] // SF-06
 
 const bookingSchema = new Schema(
   {
@@ -43,10 +44,23 @@ const bookingSchema = new Schema(
         pricePaise: { type: Number, required: true }, // GST included
       },
     ],
-    // Calculated by the backend only (SEC-10). Phase 4: tickets only; fee, food,
-    // discounts and GST lines come with U-14 (Phase 5).
+    // U-13 food: a copy of name + price at booking time (items can change or be deleted)
+    food: [
+      {
+        _id: false,
+        foodItemId: { type: Schema.Types.ObjectId, ref: 'FoodItem', required: true },
+        name: { type: String, required: true },
+        isVeg: { type: Boolean, required: true },
+        unitPricePaise: { type: Number, required: true }, // GST included
+        qty: { type: Number, required: true },
+      },
+    ],
+    foodPickup: { type: String, enum: FOOD_PICKUPS }, // SF-06, set only when there is food
+    // Calculated by the backend only (SEC-10). Tickets + food now; fee, discounts and
+    // GST lines come with U-14.
     pricing: {
       ticketsPaise: { type: Number, required: true },
+      foodPaise: { type: Number, required: true, default: 0 },
     },
     qrNonce: { type: String, required: true }, // random; QR token = booking ID + nonce (SEC-09, U-17)
   },

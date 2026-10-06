@@ -387,7 +387,7 @@ See **Section 3** for the full locking rules.
 | `holdExpiresAt` | Date | pending: yes | Same as the seats' `expiresAt`. The timer works after a page refresh (U-12) |
 | `show` | snapshot | yes | `movieTitle`, `certificate`, `theatreName`, `theatreAddress`, `screenName`, `startAt`, `endAt`, `label`, `language`, `format` |
 | `seats` | [{ `seatId`, `seatClass`, `className`, `pricePaise` }] | yes | 1 to `maxSeatsPerBooking` (BR-02) |
-| `food` | [{ `foodItemId`, `name`, `isVeg`, `unitPricePaise`, `qty` }] | | U-13 |
+| `food` | [{ `foodItemId`, `name`, `isVeg`, `unitPricePaise`, `qty` }] | | U-13 (built 2026-10-06). A copy of name + price at save time. `qty` 1–10 per item |
 | `foodPickup` | String | | `before_movie` · `interval` (SF-06). Required if `food` is not empty |
 | `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11, by the owner or Gate Staff of that theatre. Set once only (atomic update, like check-in) |
 | `pricing` | object | yes | Calculated by the backend only (SEC-10). See below |
@@ -399,7 +399,7 @@ See **Section 3** for the full locking rules.
 | `invoiceId` | ObjectId → invoices | | Set on confirm |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 
-> Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. The other fields come with their tasks (Phase 5+).
+> Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. Added 2026-10-06 (U-13): `food`, `foodPickup`, `pricing.foodPaise` (default 0). The other fields come with their tasks (Phase 5+).
 
 **`pricing`** (all paise, plus the rates used):
 `ticketsPaise`, `foodPaise`, `ticketDiscountPaise` (coupon or deal, tickets only), `discountType` (`coupon` · `deal` · none), `dealPercent`, `convenienceFeePaise`, `gstLines` (per line: GST-inclusive amount, taxable value, rate, CGST, SGST, see Section 2a), `totalPaise`, and `rates` = copy of `commissionPercent`, GST rates, `convenienceFeePaise` per ticket and the refund percents at booking time.
