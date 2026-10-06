@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-06
-- **Phase 4 Step 3 built: live seat map (U-10) + JOB-01.** Waiting for your browser check (see Next step), then tick U-10 and JOB-01.
+- **Phase 4 Step 3 done: live seat map (U-10) + JOB-01.** Tested in the browser by you with two users (2026-10-06): works. Ticked. **Phase 4 done.**
   - Packages (OK'd by you): server `socket.io`, `node-cron`, dev `socket.io-client` (for tests); client `socket.io-client`.
   - Server: `src/sockets/index.js`: Socket.io on the same HTTP server and port (`server.js` now uses `http.createServer(app)`), CORS from `CLIENT_URL`. `show:join` / `show:leave` `{ showId }` → room `show:<id>`, optional ack `{ ok }` (bad ID = `false`), no login needed (api.md 12). `emitSeatsUpdate` sends `seats:update { showId, seats: [{ seatId, status }] }`; it does nothing when Socket.io is not running (tests, seed).
   - `services/seatHold.js` sends the updates after the transaction: hold → `held`; a new hold that replaces the user's older one → the older seats not picked again are `available`; give up / time over (`releaseBooking`) → `available`. Only seats really deleted are sent, so a seat somebody else holds afresh is never shown as free. A lost race (409) sends nothing.
@@ -256,11 +256,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check Phase 4 Step 3 in the browser** (restart `npm run dev` once, so Vite loads the new `/socket.io` proxy):
-  - Two browsers (e.g. Chrome + a private window) on the same show, logged in as two different users. One picks seats and presses Proceed → the other sees them turn to the lock ("Held by someone") at once, without refresh. Give up seats → they turn free again at once.
-  - A seat you picked (not held yet) that the other browser holds drops out of your pick.
-  - Time over (wait 10 min, or set "Seat hold time" lower in admin Settings): the other browser sees the seats free within about a minute (JOB-01).
-  - After that: tick U-10 + JOB-01, and Phase 4 is done. Next: Phase 5 (U-13 Food) — plan first.
+- **Phase 5 Step 1: U-13 Food** (plan shown to you 2026-10-06, waiting for your OK).
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -364,12 +360,12 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-08 Age warning (in-page dialog for "A" movies, once per movie per browser visit; done + tested in the browser by the developer 2026-10-05)
 - [x] U-09 Show list ("Show times" on `/movies/:id`: 7 days, SF-08 filter chips, theatre cards with "from ₹…", BR-22 labels, Housefull stamp; done 2026-10-05, checked in Chrome; tested in the browser by the developer 2026-10-05)
 
-## Phase 4 – Seats
+## Phase 4 – Seats ✅ done (live seat map with two users, hold + timer, JOB-01; tested by the developer 2026-10-06)
 - [x] UI-20 Box office window (Step 1, 2026-10-05; checked in the browser by the developer)
 - [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; checked by the developer, clearer flip + plain wheelchair mark fixed the same day)
-- [ ] U-10 Live seat map (Socket.io) (seat page + taken seats Step 1; live updates built in Step 3, 2026-10-06; waiting for the developer's two-browser check)
+- [x] U-10 Live seat map (Socket.io) (seat page + taken seats Step 1; live updates Step 3, 2026-10-06; tested in the browser by the developer with two users 2026-10-06)
 - [x] U-12 Seat hold + timer (Step 2, 2026-10-05; Interval card UI-33, Give up seats; tested in the browser by the developer 2026-10-05)
-- [ ] JOB-01 (built 2026-10-06, `server/src/jobs/`; waiting for the developer's check)
+- [x] JOB-01 (2026-10-06, `server/src/jobs/`; checked by the developer 2026-10-06)
 - [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
 - [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
 
