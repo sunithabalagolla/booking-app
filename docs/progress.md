@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-06 (fourth part)
-- **Phase 5 Step 3 built: A-06 Admin coupons + "Show to users" + U-15 "Available offers".** Waiting for your browser check (see Next step), then tick A-06.
+- **Phase 5 Step 3 done: A-06 Admin coupons + "Show to users" + U-15 "Available offers".** Tested in the browser by you (2026-10-06): works. Ticked.
   - Your decisions (2026-10-06): money = ₹150 plain, ₹38.10 with paise; coupon dates = IST whole days; no delete but **"End now"** (end = now, history kept); audit log for `coupon.create`, `coupon.update`, `coupon.end`.
   - Server: `Coupon.isPublic` ("Show to users", default secret). `/api/admin/coupons`: list (newest first, search by the start of the code, status filter Active / Scheduled / Used up / Ended), get, create, patch (not the code; `null` clears; rules checked with the stored values: percent 1–100, flat ₹1–₹5,000 whole rupees, max discount only for percent, end not before start / not in the past, total limit not under the uses, per user ≤ total, cities from settings, approved theatres), `POST /:id/end`. Audit in the same transaction (update: only the changed fields, before + after). `GET /api/bookings/:id/offers`: public coupons that pass the same checks as Apply for this booking, biggest saving first, max 10, empty on deal shows. Seed: `TALKIES20` public, `FLAT50` secret (seed run again on Docker).
   - Client: sidebar "Coupons" → `/admin/coupons` register (code, offer text, dates, "Used 3 / 100", where, Public / Secret stamp, status stamp; search, status filter, pages). `/admin/coupons/new` + `/:id` form: code (new only), "Show to users" switch, Percent / Flat, value, max discount (percent only), min ticket amount, start + end date (IST hints), total / per-user uses, cities, theatres (only those in the ticked cities), "End now" with a "Yes, end now" step. `CheckboxGroup` now also takes `{ value, label }` options + a hint. Bill page: "Available offers" under the coupon box: dashed paper coupons with code, offer text, "Ends Mon 4 Jan", "You save ₹100", "Tap to apply" / "Applied" stamp; hidden on deal shows and when empty; reloads after Apply / Remove.
@@ -291,12 +291,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check A-06 in the browser** (log in as the seed admin; set "Seat hold time" back to 10 minutes):
-  - Sidebar "Coupons": the register shows TALKIES20 (Public, Active) and FLAT50 (Secret, Active); search and the status filter work.
-  - Add a coupon (try a wrong value, an end date before the start, a used code), edit one, switch "Show to users" on / off, "End now" → Ended stamp, still in the list.
-  - As a user: public coupons appear in "Available offers" on the bill (not on a deal show; not after "End now"); "Tap to apply" works.
-  - On your phone: the register table scrolls inside its box; the form and the offers fit.
-  - After that: tick A-06. Next: Phase 5 Step 4, U-16 Mock payment (PAY-01 to PAY-04, T-04) — plan first.
+- **Phase 5 Step 4: U-16 Mock payment (PAY-01 to PAY-04, T-04)** (plan shown to you 2026-10-06, waiting for your OK).
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -412,8 +407,8 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 ## Phase 5 – Booking + payment
 - [x] U-13 Food (Phase 5 Step 1, 2026-10-06; tested in the browser by the developer 2026-10-06)
 - [x] U-14 Summary (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06)
-- [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) built in Step 3, waiting for the check with A-06
-- [ ] A-06 Admin coupons (built 2026-10-06, Phase 5 Step 3, with "Show to users" + "End now"; waiting for the developer's browser check)
+- [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) built in Step 3, tested with A-06 2026-10-06
+- [x] A-06 Admin coupons (Phase 5 Step 3, 2026-10-06, with "Show to users" + "End now"; tested in the browser by the developer 2026-10-06)
 - [ ] U-16 Mock payment (PAY-01 to PAY-04)
 - [ ] U-17 QR ticket + PDF
 - [ ] GST invoice (11.3)
