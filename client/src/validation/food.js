@@ -39,5 +39,9 @@ export function formToBody({ name, photoUrl, price, isVeg, inStock, isCombo }) {
   return { name, photoUrl, pricePaise: price * 100, isVeg: isVeg === 'veg', inStock, isCombo }
 }
 
-// 15000 → "₹150", 500000 → "₹5,000" (Indian digit groups)
-export const formatRupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+// 15000 → "₹150", 500000 → "₹5,000" (Indian digit groups). With paise: always 2 decimals,
+// 3810 → "₹38.10" (never "₹38.1", fixed 2026-10-06)
+export function formatRupees(paise) {
+  const digits = paise % 100 === 0 ? 0 : 2
+  return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
+}

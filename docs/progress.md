@@ -3,7 +3,9 @@
 ## Last session
 
 - Date: 2026-10-06 (third part)
-- **Phase 5 Step 2 built: U-14 Booking summary + U-15 coupon (T-05).** Waiting for your browser check (see Next step), then tick U-14 + U-15.
+- **Phase 5 Step 2 done: U-14 Booking summary + U-15 coupon (T-05).** Tested in the browser by you (2026-10-06): works. Ticked.
+- **Bug fixed (your report 2026-10-06):** money with paise showed one decimal ("₹38.1" in the GST box). `formatRupees` (client) and the coupon message (server) now always show 2 decimals when there are paise (₹38.10, "from ₹90.50"); whole rupees stay plain (₹150). Tests added.
+- **New requirement (your request 2026-10-06), added to A-06 + U-15 in requirements.md:** each coupon has a "Show to users" switch (public offer or secret code); the bill page shows "Available offers" = public coupons that work for this booking, with "Tap to apply"; hidden on deal shows.
   - Your decisions (2026-10-06): a deal is **fixed at hold time**; the discount is **shared by the seat-class lines** (last line gets the paise left over); **no GST rates = no hold** (503 `PRICES_NOT_READY`, server log line); **A-06 admin coupons = Step 3**.
   - Server: `services/pricing.js` = the one place for money (T-05): GST worked back per line (database.md 2a), ticket lines per class, food lines per item, convenience fee line, deal or coupon on tickets only, total. Rates copied into the booking at hold (`pricing.rates`, A-05). The price is calculated again on hold, food and coupon changes (`services/bookingPrice.js`); every booking answer has the full `pricing` (not the rates). `PUT / DELETE /api/bookings/:id/coupon` (`services/bookingCoupon.js`): checks deal, dates, total uses, own uses, min amount, city, theatre (+ `not_found`), only while the hold runs; same rate limit as hold + food. New models `Coupon`, `CouponUsage` (usage written at confirm, U-16). Seed step `coupons`: `TALKIES20` (20%, max ₹100, min tickets ₹200), `FLAT50` (₹50, once per user), 90 days. Ran the seed on Docker (it also added 48 shows for the new days).
   - Client: `/bookings/:id/summary` (`SummaryPage.jsx`): UI-23 bill on ruled paper with a red margin line (`.bill-paper`): booking number, ticket lines per class with seat numbers, "Special offer" stamp + line or "Coupon CODE" line (green, minus), food lines, pickup time, convenience fee, double-ruled **Total**, box "GST included in the total" (taxable, CGST, SGST per kind and rate). Coupon box: code (uppercase), Apply, server message on a wrong code, "applied: −₹100" + Remove; with a deal: "coupons cannot be used". Bottom bar: "To pay", hold timer, "Pay ₹…" off ("Payment comes next."). Canteen Continue / Skip food now open the summary. Shared parts: `BookingGate.jsx` (loads the booking) and `useHoldEnd.jsx` (Interval card + fresh seat list).
@@ -278,12 +280,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check U-14 + U-15 in the browser** (set "Seat hold time" back to 10 minutes first):
-  - Seats → canteen → Continue / Skip food → summary bill: lines, fee (₹30 per ticket), total, GST box.
-  - Coupons: `TALKIES20` (needs tickets ₹200+, max ₹100 off), `FLAT50` (₹50 off), a wrong code, Remove. A deal show (seed: "Special offer" stamp in the show list) shows the deal and refuses coupons.
-  - Add food, go back to the summary: the coupon stays, the total changes.
-  - On your phone: the bill, the coupon box and the bottom bar fit.
-  - After that: tick U-14 + U-15. Next: Phase 5 Step 3, A-06 admin coupons (API + register page) — plan first.
+- **Phase 5 Step 3: A-06 Admin coupons (+ "Show to users" switch + "Available offers" on the bill)** (plan shown to you 2026-10-06, waiting for your OK).
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -398,8 +395,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 5 – Booking + payment
 - [x] U-13 Food (Phase 5 Step 1, 2026-10-06; tested in the browser by the developer 2026-10-06)
-- [ ] U-14 Summary (built 2026-10-06, Phase 5 Step 2; waiting for the developer's browser check)
-- [ ] U-15 + A-06 Coupons (U-15 built 2026-10-06 in Step 2, waiting for the check; A-06 admin = Step 3)
+- [x] U-14 Summary (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06)
+- [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) comes with Step 3
+- [ ] A-06 Admin coupons (Step 3, with the "Show to users" switch)
 - [ ] U-16 Mock payment (PAY-01 to PAY-04)
 - [ ] U-17 QR ticket + PDF
 - [ ] GST invoice (11.3)

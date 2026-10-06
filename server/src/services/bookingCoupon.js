@@ -12,7 +12,8 @@ import { releaseIfExpired } from './seatHold.js'
 
 const holdOver = () => new AppError(400, 'RULE_BROKEN', 'Your seat hold time is over. Please pick seats again.', { rule: 'U-12', reason: 'hold_over' })
 const invalid = (reason, message) => new AppError(400, 'COUPON_INVALID', message, { reason })
-const rupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+// Like the client: whole rupees plain, with paise always 2 decimals (₹38.10)
+const rupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', paise % 100 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
 
 // Why a coupon cannot be used for this booking, or null when it can.
 // Order (decided 2026-10-06): deal, dates, total uses, own uses, min amount, city, theatre.

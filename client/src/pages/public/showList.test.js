@@ -62,7 +62,7 @@ describe('show time buttons + theatre cards (UI-17)', () => {
   })
 
   it('"from" price = the lowest of the day', () => {
-    expect(fromPrice([show, { ...show, minPricePaise: 9050 }])).toBe('from ₹90.5')
+    expect(fromPrice([show, { ...show, minPricePaise: 9050 }])).toBe('from ₹90.50')
     expect(fromPrice([show])).toBe('from ₹120')
   })
 

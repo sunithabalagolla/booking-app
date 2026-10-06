@@ -35,4 +35,12 @@ describe('formatRupees', () => {
     expect(formatRupees(500000)).toBe('₹5,000')
     expect(formatRupees(12345600)).toBe('₹1,23,456')
   })
+
+  it('with paise: always 2 decimals (GST box, 2026-10-06 bug)', () => {
+    expect(formatRupees(3810)).toBe('₹38.10')
+    expect(formatRupees(3813)).toBe('₹38.13')
+    expect(formatRupees(5)).toBe('₹0.05')
+    expect(formatRupees(12345601)).toBe('₹1,23,456.01')
+    expect(formatRupees(0)).toBe('₹0')
+  })
 })
