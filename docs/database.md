@@ -35,7 +35,7 @@ Code uses `session.withTransaction(...)`, which retries by itself on temporary t
 | Action | Changes in one transaction |
 | --- | --- |
 | Hold seats (U-12) | Insert all `showseats` (held) + insert the `bookings` document (`pending`). If any seat is taken, the whole hold fails and no seat is held |
-| Confirm booking (U-16) | `payments` → `success` · `showseats` held → booked · `bookings` → `confirmed` · `counters` +1 and insert `invoices` · `coupons.usedCount` +1 and insert `couponusages` · `shows.bookedCount` + seats |
+| Confirm booking (U-16) | `payments` → `success` · `showseats` held → booked · `bookings` → `confirmed` · `counters` +1 and insert `invoices` · `coupons.usedCount` +1 and insert `couponusages` · `shows.bookedCount` + seats. **Built 2026-10-06** without `counters` / `invoices` (GST invoice task, 11.3) |
 | Cancel booking (U-20) | `bookings` → `cancelled` · delete its `showseats` · refund in `payments` · credit note in `invoices` (+ `counters`) · `shows.bookedCount` − seats |
 | Show cancelled (O-06, JOB-04) | Per booking, the same steps as cancel, with 100% refund |
 | Ticket transfer (SF-02) | `bookings` owner / QR nonce change + `transfer` data |
@@ -430,8 +430,10 @@ One document per payment attempt (a booking can have several attempts after fail
 | `method` | String | | `upi` · `card` · `netbanking` |
 | `amountPaise` | Number | yes | Always from the backend (SEC-10) |
 | `status` | String | yes | `created` · `success` · `failed` · `refunded` · `partially_refunded` (PAY-04) |
-| `failureReason` | String | | |
-| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1) |
+| `failureReason` | String | | `declined` (gateway said no) · `replaced` (a newer order for the same booking, built 2026-10-06) |
+| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1). `reason` so far: `hold_expired`, `amount_changed` (U-16, built 2026-10-06) |
+
+> Built 2026-10-06 (U-16). Bookings also got `confirmedAt` (Date, set in the confirm transaction).
 
 **Indexes**
 - `{ orderId: 1 }` unique
@@ -498,7 +500,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `startAt` / `endAt` | Date | yes | |
 | `totalLimit` | Number | | Empty = no limit |
 | `perUserLimit` | Number | | Empty = no limit |
-| `usedCount` | Number | yes | Default 0. +1 in the confirm transaction, only if `usedCount < totalLimit`. Not given back when the booking is cancelled |
+| `usedCount` | Number | yes | Default 0. +1 in the confirm transaction. **Changed 2026-10-06:** always +1, even if someone else took the last use between the order and the payment (the user saw and paid that price), so it can go 1–2 over `totalLimit` in a race. Apply and the offers list still stop at the limit. Not given back when the booking is cancelled |
 | `cityCodes` / `theatreIds` | [String] / [ObjectId] | | Empty = everywhere |
 | `createdBy` | ObjectId → users | yes | Admin |
 | `isPublic` | Boolean | yes | "Show to users" (added 2026-10-06, A-06): `true` = listed in Available offers on the bill (U-15); default `false` = secret code |

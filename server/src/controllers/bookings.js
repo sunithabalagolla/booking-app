@@ -2,6 +2,7 @@ import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
 import { applyCoupon, availableOffers, removeCoupon } from '../services/bookingCoupon.js'
 import { setBookingFood } from '../services/bookingFood.js'
+import { createBookingOrder, payOnGateway, verifyAndConfirm } from '../services/bookingPayment.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
 
@@ -114,4 +115,19 @@ export async function deleteCoupon(req, res) {
 // GET /api/bookings/:id/offers (U-15 Available offers): { offers } for this hold
 export async function getOffers(req, res) {
   res.json({ offers: await availableOffers(await findOwn(req), req.user) })
+}
+
+// U-16 POST /api/bookings/:id/payments → 201 { orderId, amountPaise } (amount from the server)
+export async function createPayment(req, res) {
+  res.status(201).json(await createBookingOrder(await findOwn(req), req.user))
+}
+
+// U-16 POST /api/mock-gateway/pay: the fake Razorpay page → { paymentId, signature }
+export async function gatewayPay(req, res) {
+  res.json(await payOnGateway(req.valid.body, req.user))
+}
+
+// U-16 POST /api/payments/verify → { booking } (confirmed)
+export async function verifyPayment(req, res) {
+  res.json({ booking: publicBooking(await verifyAndConfirm(req.valid.body, req.user)) })
 }

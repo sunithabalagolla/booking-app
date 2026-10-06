@@ -741,3 +741,17 @@
 .bill-total {
   border-top: 4px double var(--color-ink);
 }
+
+/* UI-32 film reel: one turn per second (motion.js filmReel) while a payment is processing.
+   Reduce motion: the reel stands still (the "Processing…" text stays). */
+.film-reel {
+  animation: film-reel-spin 1s linear infinite;
+}
+@keyframes film-reel-spin {
+  to { rotate: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-reel {
+    animation: none;
+  }
+}

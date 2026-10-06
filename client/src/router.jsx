@@ -33,7 +33,9 @@ import SearchPage from './pages/public/SearchPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
 import StaffScanPage from './pages/staff/StaffScanPage.jsx'
+import BookingPage from './pages/user/BookingPage.jsx'
 import FoodPage from './pages/user/FoodPage.jsx'
+import PaymentPage from './pages/user/PaymentPage.jsx'
 import SeatPage from './pages/user/SeatPage.jsx'
 import SummaryPage from './pages/user/SummaryPage.jsx'
 import { PUBLIC } from './store/authStore.js'
@@ -60,6 +62,9 @@ const router = createBrowserRouter([
       { path: '/bookings/:id/food', element: guard(['user'], <FoodPage />) },
       // U-14 booking summary + U-15 coupon
       { path: '/bookings/:id/summary', element: guard(['user'], <SummaryPage />) },
+      // U-16 mock payment + the booking after paying (full ticket with U-17)
+      { path: '/bookings/:id/pay', element: guard(['user'], <PaymentPage />) },
+      { path: '/bookings/:id', element: guard(['user'], <BookingPage />) },
       // U-01 sign up + verify email
       { path: '/signup', element: <SignupPage /> },
       { path: '/check-email', element: <CheckEmailPage /> },

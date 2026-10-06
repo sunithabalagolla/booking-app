@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useApplyCoupon, useOffers, useRemoveCoupon } from '../../api/bookings.js'
 import Button from '../../components/ui/Button.jsx'
+import ButtonLink from '../../components/ui/ButtonLink.jsx'
 import Stamp from '../../components/ui/Stamp.jsx'
 import { endsText, offerText } from '../../validation/coupons.js'
 import { formatRupees } from '../../validation/food.js'
@@ -14,8 +15,8 @@ import { billRows, gstRows, pickupText, signedRupees } from './summary.js'
 // U-14 booking summary at /bookings/:id/summary (9.2: after the canteen), UI-23: an old
 // bill on ruled paper. Tickets per class, the deal or coupon (U-15), food + pickup time,
 // convenience fee, total, and the GST inside it. Every amount comes from the server
-// (SEC-10); applying a coupon gives back the new prices. "Available offers" lists the
-// public coupons that work for this booking (added 2026-10-06). Payment comes with U-16.
+// (SEC-10); applying a coupon gives back the new prices. "Pay" opens the payment page (U-16). "Available offers" lists the
+// public coupons that work for this booking (added 2026-10-06).
 export default function SummaryPage() {
   return <BookingGate>{(booking, fetchedAt) => <Summary key={booking.id} booking={booking} fetchedAt={fetchedAt} />}</BookingGate>
 }
@@ -48,7 +49,7 @@ function Summary({ booking, fetchedAt }) {
         </div>
       </div>
 
-      {/* Bottom bar: total, hold timer, Pay (U-16) */}
+      {/* Bottom bar: total, hold timer, Pay → /bookings/:id/pay (U-16) */}
       <div className="paper sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-t-card border border-ink bg-cream-light px-4 py-3 text-ink shadow-[0_-6px_16px_rgb(0_0_0/0.25)]">
         <div>
           <p className="font-type text-sm">To pay</p>
@@ -56,10 +57,9 @@ function Summary({ booking, fetchedAt }) {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           {booking.status === 'pending' && <HoldTimer key={`${booking.id}-${fetchedAt}`} remainingSeconds={booking.remainingSeconds} fetchedAt={fetchedAt} onTimeUp={onTimeUp} />}
-          <div className="text-right">
-            <Button disabled>Pay {formatRupees(pricing.totalPaise)}</Button>
-            <p className="mt-1 text-xs">Payment comes next.</p>
-          </div>
+          <ButtonLink to={`/bookings/${booking.id}/pay`} aria-disabled={timeUp || undefined} className={timeUp ? 'pointer-events-none opacity-60' : ''}>
+            Pay {formatRupees(pricing.totalPaise)}
+          </ButtonLink>
         </div>
       </div>
 

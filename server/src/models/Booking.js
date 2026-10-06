@@ -53,6 +53,7 @@ const bookingSchema = new Schema(
     status: { type: String, enum: BOOKING_STATUSES, required: true, default: 'pending' },
     holdExpiresAt: Date, // pending: same as the seats' expiresAt (timer after a refresh, U-12)
     releasedAt: Date,
+    confirmedAt: Date, // U-16: paid and confirmed (the confirm transaction)
     // Snapshot: later changes to the show / movie / theatre do not change the booking
     show: {
       movieTitle: { type: String, required: true },

@@ -12,5 +12,7 @@ export const motion = {
   riseStagger: 120, // … one after another
   intervalFade: 400, // UI-33 Interval card fades in (CSS .interval-card)
   seatFlip: 400, // UI-21 seat cushion swings down / up with a small bounce (changed 2026-10-05, was 280) (CSS in theme.css .seat-cushion)
+  filmReel: 1000, // UI-32 payment "Processing…" reel: one turn (CSS .film-reel)
+  paymentMinimum: 2000, // PAY-02: "Processing…" shows at least this long
   ticketsSwing: 4000, // UI-20 "TICKETS" board swings once back and forth (CSS .tickets-board)
 }
