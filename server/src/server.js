@@ -1,4 +1,7 @@
+import http from 'node:http'
 import app from './app.js'
+import { startJobs } from './jobs/index.js'
+import { attachSockets } from './sockets/index.js'
 import { getAccessSecret } from './config/auth.js'
 import { connectDB } from './config/db.js'
 import { assertUploadConfig } from './services/upload/index.js'
@@ -24,6 +27,11 @@ try {
   process.exit(1)
 }
 
-app.listen(PORT, () => {
+// One HTTP server for the API and Socket.io (same port, api.md Section 12)
+const httpServer = http.createServer(app)
+attachSockets(httpServer)
+
+httpServer.listen(PORT, () => {
   console.log(`Talkies server running on http://localhost:${PORT}`)
+  startJobs() // JOB-01 … (node-cron)
 })

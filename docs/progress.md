@@ -2,10 +2,22 @@
 
 ## Last session
 
-- Date: 2026-10-05 (end of session)
+- Date: 2026-10-06
+- **Phase 4 Step 3 built: live seat map (U-10) + JOB-01.** Waiting for your browser check (see Next step), then tick U-10 and JOB-01.
+  - Packages (OK'd by you): server `socket.io`, `node-cron`, dev `socket.io-client` (for tests); client `socket.io-client`.
+  - Server: `src/sockets/index.js`: Socket.io on the same HTTP server and port (`server.js` now uses `http.createServer(app)`), CORS from `CLIENT_URL`. `show:join` / `show:leave` `{ showId }` → room `show:<id>`, optional ack `{ ok }` (bad ID = `false`), no login needed (api.md 12). `emitSeatsUpdate` sends `seats:update { showId, seats: [{ seatId, status }] }`; it does nothing when Socket.io is not running (tests, seed).
+  - `services/seatHold.js` sends the updates after the transaction: hold → `held`; a new hold that replaces the user's older one → the older seats not picked again are `available`; give up / time over (`releaseBooking`) → `available`. Only seats really deleted are sent, so a seat somebody else holds afresh is never shown as free. A lost race (409) sends nothing.
+  - JOB-01 `src/jobs/releaseExpiredHolds.js` (every minute, `src/jobs/index.js` with `node-cron`, IST, `noOverlap`, an error is logged and never stops the server): pending bookings whose time is over → `released`, seats freed + pushed; then left-over expired held seats (no pending booking) are deleted one by one with the expiry check again, and pushed.
+  - Client: `api/socket.js`: one app-wide socket (connects only when the seat page needs it). `useLiveSeats(showId)` joins the room, changes the seat list in the React Query cache at once (`applySeatUpdate` in `seats.js`), and after every (re)connect joins again + reloads the seat list (nothing missed while offline). Leaves the room when the page closes. While my own hold request runs, my picked seats never flash as "held by someone". A picked seat taken by someone else drops out of the pick (as before). Vite proxy: `/socket.io` with websockets.
+  - Checked against the running dev server through the Vite proxy: 2 viewers joined one seeded show; the seed user held 2 seats → both viewers got `held`; Give up → both got `available` (the test hold was given back).
+  - api.md Section 12 marked built.
+  - Tests: **458 pass** (client 145: live updates 4; server 313: `tests/seats.live.test.js` 8 = real Socket.io server + clients: rooms, hold / change pick / give up, 409 sends nothing, leave + bad IDs; JOB-01: release + push, running holds untouched, run twice = nothing, re-taken seat not sent as free, left-over seats). Lint + build OK.
+
+## Earlier on 2026-10-05 (end of session)
+
 - Step 2 (seat hold + timer, Interval card, Give up seats) tested in the browser by you: works. Ticked.
 - End of session: all tests run: **446 pass** (client 141, server 305).
-- Done today in short: U-07, U-08, U-09 (+ sample Housefull / deal shows), Phase 3 done; Phase 4 Step 1 (seat page, box office window, chair seats, NF-04) with your flip + wheelchair mark fixes; Phase 4 Step 2 (U-12 hold, T-02, T-03).
+- Done that day in short: U-07, U-08, U-09 (+ sample Housefull / deal shows), Phase 3 done; Phase 4 Step 1 (seat page, box office window, chair seats, NF-04) with your flip + wheelchair mark fixes; Phase 4 Step 2 (U-12 hold, T-02, T-03).
 
 ## Earlier on 2026-10-05 (Phase 4 Step 2)
 
@@ -244,10 +256,11 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Phase 4 Step 3: live seat map (U-10) + JOB-01** (plan first, then wait for your OK):
-  - Socket.io on the same server and port (`socket.io` + `socket.io-client`, OK'd by you); room `show:<id>` (`show:join` / `show:leave`); `seats:update` after hold, give up and time over (api.md Section 12).
-  - JOB-01 every minute with `node-cron` (in Section 2, OK'd by you): delete expired holds, mark their bookings `released`, push `seats:update`.
-  - Check: two browsers on the same show, one holds, the other sees the seat turn green with a lock at once.
+- **Check Phase 4 Step 3 in the browser** (restart `npm run dev` once, so Vite loads the new `/socket.io` proxy):
+  - Two browsers (e.g. Chrome + a private window) on the same show, logged in as two different users. One picks seats and presses Proceed → the other sees them turn to the lock ("Held by someone") at once, without refresh. Give up seats → they turn free again at once.
+  - A seat you picked (not held yet) that the other browser holds drops out of your pick.
+  - Time over (wait 10 min, or set "Seat hold time" lower in admin Settings): the other browser sees the seats free within about a minute (JOB-01).
+  - After that: tick U-10 + JOB-01, and Phase 4 is done. Next: Phase 5 (U-13 Food) — plan first.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -354,9 +367,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 ## Phase 4 – Seats
 - [x] UI-20 Box office window (Step 1, 2026-10-05; checked in the browser by the developer)
 - [x] UI-21 Chair seat + UI-22 class names (fixed names; Step 1, 2026-10-05; checked by the developer, clearer flip + plain wheelchair mark fixed the same day)
-- [ ] U-10 Live seat map (Socket.io) (seat page + taken seats done in Step 1; live updates = Step 3)
+- [ ] U-10 Live seat map (Socket.io) (seat page + taken seats Step 1; live updates built in Step 3, 2026-10-06; waiting for the developer's two-browser check)
 - [x] U-12 Seat hold + timer (Step 2, 2026-10-05; Interval card UI-33, Give up seats; tested in the browser by the developer 2026-10-05)
-- [ ] JOB-01
+- [ ] JOB-01 (built 2026-10-06, `server/src/jobs/`; waiting for the developer's check)
 - [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
 - [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
 

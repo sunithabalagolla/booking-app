@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classSections, clockWords, dropTaken, formatClock, secondsLeft, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
+import { applySeatUpdate, classSections, clockWords, dropTaken, formatClock, secondsLeft, seatInfo, seatLabel, seatState, selectionSummary, sortSeatIds, takenMap, toggleSeat } from './seats.js'
 
 // U-10 seat page helpers (UI-20, UI-21, NF-04, BR-02)
 const seat = (seatId, seatClass, wheelchair = false) => ({ type: 'seat', seatId, seatClass, wheelchair })
@@ -94,5 +94,42 @@ describe('hold timer (U-12)', () => {
     expect(clockWords(60)).toBe('1 minute')
     expect(clockWords(1)).toBe('1 second')
     expect(clockWords(0)).toBe('0 seconds')
+  })
+})
+
+describe('live seat updates (U-10, Socket.io seats:update)', () => {
+  const taken = [
+    { seatId: 'A1', status: 'held' },
+    { seatId: 'B2', status: 'booked' },
+  ]
+
+  it('adds newly held seats and removes seats that became available', () => {
+    const next = applySeatUpdate(taken, [
+      { seatId: 'A1', status: 'available' },
+      { seatId: 'C3', status: 'held' },
+    ])
+    expect(next).toEqual([
+      { seatId: 'B2', status: 'booked' },
+      { seatId: 'C3', status: 'held' },
+    ])
+    expect(taken).toHaveLength(2) // the old list is not changed
+  })
+
+  it('changes the status of a seat that is already taken, without doubles', () => {
+    expect(applySeatUpdate(taken, [{ seatId: 'A1', status: 'booked' }])).toEqual([
+      { seatId: 'B2', status: 'booked' },
+      { seatId: 'A1', status: 'booked' },
+    ])
+  })
+
+  it('a free seat sent as available stays free; empty input is fine', () => {
+    expect(applySeatUpdate(taken, [{ seatId: 'Z9', status: 'available' }])).toEqual(taken)
+    expect(applySeatUpdate(undefined, [{ seatId: 'A1', status: 'held' }])).toEqual([{ seatId: 'A1', status: 'held' }])
+    expect(applySeatUpdate(taken, [])).toEqual(taken)
+  })
+
+  it('a picked seat that somebody holds live drops out of the pick', () => {
+    const next = takenMap(applySeatUpdate(taken, [{ seatId: 'C3', status: 'held' }]))
+    expect(dropTaken(['C3', 'C4'], next)).toEqual(['C4'])
   })
 })

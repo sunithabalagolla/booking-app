@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { Booking } from '../models/Booking.js'
 import { getSettings } from '../models/Settings.js'
 import { ShowSeat, takenNow } from '../models/ShowSeat.js'
+import { emitSeatsUpdate } from '../sockets/index.js'
 import { AppError } from '../utils/AppError.js'
 import { newBookingNumber, newQrNonce } from '../utils/bookingNumber.js'
 import { CLASS_NAMES } from '../utils/seatLayout.js'
@@ -18,15 +19,26 @@ const MAX_NUMBER_TRIES = 3 // a booking number clash is very rare; just pick ano
 const isDuplicate = (error) => error?.code === 11000 || error?.writeErrors?.some?.((e) => e.code === 11000)
 const duplicateOn = (error, field) => isDuplicate(error) && JSON.stringify(error.keyPattern ?? error.writeErrors?.[0]?.err?.keyPattern ?? {}).includes(field)
 
+// U-10 live map: tell the show's viewers which seats became free / held (after commit)
+const seatsAs = (seatIds, status) => seatIds.map((seatId) => ({ seatId, status }))
+
 // End a pending booking: status released, its held seats deleted (one transaction).
 // Returns true when it was still pending. Safe to call twice.
+// Only the seats really deleted here are sent as available: after the time is over
+// somebody else may already hold the same seat (with their own booking).
 export async function releaseBooking(bookingId, now = new Date()) {
   let released = false
+  let freed = []
   await mongoose.connection.transaction(async (session) => {
+    freed = []
     const result = await Booking.updateOne({ _id: bookingId, status: 'pending' }, { $set: { status: 'released', releasedAt: now }, $unset: { holdExpiresAt: 1 } }, { session })
     released = result.modifiedCount === 1
-    if (released) await ShowSeat.deleteMany({ bookingId, status: 'held' }, { session })
+    if (released) {
+      freed = await ShowSeat.find({ bookingId, status: 'held' }, 'showId seatId', { session })
+      await ShowSeat.deleteMany({ bookingId, status: 'held' }, { session })
+    }
   })
+  if (freed.length) emitSeatsUpdate(freed[0].showId, seatsAs(freed.map((s) => s.seatId), 'available'))
   return released
 }
 
@@ -75,12 +87,15 @@ export async function holdSeats({ show, user, seatIds, now = new Date() }) {
   for (let attempt = 1; ; attempt++) {
     try {
       let booking
+      let olderSeatIds = []
       await mongoose.connection.transaction(async (session) => {
+        olderSeatIds = [] // the transaction may run again after a write conflict
         // 1. The user's older hold for this show is given back first (api.md)
         const older = await Booking.find({ showId: show._id, userId: user._id, status: 'pending' }, '_id', { session })
         if (older.length) {
           const ids = older.map((b) => b._id)
           await Booking.updateMany({ _id: { $in: ids } }, { $set: { status: 'released', releasedAt: now }, $unset: { holdExpiresAt: 1 } }, { session })
+          olderSeatIds = (await ShowSeat.find({ bookingId: { $in: ids }, status: 'held' }, 'seatId', { session })).map((s) => s.seatId)
           await ShowSeat.deleteMany({ bookingId: { $in: ids }, status: 'held' }, { session })
         }
         // 2. Expired holds on these seats may still be there (slow TTL): clear them
@@ -124,6 +139,9 @@ export async function holdSeats({ show, user, seatIds, now = new Date() }) {
           { session, ordered: true },
         )
       })
+      // U-10: the older hold's other seats are free again, the new ones are held
+      const freed = olderSeatIds.filter((id) => !seatIds.includes(id))
+      emitSeatsUpdate(show._id, [...seatsAs(freed, 'available'), ...seatsAs(seatIds, 'held')])
       return booking
     } catch (error) {
       if (duplicateOn(error, 'bookingNumber') && attempt < MAX_NUMBER_TRIES) continue

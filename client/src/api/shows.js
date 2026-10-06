@@ -20,7 +20,7 @@ export function useShow(id) {
 }
 
 // U-10: { taken: [{ seatId, status }], myHold } = the seats taken right now (held / booked)
-// + the user's own running hold (U-12, timer after a refresh). Live updates come in Step 3.
+// + the user's own running hold (U-12, timer after a refresh). Live updates: useLiveSeats (socket.js).
 export function useShowSeats(id, { enabled = true } = {}) {
   return useQuery({ queryKey: ['show-seats', id], queryFn: () => apiFetch(`/shows/${id}/seats`), enabled: Boolean(id) && enabled })
 }

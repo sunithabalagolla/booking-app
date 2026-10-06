@@ -31,6 +31,15 @@ export function toggleSeat(selected, seatId, taken, max) {
   return { selected: [...selected, seatId], error: null }
 }
 
+// U-10 live update (Socket.io `seats:update`): change the taken list [{ seatId, status }].
+// 'held' / 'booked' = taken (added or changed), 'available' = removed. Returns a new list.
+export function applySeatUpdate(taken = [], updates = []) {
+  const changed = new Map(updates.map((u) => [u.seatId, u.status]))
+  const kept = taken.filter((t) => !changed.has(t.seatId))
+  const added = [...changed].filter(([, status]) => status === 'held' || status === 'booked').map(([seatId, status]) => ({ seatId, status }))
+  return [...kept, ...added]
+}
+
 // Seats someone else took since they were picked (live updates) drop out of the selection
 export const dropTaken = (selected, taken) => selected.filter((id) => !taken.has(id))
 

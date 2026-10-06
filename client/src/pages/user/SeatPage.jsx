@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { usePublicSettings } from '../../api/settings.js'
 import { useGiveUpHold, useHoldSeats } from '../../api/bookings.js'
 import { useShow, useShowSeats } from '../../api/shows.js'
+import { useLiveSeats } from '../../api/socket.js'
 import AgeWarningDialog from '../../components/ui/AgeWarningDialog.jsx'
 import Button from '../../components/ui/Button.jsx'
 import ButtonLink from '../../components/ui/ButtonLink.jsx'
@@ -21,7 +22,8 @@ import { classSections, clockWords, dropTaken, formatClock, SEAT_MARKS, secondsL
 // Pick seats → "Proceed" holds them for BR-01 (U-12): the page then shows the held seats,
 // the timer and "Give up seats"; when the time is over, the Interval card (UI-33).
 // After a refresh the running hold comes back with the seat list (myHold).
-// Food and payment come in Phase 5; live updates (Socket.io) in Step 3.
+// Live: other people's holds and freed seats arrive by Socket.io at once (U-10).
+// Food and payment come in Phase 5.
 export default function SeatPage() {
   const { id } = useParams()
   const show = useShow(id)
@@ -51,6 +53,7 @@ function SeatSelection({ show }) {
   const navigate = useNavigate()
   const settings = usePublicSettings()
   const seats = useShowSeats(show.id, { enabled: !show.housefull })
+  useLiveSeats(show.id, { enabled: !show.housefull }) // U-10 live seat map
   const [picked, setPicked] = useState([])
   const [message, setMessage] = useState(null)
   // U-08: an "A" movie opened straight from a link still asks first
@@ -61,7 +64,10 @@ function SeatSelection({ show }) {
   const giveUp = useGiveUpHold(show.id)
 
   const myHold = seats.data?.myHold ?? null
-  const taken = useMemo(() => takenMap(seats.data?.taken, myHold?.seatIds), [seats.data, myHold])
+  // My own seats are never "held by someone". While my hold request runs, the live
+  // update for my seats can come before the answer, so the seats I sent count as mine.
+  const mySeatIds = myHold?.seatIds ?? (holdSeats.isPending ? holdSeats.variables : undefined)
+  const taken = useMemo(() => takenMap(seats.data?.taken, mySeatIds), [seats.data, mySeatIds])
   const info = useMemo(() => seatInfo(show.layout.grid, show.prices), [show])
   const sections = useMemo(() => classSections(show.layout.grid), [show])
   const priceOf = Object.fromEntries(show.prices.map((p) => [p.seatClass, p.pricePaise]))

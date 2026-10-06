@@ -297,8 +297,8 @@ Same server and port as the API. The client sends the access token in `auth: { t
 
 | Direction | Event | Data | Notes |
 | --- | --- | --- | --- |
-| client → server | `show:join` / `show:leave` | `{ showId }` | Room `show:<id>` (9.3) |
-| server → client | `seats:update` | `{ showId, seats: [{ seatId, status }] }` | `status`: `held` · `booked` · `available`. Sent after hold, release, confirm, cancel and by JOB-01 for expired holds (U-10) |
+| client → server | `show:join` / `show:leave` | `{ showId }` | Room `show:<id>` (9.3). (**built 2026-10-06**) Optional ack `{ ok }` (`false` = not a valid show ID). No login needed; the seat page joins again after every reconnect and reloads the seat list |
+| server → client | `seats:update` | `{ showId, seats: [{ seatId, status }] }` | `status`: `held` · `booked` · `available`. Sent after hold, release, confirm, cancel and by JOB-01 for expired holds (U-10). (**built 2026-10-06** for hold, give up, a new hold replacing the older one, time over and JOB-01; confirm / cancel come with Phase 5 / 6.) Only seats really changed are sent: a lost race (409) sends nothing |
 | server → client | `show:housefull` | `{ showId, housefull }` | Show list and waitlist button |
 | client → server | `dashboard:join` | — | Owner → room `owner:<id>`, Admin → room `admin`. Other roles are refused |
 | server → client | `dashboard:update` | `{ theatreId?, ticketsToday, revenueTodayPaise, filledPercent }` | O-02, A-01 (flip numbers UI-37) |

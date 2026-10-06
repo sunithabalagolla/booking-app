@@ -9,6 +9,8 @@ export default defineConfig({
     // Development: /api calls go to the Express server, so no CORS setup is needed
     proxy: {
       '/api': 'http://localhost:5000',
+      // Socket.io (U-10 live seat map): same server, websockets too
+      '/socket.io': { target: 'http://localhost:5000', ws: true },
     },
   },
 })
