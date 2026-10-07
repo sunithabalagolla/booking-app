@@ -39,7 +39,7 @@ export function tiltFor(id) {
 }
 
 // Past stubs: rubber stamp text + tone ("Watched" comes with gate check-in, Phase 7)
-export const STAMPS = { cancelled: { text: 'Cancelled', tone: 'maroon' }, transferred: { text: 'Transferred', tone: 'mustard' } }
+export const STAMPS = { cancelled: { text: 'Cancelled', tone: 'maroon' }, transferred: { text: 'Transferred', tone: 'mustard' }, watched: { text: 'Watched', tone: 'green' } } // Watched = scanned at the gate (S-04)
 
 // Short date for a stub: "Wed 7 Oct 2026 · 9:45 PM" (IST)
 export function stubDateText(show) {

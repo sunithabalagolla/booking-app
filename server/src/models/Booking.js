@@ -107,6 +107,11 @@ const bookingSchema = new Schema(
     },
     qrNonce: { type: String, required: true }, // random; QR token = booking ID + nonce (SEC-09, U-17)
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // GST invoice, set in the confirm transaction (U-17)
+    // S-04 gate check-in: set once with an atomic update (only one scan can win)
+    checkIn: {
+      usedAt: Date,
+      staffId: { type: Schema.Types.ObjectId, ref: 'User' },
+    },
     // U-20 user cancel / O-06 show cancelled by the theatre. refundStatus 'pending' = the
     // gateway refund is not done yet (JOB-04 sends it); 'done' = money sent back.
     cancellation: {

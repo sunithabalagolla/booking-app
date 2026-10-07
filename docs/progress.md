@@ -2,6 +2,19 @@
 
 ## Last session
 
+- Date: 2026-10-07 (sixth part)
+- O-06, JOB-04, E-05 ticked (you tested O-06: works). **Phase 6 done.** Pushed to GitHub (`d9cd58c`, `fda2db1`).
+- **Phase 7 Step 1 built: gate staff scanner (S-02 … S-05, flow 9.7, UI-31, UI-35, T-07).** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-07): **"Watched"** stamp on past tickets scanned at the gate (green); badges (U-24, E-08) wait for Phase 10, only `enteredCount` +1 now; package **`html5-qrcode` 2.3.8** installed in the client (last release April 2023, still works; listed in Section 2); camera tested on the laptop webcam for now, the real phone test after deploy (Phase 12: phone browsers allow the camera only on https or localhost).
+  - Server: `services/checkIn.js`: `POST /api/staff/checkins` (`qrToken` **or** `bookingNumber`, typed one cleaned: spaces out, capitals). S-03 order: QR signature + current `qrNonce` (`bad_qr`; old QR of a transferred booking → `transferred`) → my theatre (`wrong_theatre`) → BR-08 window from start − `checkinBeforeMinutes` (setting) until the end (`too_early` with `opensAt`, `too_late`) → confirmed (`cancelled`) → not used (`already_used` with `usedAt`). S-04: one transaction sets `checkIn: { usedAt, staffId }` (only one scan can win) + user `enteredCount` +1. Always `200`. Rate limit 60/min per staff (`scan` in `rateLimits.js`). `GET /api/staff/theatres`. Booking model got `checkIn`. Ticket album: `stamp: 'watched'` for scanned tickets. U-20: a used ticket cannot be cancelled (`reason: used`).
+  - Client: `/staff/scan` (UI-31): ticket-window frame, header with your name + theatres, **Start camera** (back camera, tap first so the browser asks for permission; clear messages when there is no camera / no permission / no https), **Type booking number** (backup, checked before sending). Result (S-05): big **ENTERED** (green) / **REJECTED** (maroon) stamp dropping in from scale 2 + small shake (UI-35, CSS `.gate-stamp`, 500 ms; reduce motion: no movement), short vibration on Android; entered shows movie, show, screen, seats, food + pickup, booking number; rejected shows the reason in words ("Already used at 6:05 PM.", "Too early. Check-in opens at 6:30 PM.", "This ticket is for another theatre." …). Back to scanning after 3 s; the camera keeps running. Album: green "Watched" stamp. Ticket page: "This ticket was used at the gate, so it cannot be cancelled." Thud sound waits for UI-40 (Phase 10).
+  - Checked: tests only. **Not checked in Chrome**: staff / user logins need the seed password from `.env`, which I may not read.
+  - api.md + database.md updated.
+  - Note: `npm audit` in the client shows 1 high warning in `source-map-js` (build tool, not new, not from html5-qrcode); `npm audit fix` would fix it. Your choice.
+  - Tests: **617 pass** (client 187: scanner helpers 3, Watched stamp; server 430: `t07.checkin.test.js` 10 = valid + details + used twice + count, typed number, bad / old / transferred QR + hold, wrong theatre before time, BR-08 edges + setting, cancelled (user / theatre), three scans at once = one Entered, body / 403 / rate limit per staff, staff theatres, album Watched + no cancel after scan). Lint + build OK.
+
+## Earlier on 2026-10-07 (O-06)
+
 - Date: 2026-10-07 (fifth part)
 - U-20 + T-06 ticked (you tested U-20 in the browser: works).
 - **Phase 6 Step 3 done: O-06 Cancel show (flow 9.6, BR-06, BR-07, JOB-04, E-05).** Tested in the browser by you (2026-10-07): works. Ticked. **Phase 6 done.**
@@ -361,7 +374,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Phase 7 Step 1: gate staff scanner** (S-02 … S-05, flow 9.7, T-07) — plan first; also ask again about the "Watched" stamp (your U-18 note).
+- **Check the scanner in the browser** (laptop webcam): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or in another tab change nothing and test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over. After that: tick S-02 … S-05 + T-07. Next: Phase 7 Step 2, **O-09 Gate Staff accounts** — plan first.
 - Your Chrome may still be logged in as the seed test user; log in as the seed owner for the O-06 check.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -495,11 +508,11 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] T-06 test (BR-05 + BR-06 refund amounts, 2026-10-07 with U-20; the show-cancel flow gets its own tests with O-06)
 
 ## Phase 7 – Gate + canteen counter
-- [ ] S-02 to S-05 Scanner + verify
+- [ ] S-02 to S-05 Scanner + verify (built 2026-10-07, Phase 7 Step 1; waiting for the developer's browser check)
 - [ ] O-09 Staff accounts
 - [ ] O-10 Check-in report
 - [ ] O-11 Food pickup
-- [ ] T-07 test
+- [ ] T-07 test (built 2026-10-07 with the scanner)
 
 ## Phase 8 – Dashboards + money
 - [ ] O-02 Owner dashboard

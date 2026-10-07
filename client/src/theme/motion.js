@@ -17,4 +17,6 @@ export const motion = {
   ticketsSwing: 4000, // UI-20 "TICKETS" board swings once back and forth (CSS .tickets-board)
   ticketTear: 800, // UI-34 counterfoil tears off on Booking confirmed (CSS .ticket-stub)
   ticketTearDelay: 300, // … starts after this
+  gateStamp: 500, // UI-35 ENTERED / REJECTED stamp drops from scale 2 to 1 + small shake (CSS .gate-stamp)
+  gateReset: 3000, // S-05 the result screen goes back to the scanner after this
 }

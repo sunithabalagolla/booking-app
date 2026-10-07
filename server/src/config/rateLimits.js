@@ -13,6 +13,7 @@ export const LIMITS = {
   forgotPassword: { windowMs: HOUR, limit: 3 }, // per email (start value, U-03)
   booking: { windowMs: 10 * MINUTE, limit: 30 },
   payment: { windowMs: 10 * MINUTE, limit: 10 }, // create order, pay, verify together, per user (start value) // seat hold + food (+ coupon later) together, per user (start value)
+  scan: { windowMs: MINUTE, limit: 60 }, // gate scan + food pickup, per staff / owner (start value)
   general: { windowMs: 15 * MINUTE, limit: 300 }, // every /api call per IP, except /api/health (start value)
 }
 
@@ -67,6 +68,11 @@ export const bookingLimiter = makeLimiter(LIMITS.booking, {
 // Payment (api.md 1.7): create order, pay, verify together, per logged-in user
 export const paymentLimiter = makeLimiter(LIMITS.payment, {
   keyGenerator: (req) => `payment:${req.user._id}`,
+})
+
+// Gate scan (S-02) and food pickup (O-11): per logged-in staff / owner
+export const scanLimiter = makeLimiter(LIMITS.scan, {
+  keyGenerator: (req) => `scan:${req.user._id}`,
 })
 
 // Tests only: forget all counts

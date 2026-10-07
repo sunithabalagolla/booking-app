@@ -17,7 +17,8 @@ describe('ticket album', () => {
     expect(stubDateText({ startAt: '2026-12-31T19:00:00.000Z' })).toBe('Fri 1 Jan 2027 · 12:30 AM')
     expect(STAMPS.cancelled).toEqual({ text: 'Cancelled', tone: 'maroon' })
     expect(STAMPS.transferred).toEqual({ text: 'Transferred', tone: 'mustard' })
-    expect(STAMPS.null).toBeUndefined() // no "Watched" until gate check-in (Phase 7)
+    expect(STAMPS.watched).toEqual({ text: 'Watched', tone: 'green' }) // scanned at the gate (S-04)
+    expect(STAMPS.null).toBeUndefined() // a past show that was never scanned
   })
 
   it('album items (flat totalPaise) work with the ticket text', () => {

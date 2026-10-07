@@ -6,8 +6,8 @@ import { qrDataUrl } from './qr/index.js'
 //              soonest first, each with its QR
 //   past     = everything else: show ended, cancelled (by me or the theatre), transferred
 //              away (transfer.fromUserId = me, SF-02); newest first, no QR
-// Stamp: 'cancelled' · 'transferred' · null. "Watched" comes with gate check-in (Phase 7,
-// decided 2026-10-07: no stamp until then).
+// Stamp: 'cancelled' · 'transferred' · 'watched' (scanned "Entered" at the gate, S-04;
+// decided 2026-10-07) · null (a past show that was never scanned).
 
 const CANCELLED = ['cancelled', 'cancelled_by_theatre']
 
@@ -25,6 +25,7 @@ function filterFor(tab, userId, now) {
 function stampFor(booking, userId) {
   if (String(booking.userId) !== String(userId)) return 'transferred'
   if (CANCELLED.includes(booking.status)) return 'cancelled'
+  if (booking.checkIn?.usedAt) return 'watched'
   return null
 }
 

@@ -73,7 +73,7 @@ function AlbumSection({ title, query, emptyText, children }) {
   )
 }
 
-// A past show: a small stub with a rubber stamp (Cancelled / Transferred)
+// A past show: a small stub with a rubber stamp (Cancelled / Transferred / Watched)
 function Stub({ item }) {
   const t = ticketInfo(item)
   const stamp = STAMPS[item.stamp]

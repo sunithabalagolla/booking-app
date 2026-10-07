@@ -17,7 +17,7 @@ import { refundFor } from './pricing.js'
 //   2. after it: the mock gateway refunds (never inside the transaction: a retried
 //      transaction would refund twice). If that fails the refund stays 'pending' (JOB-04).
 //   3. live seat update + E-04 email (refund amount + credit note PDF)
-// Not here yet: waitlist offer (SF-04, Phase 9), "not after check-in" (Phase 7).
+// Not after the gate scan (S-04). Not here yet: waitlist offer (SF-04, Phase 9).
 
 const MIN = 60 * 1000
 
@@ -34,6 +34,7 @@ export async function cancelPreview(booking, now = new Date()) {
   const { lines, refundPaise } = refundFor(booking.pricing, 'user')
   let reason = null
   if (booking.status !== 'confirmed') reason = 'not_confirmed'
+  else if (booking.checkIn?.usedAt) reason = 'used' // already scanned at the gate (S-04)
   else if (now > cutoffAt) reason = 'cutoff'
   return {
     allowed: reason === null,
@@ -44,13 +45,11 @@ export async function cancelPreview(booking, now = new Date()) {
   }
 }
 
-const refused = (reason) =>
-  new AppError(
-    400,
-    'RULE_BROKEN',
-    reason === 'cutoff' ? 'Cancellation is closed: it is allowed only until 2 hours before the show.' : 'This booking cannot be cancelled.',
-    { rule: reason === 'cutoff' ? 'BR-04' : 'U-20', reason },
-  )
+const REFUSED_TEXT = {
+  cutoff: 'Cancellation is closed: it is allowed only until 2 hours before the show.',
+  used: 'This ticket was already used at the gate, so it cannot be cancelled.',
+}
+const refused = (reason) => new AppError(400, 'RULE_BROKEN', REFUSED_TEXT[reason] ?? 'This booking cannot be cancelled.', { rule: reason === 'cutoff' ? 'BR-04' : 'U-20', reason })
 
 class NotConfirmed extends Error {}
 

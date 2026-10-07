@@ -142,6 +142,7 @@ function CancelSection({ booking }) {
   if (preview.isPending || preview.isError) return null
   const p = preview.data
   if (!p.allowed) {
+    if (p.reason === 'used') return <p className="font-type text-sm">This ticket was used at the gate, so it cannot be cancelled.</p>
     return <p className="font-type text-sm">Cancellation closed. It was possible until {istShortDateTime(p.cutoffAt)}.</p>
   }
   if (!open) {
