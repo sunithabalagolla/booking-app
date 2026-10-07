@@ -76,3 +76,20 @@ export function useTicketAlbum(tab) {
     getNextPageParam: (last) => (last.page * last.limit < last.total ? last.page + 1 : undefined),
   })
 }
+
+// U-20 GET /api/bookings/:id/cancel-preview: { allowed, reason, cutoffAt, refundPaise, lines }
+export function useCancelPreview(bookingId, { enabled = true } = {}) {
+  return useQuery({ queryKey: ['cancel-preview', bookingId], queryFn: () => apiFetch(`/bookings/${bookingId}/cancel-preview`), enabled: Boolean(bookingId) && enabled, retry: false })
+}
+
+// U-20 POST /api/bookings/:id/cancel → { booking } (cancelled). The album shows it as a stub now.
+export function useCancelBooking(bookingId) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch(`/bookings/${bookingId}/cancel`, { method: 'POST' }),
+    onSuccess: ({ booking }) => {
+      queryClient.setQueryData(['booking', bookingId], booking)
+      queryClient.invalidateQueries({ queryKey: ['ticket-album'] })
+    },
+  })
+}

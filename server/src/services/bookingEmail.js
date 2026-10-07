@@ -1,7 +1,7 @@
 import { Invoice } from '../models/Invoice.js'
 import { User } from '../models/User.js'
 import { sendEmail } from './email/index.js'
-import { bookingConfirmedTemplate, paymentRefundedTemplate } from './email/templates.js'
+import { bookingCancelledTemplate, bookingConfirmedTemplate, paymentRefundedTemplate } from './email/templates.js'
 import { invoicePdf } from './pdf/invoicePdf.js'
 import { ticketPdf } from './pdf/ticketPdf.js'
 import { qrPng } from './qr/index.js'
@@ -11,7 +11,7 @@ import { istDateTime, rupees, ticketDetails } from './ticketText.js'
 // ticket PDF + GST invoice PDF attached. Called after the confirm transaction.
 
 export const ticketFileName = (booking) => `Talkies-ticket-${booking.bookingNumber}.pdf`
-export const invoiceFileName = (invoice) => `Talkies-invoice-${invoice.number.replaceAll('/', '-')}.pdf`
+export const invoiceFileName = (invoice) => `Talkies-${invoice.type === 'credit_note' ? 'credit-note' : 'invoice'}-${invoice.number.replaceAll('/', '-')}.pdf`
 
 export async function sendBookingConfirmedEmail(booking) {
   const [user, invoice] = await Promise.all([User.findById(booking.userId), Invoice.findById(booking.invoiceId)])
@@ -51,4 +51,21 @@ export async function sendPaymentRefundedEmail(booking, payment) {
     amountText: rupees(payment.amountPaise),
   })
   await sendEmail({ to: user.email, subject, html, text })
+}
+
+// E-04 booking cancelled by the user (U-20): refund amount + credit note PDF (GST-02)
+export async function sendBookingCancelledEmail(booking) {
+  const [user, note] = await Promise.all([User.findById(booking.userId), booking.cancellation.creditNoteId ? Invoice.findById(booking.cancellation.creditNoteId) : null])
+  if (!user) throw new Error('user missing')
+  const start = istDateTime(booking.show.startAt)
+  const { subject, html, text } = bookingCancelledTemplate({
+    name: user.name,
+    movieTitle: booking.show.movieTitle,
+    bookingNumber: booking.bookingNumber,
+    showText: `${start.day.slice(0, -5)}, ${start.time}`,
+    refundText: rupees(booking.cancellation.refundPaise),
+    creditNoteNumber: note?.number ?? null,
+  })
+  const attachments = note ? [{ name: invoiceFileName(note), content: await invoicePdf(note), contentType: 'application/pdf' }] : []
+  await sendEmail({ to: user.email, subject, html, text, attachments })
 }

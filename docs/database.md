@@ -191,7 +191,7 @@ Owner bank details for payouts (O-14). A separate collection, so that no normal 
 | `holdMinutes` | Number | 10 | BR-01 |
 | `maxSeatsPerBooking` | Number | 10 | BR-02 |
 | `convenienceFeePaise` | Number | 3000 | BR-03, per ticket, GST included |
-| `cancelCutoffMinutes` | Number | 120 | BR-04 |
+| `cancelCutoffMinutes` | Number | 120 | BR-04. Copied into `bookings.pricing.rates` at hold from 2026-10-07 (U-20, A-05); older bookings use this value |
 | `userRefundTicketPercent` | Number | 75 | BR-05 (after discount) |
 | `userRefundFoodPercent` | Number | 100 | BR-05 |
 | `checkinBeforeMinutes` | Number | 30 | BR-08 |
@@ -394,7 +394,7 @@ See **Section 3** for the full locking rules.
 | `couponId` / `couponCode` | ObjectId / String | | U-15. Not together with a deal (BR-16) |
 | `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid. **Built 2026-10-07 (U-17):** token = `<booking ID>.<qrNonce>.<HMAC-SHA256 of "<booking ID>.<qrNonce>", base64url>` (`services/qr/`); the QR picture is made when needed, not stored |
 | `checkIn.usedAt` / `checkIn.staffId` | Date / ObjectId → users | | S-04. Set with an atomic update: `{ _id, status: 'confirmed', 'checkIn.usedAt': null }`, so only one scan can win |
-| `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending` |
+| `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending`. **Built 2026-10-07 (U-20)** + `creditNoteId` (→ invoices, GST-02) |
 | `transfer` | object | | SF-02, once per booking (BR-15): `status` (`pending_claim` · `done`), `fromUserId`, `toEmail`, `toUserId`, `claimTokenHash`, `requestedAt`, `completedAt`. Fields + the `transfer.fromUserId` index added 2026-10-07 (U-18 album reads them); filled in Phase 9 |
 | `invoiceId` | ObjectId → invoices | | Set on confirm (built 2026-10-07, U-17). Bookings confirmed before U-17 have none (no backfill, decided 2026-10-07) |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
@@ -457,6 +457,7 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `bookingNumber` | String | yes | Snapshot, printed on the invoice (added 2026-10-07) |
 | `userId` | ObjectId → users | | Removed when the user deletes the account (U-26) |
 | `invoiceId` | ObjectId → invoices | credit note: yes | The invoice this credit note is for (GST-02) |
+| `againstNumber` | String | credit note | The invoice number, printed on the credit note (added 2026-10-07, U-20). Credit note lines = refunded amounts per line (`Movie ticket: 2 × Balcony (75% refund)`), GST worked back the same way |
 | `issuedAt` | Date | yes | |
 | `seller` | { `theatreName`, `address`, `gstin`, `state` } | yes | Snapshot. `state` = the GST state for all lines |
 | `platform` | { `companyName`, `gstin`, `address` } | yes | Snapshot of `settings.platform` (`address` added 2026-10-07) |

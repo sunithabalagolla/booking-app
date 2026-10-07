@@ -2,6 +2,17 @@
 
 ## Last session
 
+- Date: 2026-10-07 (fourth part)
+- **Phase 6 Step 2 built: U-20 Cancel booking (flow 9.5, BR-04, BR-05, GST-02, E-04, T-06).** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-07): the cutoff is **copied into the booking** at hold (`pricing.rates.cancelCutoffMinutes`; older bookings use the current setting); refund per line rounded to the nearest paisa; cancel allowed **up to and exactly at** 2:00 h before; inline "Yes, cancel" panel.
+  - Server: `refundFor(pricing, mode)` in `services/pricing.js` (T-06): user = tickets after discount × 75%, food × 100%, fee 0 (percents from the booking's rates copy); theatre (BR-06, for O-06 next) = 100% of all; GST worked back per refunded line. `services/bookingCancel.js`: `GET /api/bookings/:id/cancel-preview` (`allowed`, `reason` not_confirmed / cutoff, `cutoffAt`, lines, `refundPaise`); `POST /api/bookings/:id/cancel`: ONE transaction (booking → cancelled with `cancellation`, booked seats deleted, show count −, credit note `CN/2026-27/000001` against the invoice, own counter); then the mock gateway refund (payment → `partially_refunded` + refund entry `user_cancelled` with the credit note; a gateway error leaves `refundStatus: pending` for JOB-04), live seat update, **E-04** email with the credit note PDF. Credit note PDF = the invoice layout with "CREDIT NOTE", "Against invoice", "Amount refunded"; downloads through `/api/invoices/:id/pdf`. Booking answers have `cancellation`. Bookings without an invoice (before U-17) cancel without a credit note. Coupon use not given back. Not here: waitlist offer (SF-04, Phase 9), "not after check-in" (Phase 7).
+  - Client: ticket page ("Your ticket" / "Booking confirmed"): "You can cancel until Wed 7 Oct, 6:00 PM." + **Cancel booking** → ruled bill panel "Cancel this booking?" (refund lines with "75% back of ₹230" / "not refunded", double-ruled "You get back", "Yes, cancel" / "Keep my booking", focus moves to the panel title). After the cutoff: "Cancellation closed. It was possible until …". Cancelled booking page: "← Ticket album", "Booking cancelled", dashed stub with a Cancelled stamp, "Refund ₹… sent back to your payment method" (or "is on its way" while pending), **Download credit note**, Download GST invoice, Back to ticket album. The album list reloads after a cancel.
+  - Checked: sample credit note PDF (fixed the footer: "This credit note is made by computer…"). Chrome (seed Sample User): one new test booking made through the API and **cancelled in the browser** (TK3UKTPHSZ, seats A1 + A2, tomorrow 2:00 PM "Ghost of Gulmohar Lane", ₹400 → refund ₹255; it stays cancelled in your Docker database): panel numbers right; fixed the bill's red margin line running through the panel text; after "Yes, cancel" the cancelled page shows; database: credit note `CN/2026-27/000001` against `INV/2026-27/000002`, payment `partially_refunded`, seats free, show count 0; no console errors. Not clicked: the downloads. Phone width not checked.
+  - api.md + database.md updated.
+  - Tests: **592 pass** (client 181: cancel panel helpers 2; server 411: `t06.refunds.test.js` 6 = BR-05 lines, after coupon, deal, rounding, booking's percents, BR-06; `bookings.cancel.test.js` 8 = preview lines + cutoff exact / +1 ms / copied value / older booking, hold + 404, full cancel (seats, count, credit note lines + series, payment refund, coupon kept, E-04 + PDF, credit note download, seats bookable again), twice / cutoff / hold refused, two cancels at once = one, booking without invoice, gateway error → pending; T-05 rates copy now has the cutoff). Lint + build OK.
+
+## Earlier on 2026-10-07 (U-18)
+
 - Date: 2026-10-07 (third part)
 - **Phase 6 Step 1 done: U-18 Ticket album (UI-28).** Tested in the browser by you (2026-10-07): works. Ticked.
   - Your decisions (2026-10-07): no stamp on past confirmed shows for now ("Watched" needs gate check-in: **ask again in Phase 7**); upcoming = show not ended (BR-08); "Your ticket" heading when opened from the album; 10 per page with "Show more".
@@ -336,7 +347,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Next: Phase 6 Step 2, U-20 Cancel booking** (BR-04, BR-05, credit note GST-02, E-04, T-06). Plan shown 2026-10-07, waiting for OK.
+- **Check U-20 in the browser:** book a show more than 2 hours away (with food and a coupon if you like) → Ticket album → tap it → "Cancel booking" → check the refund lines (75% of tickets after the coupon, food 100%, fee not refunded) → "Keep my booking" closes the panel → "Yes, cancel" → cancelled page, **Download credit note** (CN/…, "Against invoice", amount refunded) → album shows the stub with the Cancelled stamp → server terminal: E-04 email with the credit note attachment → seat map: the seats are free again. A show less than 2 hours away: "Cancellation closed…". Phone width. After that: tick U-20 + T-06. Next: Phase 6 Step 3, **O-06 Cancel show** (BR-06, BR-07, flow 9.6, JOB-04, E-05) — plan first.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -463,10 +474,10 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 6 – Album + cancellations
 - [x] U-18 Ticket album (Phase 6 Step 1, 2026-10-07; tested in the browser by the developer 2026-10-07)
-- [ ] U-20 Cancel booking
+- [ ] U-20 Cancel booking (built 2026-10-07, Phase 6 Step 2; waiting for the developer's browser check)
 - [ ] O-06 Cancel show
 - [ ] JOB-04, E-04, E-05
-- [ ] T-06 test
+- [ ] T-06 test (BR-05 + BR-06 refund amounts built 2026-10-07 with U-20; the show-cancel part is tested again with O-06)
 
 ## Phase 7 – Gate + canteen counter
 - [ ] S-02 to S-05 Scanner + verify

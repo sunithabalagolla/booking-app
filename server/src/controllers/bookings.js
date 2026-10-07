@@ -2,6 +2,7 @@ import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
 import { applyCoupon, availableOffers, removeCoupon } from '../services/bookingCoupon.js'
 import { setBookingFood } from '../services/bookingFood.js'
+import { cancelBooking, cancelPreview } from '../services/bookingCancel.js'
 import { ticketFileName } from '../services/bookingEmail.js'
 import { createBookingOrder, payOnGateway, verifyAndConfirm } from '../services/bookingPayment.js'
 import { ticketPdf } from '../services/pdf/ticketPdf.js'
@@ -61,6 +62,15 @@ export function publicBooking(booking, now = new Date()) {
     pricing: publicPricing(booking.pricing),
     confirmedAt: booking.confirmedAt ?? null,
     invoiceId: booking.invoiceId ? String(booking.invoiceId) : null, // U-17 GST invoice PDF
+    // U-20: when cancelled
+    cancellation: booking.cancellation?.at
+      ? {
+          at: booking.cancellation.at,
+          refundPaise: booking.cancellation.refundPaise,
+          refundStatus: booking.cancellation.refundStatus,
+          creditNoteId: booking.cancellation.creditNoteId ? String(booking.cancellation.creditNoteId) : null,
+        }
+      : null,
   }
 }
 
@@ -143,6 +153,16 @@ export async function gatewayPay(req, res) {
 // U-16 POST /api/payments/verify → { booking } (confirmed)
 export async function verifyPayment(req, res) {
   res.json({ booking: await ticketView(await verifyAndConfirm(req.valid.body, req.user)) })
+}
+
+// U-20 GET /api/bookings/:id/cancel-preview → { allowed, reason, cutoffAt, refundPaise, lines }
+export async function getCancelPreview(req, res) {
+  res.json(await cancelPreview(await findOwn(req)))
+}
+
+// U-20 POST /api/bookings/:id/cancel → { booking } (cancelled, refund + credit note)
+export async function cancel(req, res) {
+  res.json({ booking: await ticketView(await cancelBooking(await findOwn(req), req.user)) })
 }
 
 // U-18 GET /api/bookings?tab=upcoming|past&page&limit: the ticket album

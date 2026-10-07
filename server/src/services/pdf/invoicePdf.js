@@ -2,6 +2,8 @@ import { istDateTime, rupees } from '../ticketText.js'
 import { COLORS, FONTS, newDoc, toBuffer } from './common.js'
 
 // 11.3 GST tax invoice PDF (made from the invoices document; nothing is stored).
+// GST-02 credit notes use the same layout: "CREDIT NOTE", against the invoice number,
+// "Amount refunded".
 // Prices include GST: each line shows the taxable value + CGST + SGST worked back.
 // Money on the invoice always has 2 decimals.
 
@@ -25,13 +27,14 @@ const COLUMNS = [
 const amount = (paise) => rupees(paise, { decimals: true }).slice(1) // no ₹: the column title has it
 
 export async function invoicePdf(invoice) {
-  const doc = newDoc(`Talkies tax invoice ${invoice.number}`)
+  const isCredit = invoice.type === 'credit_note'
+  const doc = newDoc(`Talkies ${isCredit ? 'credit note' : 'tax invoice'} ${invoice.number}`)
   const issued = istDateTime(invoice.issuedAt)
 
   // Header band
   doc.rect(X, 40, W, 50).fill(COLORS.maroon)
   doc.font(FONTS.heading).fontSize(24).fillColor(COLORS.gold).text('Talkies', X + 16, 52)
-  doc.font(FONTS.type).fontSize(16).fillColor(COLORS.cream).text('TAX INVOICE', X, 58, { width: W - 16, align: 'right', characterSpacing: 2 })
+  doc.font(FONTS.type).fontSize(16).fillColor(COLORS.cream).text(isCredit ? 'CREDIT NOTE' : 'TAX INVOICE', X, 58, { width: W - 16, align: 'right', characterSpacing: 2 })
 
   // Invoice facts
   let y = 104
@@ -39,13 +42,17 @@ export async function invoicePdf(invoice) {
     doc.font(FONTS.type).fontSize(8).fillColor(COLORS.label).text(label.toUpperCase(), x, y, { characterSpacing: 1 })
     doc.font(FONTS.monoBold).fontSize(10.5).fillColor(COLORS.ink).text(value, x, y + 11)
   }
-  fact('Invoice no.', invoice.number, X)
+  fact(isCredit ? 'Credit note no.' : 'Invoice no.', invoice.number, X)
   fact('Date', `${issued.day}, ${issued.time} IST`, X + 150)
   fact('Booking no.', invoice.bookingNumber, X + 330)
   fact('Place of supply', invoice.seller.state, X + 430)
+  if (isCredit) {
+    y += 30
+    fact('Against invoice', invoice.againstNumber ?? '—', X)
+  }
 
   // Parties
-  y = 148
+  y = isCredit ? 178 : 148
   const block = (title, lines, x, width) => {
     doc.font(FONTS.type).fontSize(8).fillColor(COLORS.label).text(title.toUpperCase(), x, y, { width, characterSpacing: 1 })
     doc.font(FONTS.mono).fontSize(9.5).fillColor(COLORS.ink)
@@ -100,11 +107,11 @@ export async function invoicePdf(invoice) {
     y = 40
   }
   y += 14
-  doc.font(FONTS.moneyBold).fontSize(14).fillColor(COLORS.maroon).text(`Amount paid ${rupees(t.totalPaise, { decimals: true })}`, X, y, { width: W, align: 'right' })
+  doc.font(FONTS.moneyBold).fontSize(14).fillColor(COLORS.maroon).text(`${isCredit ? 'Amount refunded' : 'Amount paid'} ${rupees(t.totalPaise, { decimals: true })}`, X, y, { width: W, align: 'right' })
   y = doc.y + 16
   doc.font(FONTS.mono).fontSize(8.5).fillColor(COLORS.ink)
   doc.text(`Prices include GST. The taxable value, CGST and SGST are worked back from each price. Every line has CGST + SGST of ${invoice.seller.state}, each half of the GST rate.`, X, y, { width: W })
-  doc.text('This invoice is made by computer and needs no signature.', X, doc.y + 4, { width: W })
+  doc.text(`This ${isCredit ? 'credit note' : 'invoice'} is made by computer and needs no signature.`, X, doc.y + 4, { width: W })
 
   return toBuffer(doc)
 }

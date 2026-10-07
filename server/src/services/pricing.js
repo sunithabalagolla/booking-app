@@ -34,6 +34,7 @@ export function ratesFromSettings(settings) {
     commissionPercent: settings.commissionPercent ?? null, // BR-11 (payouts, Phase 9)
     userRefundTicketPercent: settings.userRefundTicketPercent, // BR-05
     userRefundFoodPercent: settings.userRefundFoodPercent,
+    cancelCutoffMinutes: settings.cancelCutoffMinutes, // BR-04 (copied from 2026-10-07, U-20)
   }
 }
 
@@ -105,3 +106,25 @@ export function calculatePricing({ seats, food = [], rates, discount = {} }) {
 
 // The discount kept in a booking's pricing, for the next recalculation (food change)
 export const discountOf = (pricing) => ({ type: pricing.discountType ?? null, paise: pricing.ticketDiscountPaise ?? 0, dealPercent: pricing.dealPercent, couponCode: pricing.couponCode })
+
+// U-20 / O-06 refund of a confirmed booking (T-06), line by line like the invoice:
+//   mode 'user'    (BR-05): each ticket line (after its discount) × userRefundTicketPercent,
+//                           each food line × userRefundFoodPercent, convenience fee not refunded
+//   mode 'theatre' (BR-06): 100% of everything
+// The percents come from the rates copied into the booking (A-05). Each line is rounded to
+// the nearest paisa (decided 2026-10-07) and its GST is worked back like the invoice, so the
+// credit note adds up exactly. → { lines (only lines with money back), refundPaise }
+export function refundFor(pricing, mode = 'user') {
+  const percentFor = (kind) => {
+    if (mode === 'theatre') return 100
+    if (kind === 'ticket') return pricing.rates?.userRefundTicketPercent ?? 75
+    if (kind === 'food') return pricing.rates?.userRefundFoodPercent ?? 100
+    return 0 // convenience fee (BR-05)
+  }
+  const lines = pricing.gstLines.map((l) => {
+    const percent = percentFor(l.kind)
+    const amountPaise = Math.round((l.amountPaise * percent) / 100)
+    return { kind: l.kind, seatClass: l.seatClass ?? null, description: l.description, qty: l.qty, paidPaise: l.amountPaise, percent, amountPaise, gstPercent: l.gstPercent, ...gstSplit(amountPaise, l.gstPercent) }
+  })
+  return { lines, refundPaise: lines.reduce((sum, l) => sum + l.amountPaise, 0) }
+}

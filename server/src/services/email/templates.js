@@ -194,3 +194,22 @@ Your payment for ${movieTitle} (${showText}) went through, but we could not keep
 We refunded ${amountText}. No booking was made.`
   return { subject, html, text }
 }
+
+// E-04: booking cancelled by the user (U-20). Refund amount + credit note PDF attached.
+export function bookingCancelledTemplate({ name, movieTitle, bookingNumber, showText, refundText, creditNoteNumber }) {
+  const subject = `Talkies – booking cancelled: ${movieTitle} (${bookingNumber})`
+  const noteHtml = creditNoteNumber ? `<p>Your credit note ${escapeHtml(creditNoteNumber)} (PDF) is attached.</p>` : ''
+  const html = layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Your booking <strong>${escapeHtml(bookingNumber)}</strong> for <strong>${escapeHtml(movieTitle)}</strong> (${escapeHtml(showText)}) is cancelled.</p>
+    <p>We refunded <strong>${escapeHtml(refundText)}</strong> to your payment method. The convenience fee is not refunded.</p>
+    ${noteHtml}
+    <p>We hope to see you at the movies again soon.</p>`)
+  const text = `Namaste ${name},
+
+Your booking ${bookingNumber} for ${movieTitle} (${showText}) is cancelled.
+We refunded ${refundText} to your payment method. The convenience fee is not refunded.
+${creditNoteNumber ? `Your credit note ${creditNoteNumber} (PDF) is attached.\n` : ''}
+We hope to see you at the movies again soon.`
+  return { subject, html, text }
+}

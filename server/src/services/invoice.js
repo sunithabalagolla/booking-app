@@ -49,6 +49,53 @@ function sellerState(theatre, settings) {
   return Object.keys(GST_STATE_CODES).find((state) => GST_STATE_CODES[state] === code) ?? code
 }
 
+// GST-02 credit note for a refund (inside the cancel transaction): same seller, platform and
+// buyer as the invoice, its own series CN/2026-27/000001, lines = the refunded amounts with
+// their GST worked back (pricing.refundFor). → the credit note
+export async function createCreditNote(invoice, refund, { session, now = new Date() }) {
+  const fy = financialYear(now)
+  const seq = await nextSeq(`credit_note:${fy}`, session)
+  const hsnFor = Object.fromEntries(invoice.lines.map((l) => [l.kind, l.hsnSac]))
+  const lines = refund.lines
+    .filter((l) => l.amountPaise > 0)
+    .map((l) => ({
+      kind: l.kind,
+      description: l.kind === 'convenience_fee' ? `${KIND_TEXT[l.kind]} (${l.qty} ${l.qty === 1 ? 'ticket' : 'tickets'})` : `${KIND_TEXT[l.kind]}: ${l.description} (${l.percent}% refund)`,
+      hsnSac: hsnFor[l.kind] ?? null,
+      qty: l.qty,
+      taxablePaise: l.taxablePaise,
+      gstPercent: l.gstPercent,
+      cgstPaise: l.cgstPaise,
+      sgstPaise: l.sgstPaise,
+      totalPaise: l.amountPaise,
+    }))
+  const sum = (key) => lines.reduce((total, l) => total + l[key], 0)
+  const [note] = await Invoice.create(
+    [
+      {
+        type: 'credit_note',
+        number: invoiceNumber('CN', fy, seq),
+        financialYear: fy,
+        bookingId: invoice.bookingId,
+        bookingNumber: invoice.bookingNumber,
+        theatreId: invoice.theatreId,
+        ownerId: invoice.ownerId,
+        userId: invoice.userId,
+        invoiceId: invoice._id,
+        againstNumber: invoice.number,
+        issuedAt: now,
+        seller: invoice.seller,
+        platform: invoice.platform,
+        buyer: invoice.buyer,
+        lines,
+        totals: { taxablePaise: sum('taxablePaise'), cgstPaise: sum('cgstPaise'), sgstPaise: sum('sgstPaise'), totalPaise: sum('totalPaise') },
+      },
+    ],
+    { session },
+  )
+  return note
+}
+
 // Creates the invoice of a booking being confirmed (inside `session`) → the invoice
 export async function createInvoice(booking, { session, now = new Date() }) {
   const [theatre, settings, buyer] = await Promise.all([

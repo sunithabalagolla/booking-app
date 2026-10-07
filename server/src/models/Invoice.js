@@ -31,6 +31,7 @@ const invoiceSchema = new Schema(
     ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' }, // removed on account delete (U-26)
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // credit notes only
+    againstNumber: String, // credit notes: the invoice number they belong to (GST-02)
     issuedAt: { type: Date, required: true },
     seller: {
       theatreName: { type: String, required: true },

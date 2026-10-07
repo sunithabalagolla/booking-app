@@ -9,6 +9,7 @@ const rates = ratesFromSettings({
   commissionPercent: 10,
   userRefundTicketPercent: 75,
   userRefundFoodPercent: 100,
+  cancelCutoffMinutes: 120,
 })
 const seat = (seatClass, pricePaise) => ({ seatClass, pricePaise })
 // Every line must add up exactly, and the lines must add up to the total
@@ -117,6 +118,7 @@ describe('rates come from settings (BR-20, A-05)', () => {
       commissionPercent: 10,
       userRefundTicketPercent: 75,
       userRefundFoodPercent: 100,
+      cancelCutoffMinutes: 120,
     })
   })
 
