@@ -4,7 +4,7 @@
 
 - Date: 2026-10-07 (fifth part)
 - U-20 + T-06 ticked (you tested U-20 in the browser: works).
-- **Phase 6 Step 3 built: O-06 Cancel show (flow 9.6, BR-06, BR-07, JOB-04, E-05).** Waiting for your browser check (see Next step), then tick.
+- **Phase 6 Step 3 done: O-06 Cancel show (flow 9.6, BR-06, BR-07, JOB-04, E-05).** Tested in the browser by you (2026-10-07): works. Ticked. **Phase 6 done.**
   - Your decisions (2026-10-07): the admin cancel is **API only** for now (the admin screen comes with A-08, Phase 8); "Admin notified" = the audit log entry `show.cancel` (A-14 page in Phase 8, no admin email because of BR-25); reason 5–300 characters.
   - Server: `services/showCancel.js`: `GET /api/owner/shows/:id/cancel-preview` → `{ bookings, refundPaise }`; `POST /api/owner/shows/:id/cancel { reason }`: ONE transaction (show → `cancelled` + reason / by / at, `bookedCount` 0; every confirmed booking → `cancelled_by_theatre` with a 100% refund (BR-06), `refundStatus` + `emailStatus` pending; unpaid holds released; all show seats deleted; audit `show.cancel`). Then the live seat update and JOB-04 at once. Not after the start (BR-07), not twice. The admin has the same two endpoints under `/api/admin/shows/:id/…` (any show).
   - **JOB-04** (`jobs/cancellationRefunds.js`, every minute + right after a show cancel): per booking: credit note (own small transaction, never twice), gateway refund (payment → `refunded`, reason `show_cancelled`), then **E-05** once ("We are sorry… Reason… We refunded the full amount ₹… (tickets, food and convenience fee)", or "is on its way" when the gateway failed; credit note PDF attached). Also retries U-20 refunds that failed (no new email). The refund is sent by a new shared `services/bookingRefund.js`, which **claims** it first (`cancellation.refundLockUntil`), so the cancel request and JOB-04 never refund twice (U-20 uses it too now).
@@ -361,7 +361,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check O-06 in the browser:** log in as the seed owner → Shows → Thu 8 Oct, 9:30 AM "Operation Monsoon" (has test booking TKS85HKAZN) → **Cancel show** → panel says "1 booking · ₹560 goes back…" → try "Keep the show" → open again, a short reason (under 5 characters) shows the error → a real reason → "Yes, cancel show" → message + Cancelled stamp. Server terminal: `[JOB-04] … 1 refunded` and the E-05 email with the credit note attached. Then log in as the seed user → Ticket album → past: Cancelled stub → tap → "Show cancelled", reason, full refund ₹560, Download credit note (CN/…, 100% lines incl. the convenience fee). Also: a started show has no Cancel show link; phone / tablet width of the panel. After that: tick O-06, JOB-04, E-05 (Phase 6 then done). Next: **Phase 7 Step 1** (gate staff scanner, S-02 … S-05, T-07) — plan first; also ask again about the "Watched" stamp (your U-18 note).
+- **Phase 7 Step 1: gate staff scanner** (S-02 … S-05, flow 9.7, T-07) — plan first; also ask again about the "Watched" stamp (your U-18 note).
 - Your Chrome may still be logged in as the seed test user; log in as the seed owner for the O-06 check.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -486,12 +486,12 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] JOB-02 (Phase 5 Step 6, 2026-10-07; tested by the developer 2026-10-07: paid + tab closed → confirmed, never paid → failed + seats free)
 - [x] T-04, T-05 tests (T-05: `server/tests/t05.pricing.test.js`; T-04: `server/tests/t04.payments.test.js`, 2026-10-06)
 
-## Phase 6 – Album + cancellations
+## Phase 6 – Album + cancellations ✅ done (refund amounts correct; tested by the developer 2026-10-07)
 - [x] U-18 Ticket album (Phase 6 Step 1, 2026-10-07; tested in the browser by the developer 2026-10-07)
 - [x] U-20 Cancel booking (Phase 6 Step 2, 2026-10-07; tested in the browser by the developer 2026-10-07)
-- [ ] O-06 Cancel show (built 2026-10-07, Phase 6 Step 3; waiting for the developer's browser check)
+- [x] O-06 Cancel show (Phase 6 Step 3, 2026-10-07; tested in the browser by the developer 2026-10-07)
 - [x] E-04 (built and tested with U-20, 2026-10-07)
-- [ ] JOB-04, E-05 (built 2026-10-07 with O-06; waiting for the same browser check)
+- [x] JOB-04, E-05 (built 2026-10-07 with O-06; tested by the developer 2026-10-07)
 - [x] T-06 test (BR-05 + BR-06 refund amounts, 2026-10-07 with U-20; the show-cancel flow gets its own tests with O-06)
 
 ## Phase 7 – Gate + canteen counter
