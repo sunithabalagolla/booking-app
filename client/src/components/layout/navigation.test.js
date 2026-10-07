@@ -18,7 +18,7 @@ describe('accountLinksFor (header)', () => {
   })
 
   it('shows the name; a user has no extra own-page link', () => {
-    expect(accountLinksFor('user', user)).toEqual({ kind: 'user', name: 'Asha', ownPage: null })
+    expect(accountLinksFor('user', user)).toEqual({ kind: 'user', name: 'Asha', ownPage: { to: '/tickets', label: 'Ticket album' } }) // U-18
   })
 
   it('links each other role to its own page', () => {

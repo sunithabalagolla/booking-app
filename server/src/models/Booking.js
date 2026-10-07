@@ -106,12 +106,24 @@ const bookingSchema = new Schema(
     },
     qrNonce: { type: String, required: true }, // random; QR token = booking ID + nonce (SEC-09, U-17)
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // GST invoice, set in the confirm transaction (U-17)
+    // SF-02 ticket transfer (built in Phase 9). Here already because the ticket album (U-18)
+    // shows tickets transferred away (transfer.fromUserId = me) as "Transferred".
+    transfer: {
+      status: { type: String, enum: ['pending_claim', 'done'] },
+      fromUserId: { type: Schema.Types.ObjectId, ref: 'User' },
+      toEmail: String,
+      toUserId: { type: Schema.Types.ObjectId, ref: 'User' },
+      claimTokenHash: String,
+      requestedAt: Date,
+      completedAt: Date,
+    },
   },
   { timestamps: true },
 )
 
 bookingSchema.index({ bookingNumber: 1 }, { unique: true })
 bookingSchema.index({ userId: 1, 'show.startAt': -1 }) // ticket album
+bookingSchema.index({ 'transfer.fromUserId': 1 }, { sparse: true }) // ticket album: transferred away
 bookingSchema.index({ showId: 1, status: 1 })
 bookingSchema.index({ ownerId: 1, createdAt: -1 })
 bookingSchema.index({ theatreId: 1, createdAt: -1 })

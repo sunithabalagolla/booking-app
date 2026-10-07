@@ -2,6 +2,17 @@
 
 ## Last session
 
+- Date: 2026-10-07 (third part)
+- **Phase 6 Step 1 built: U-18 Ticket album (UI-28).** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-07): no stamp on past confirmed shows for now ("Watched" needs gate check-in: **ask again in Phase 7**); upcoming = show not ended (BR-08); "Your ticket" heading when opened from the album; 10 per page with "Show more".
+  - Server: `GET /api/bookings?tab=upcoming|past&page&limit` (`services/ticketAlbum.js`): never seat holds; upcoming = mine + confirmed + `show.endAt > now`, soonest first, with QR; past = ended, cancelled (me / theatre) or transferred away, newest first, stamps `cancelled` / `transferred`, no QR. Booking model got the `transfer` fields + `transfer.fromUserId` index (read by the album; filled by SF-02 in Phase 9).
+  - Client: `/tickets` "Ticket album": light-cream scrapbook pages (faint paper dots), each ticket pasted with a tape strip and a small fixed tilt (from the booking ID; half the tilt on phones). Upcoming = the full paper ticket (shared `PaperTicket.jsx`, now also used by the ticket page; no tear-off in the album). Past = dashed stubs (movie, date, theatre, screen, seats, booking no.) with a Cancelled (maroon) / Transferred (mustard) stamp. Tap → `/bookings/:id?from=album`: "← Ticket album" + "Your ticket", no tear-off, same downloads. A cancelled booking's page now says "Booking cancelled" (was "No booking"). "Show more" per section; empty album: "Your ticket album is empty. Book your first show!" + Find a show. Header: **Ticket album** link for users (also in the ☰ phone menu). Not here: bottom navigation (waits for Profile, your 2026-10-01 decision), badges (U-24, Phase 10), offline (U-19, Phase 11).
+  - Checked in Chrome (seed Sample User): Upcoming shows TKWDMAZ5L3 with QR; Past shows TK54RENF35 + TKLCEQ5CKH as stubs without stamps; the ticket on the same cream as the page did not stand out → album pages are light cream now; tap → "Your ticket" page with both downloads; no console errors. Phone width not checked. No cancelled / transferred bookings exist yet (U-20, SF-02), so those stamps were checked by the tests only.
+  - api.md + database.md updated.
+  - Tests: **576 pass** (client 179: album helpers 3, header link 1 changed; server 397: `bookings.album.test.js` 4 = upcoming rules + order + QR, past rules + order + stamps + transferred away + Ravi sees his ticket, pages of 10 + bad query + 401 / 403, empty album). Lint + build OK.
+
+## Earlier on 2026-10-07 (JOB-02)
+
 - Date: 2026-10-07 (second part)
 - **Phase 5 Step 6 done: JOB-02 payment safety check (PAY-05).** Tested by you (2026-10-07): both cases work. Ticked. **Phase 5 done.**
   - Your decisions (2026-10-07): mock "payment captured" webhook; 2-minute grace; hold over but seats free → confirm, show started / cancelled → refund; a never-paid order fails after **max(15 min, seat hold time)** (requirements JOB-02 changed); refund email wording OK.
@@ -325,7 +336,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Next: Phase 6 Step 1, U-18 Ticket album (UI-28).** Plan shown 2026-10-07, waiting for OK.
+- **Check U-18 in the browser:** header "Ticket album" (also in the ☰ menu on your phone) → `/tickets`: upcoming tickets with QR on top, past stubs below, tape + tilt; tap a ticket → "Your ticket" with "← Ticket album" and both downloads; a new account (or the owner/admin) shows the empty album text / no link; phone width. After that: tick U-18. Next: Phase 6 Step 2, **U-20 Cancel booking** (BR-04, BR-05, credit note GST-02, E-04, T-06) — plan first.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -451,7 +462,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] T-04, T-05 tests (T-05: `server/tests/t05.pricing.test.js`; T-04: `server/tests/t04.payments.test.js`, 2026-10-06)
 
 ## Phase 6 – Album + cancellations
-- [ ] U-18 Ticket album
+- [ ] U-18 Ticket album (built 2026-10-07, Phase 6 Step 1; waiting for the developer's browser check)
 - [ ] U-20 Cancel booking
 - [ ] O-06 Cancel show
 - [ ] JOB-04, E-04, E-05

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiFetch } from './client.js'
 
 // U-12 seat hold, U-13 food (api.md Section 6). The client sends only IDs and counts (SEC-10).
@@ -65,4 +65,14 @@ export async function downloadPdf(path, fileName) {
   link.click()
   link.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+// U-18 GET /api/bookings?tab=upcoming|past&page: the ticket album, 10 per page ("Show more")
+export function useTicketAlbum(tab) {
+  return useInfiniteQuery({
+    queryKey: ['ticket-album', tab],
+    queryFn: ({ pageParam }) => apiFetch(`/bookings?tab=${tab}&page=${pageParam}`),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.page * last.limit < last.total ? last.page + 1 : undefined),
+  })
 }

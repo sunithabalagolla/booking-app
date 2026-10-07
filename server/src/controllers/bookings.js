@@ -6,6 +6,7 @@ import { ticketFileName } from '../services/bookingEmail.js'
 import { createBookingOrder, payOnGateway, verifyAndConfirm } from '../services/bookingPayment.js'
 import { ticketPdf } from '../services/pdf/ticketPdf.js'
 import { qrDataUrl } from '../services/qr/index.js'
+import { ticketAlbum } from '../services/ticketAlbum.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
 
@@ -142,6 +143,11 @@ export async function gatewayPay(req, res) {
 // U-16 POST /api/payments/verify → { booking } (confirmed)
 export async function verifyPayment(req, res) {
   res.json({ booking: await ticketView(await verifyAndConfirm(req.valid.body, req.user)) })
+}
+
+// U-18 GET /api/bookings?tab=upcoming|past&page&limit: the ticket album
+export async function listBookings(req, res) {
+  res.json(await ticketAlbum(req.user._id, req.valid.query))
 }
 
 // U-17 GET /api/bookings/:id/ticket.pdf (own, confirmed only)

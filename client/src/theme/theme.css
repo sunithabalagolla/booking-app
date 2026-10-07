@@ -773,3 +773,35 @@
     animation: none;
   }
 }
+
+/* UI-28 ticket album (U-18): scrapbook pages. Cream page with faint paper fibres; each
+   ticket "pasted" a little tilted (--tilt from the booking ID) with a strip of tape.
+   The tilt is fixed (not an animation), so reduce motion does not change it. */
+.album-page {
+  background-color: var(--color-cream-light); /* the tickets (cream) stand out on it */
+  background-image: radial-gradient(rgb(59 42 32 / 0.05) 1px, transparent 1px);
+  background-size: 6px 6px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+.pasted {
+  transform: rotate(var(--tilt, 0deg));
+}
+.pasted .tape {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 88px;
+  height: 22px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgb(243 233 210 / 0.9); /* cream, see-through like old tape */
+  border-left: 1px dashed rgb(59 42 32 / 0.25);
+  border-right: 1px dashed rgb(59 42 32 / 0.25);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .pasted {
+    transform: rotate(calc(var(--tilt, 0deg) / 2)); /* less tilt on narrow phones */
+  }
+}

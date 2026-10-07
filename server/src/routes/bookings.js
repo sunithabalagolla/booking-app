@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import { bookingLimiter, paymentLimiter } from '../config/rateLimits.js'
-import { createPayment, deleteCoupon, getBooking, getOffers, getTicketPdf, giveUpHold, hold, setCoupon, setFood } from '../controllers/bookings.js'
+import { createPayment, deleteCoupon, getBooking, getOffers, getTicketPdf, giveUpHold, hold, listBookings, setCoupon, setFood } from '../controllers/bookings.js'
 import { requireAuth } from '../middleware/auth.js'
 import { requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
-import { couponBody, foodBody, holdBody } from '../validation/bookings.js'
+import { albumQuery, couponBody, foodBody, holdBody } from '../validation/bookings.js'
 import { idParams } from '../validation/common.js'
 
 // /api/bookings (api.md Section 6): users only (9.2: login from seat selection on)
@@ -12,6 +12,7 @@ const router = Router()
 
 router.use(requireAuth, requireRole('user'))
 
+router.get('/', validate({ query: albumQuery }), listBookings) // U-18 ticket album
 router.post('/hold', bookingLimiter, validate({ body: holdBody }), hold) // U-12
 router.get('/:id', validate({ params: idParams }), getBooking)
 router.delete('/:id/hold', validate({ params: idParams }), giveUpHold) // "Give up seats"

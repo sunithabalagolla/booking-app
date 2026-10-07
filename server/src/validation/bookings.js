@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { z } from 'zod'
+import { pageQuery } from './common.js'
 import { FOOD_PICKUPS } from '../models/Booking.js'
 
 // U-12 POST /api/bookings/hold. The client sends only IDs (SEC-10): never prices.
@@ -44,4 +45,11 @@ export const couponBody = z.object({
     .min(1, { error: 'Please type a coupon code.' })
     .max(30, { error: 'This coupon code is too long.' })
     .transform((code) => code.toUpperCase()),
+})
+
+// U-18 ticket album: GET /api/bookings?tab=upcoming|past&page&limit (10 per page, decided 2026-10-07)
+export const albumQuery = z.object({
+  tab: z.enum(['upcoming', 'past']).default('upcoming'),
+  page: pageQuery.page,
+  limit: z.coerce.number().int().min(1).max(50).default(10),
 })

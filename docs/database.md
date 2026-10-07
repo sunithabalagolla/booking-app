@@ -395,7 +395,7 @@ See **Section 3** for the full locking rules.
 | `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid. **Built 2026-10-07 (U-17):** token = `<booking ID>.<qrNonce>.<HMAC-SHA256 of "<booking ID>.<qrNonce>", base64url>` (`services/qr/`); the QR picture is made when needed, not stored |
 | `checkIn.usedAt` / `checkIn.staffId` | Date / ObjectId → users | | S-04. Set with an atomic update: `{ _id, status: 'confirmed', 'checkIn.usedAt': null }`, so only one scan can win |
 | `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending` |
-| `transfer` | object | | SF-02, once per booking (BR-15): `status` (`pending_claim` · `done`), `fromUserId`, `toEmail`, `toUserId`, `claimTokenHash`, `requestedAt`, `completedAt` |
+| `transfer` | object | | SF-02, once per booking (BR-15): `status` (`pending_claim` · `done`), `fromUserId`, `toEmail`, `toUserId`, `claimTokenHash`, `requestedAt`, `completedAt`. Fields + the `transfer.fromUserId` index added 2026-10-07 (U-18 album reads them); filled in Phase 9 |
 | `invoiceId` | ObjectId → invoices | | Set on confirm (built 2026-10-07, U-17). Bookings confirmed before U-17 have none (no backfill, decided 2026-10-07) |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 

@@ -15,7 +15,7 @@ const OWN_PAGE_LABELS = {
 }
 
 // Header account area: guests see Log in / Sign up; logged-in people see their
-// name, a link to their own page (not for users) and Log out.
+// name, a link to their own page (users: the ticket album, U-18) and Log out.
 export function accountLinksFor(status, user) {
   if (status === 'loading') return { kind: 'loading' }
   if (status !== 'user') {
@@ -27,6 +27,7 @@ export function accountLinksFor(status, user) {
       ],
     }
   }
+  if (roleKey(user) === 'user') return { kind: 'user', name: user.name, ownPage: { to: '/tickets', label: 'Ticket album' } }
   const label = OWN_PAGE_LABELS[roleKey(user)]
   return { kind: 'user', name: user.name, ownPage: label ? { to: homePathFor(user), label } : null }
 }

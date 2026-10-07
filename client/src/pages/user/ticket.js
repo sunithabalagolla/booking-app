@@ -21,10 +21,29 @@ export function ticketInfo(booking) {
     seatsText: seats.join(', '),
     foodText: booking.food.length ? booking.food.map((f) => `${f.qty} × ${f.name}`).join(', ') : null,
     pickup: pickupText(booking),
-    totalText: formatRupees(booking.pricing.totalPaise),
+    totalText: formatRupees(booking.pricing?.totalPaise ?? booking.totalPaise), // album items have totalPaise
   }
 }
 
 // File names of the downloads (the server sends the same ticket name)
 export const ticketFileName = (booking) => `Talkies-ticket-${booking.bookingNumber}.pdf`
 export const invoiceFileName = (booking) => `Talkies-invoice-${booking.bookingNumber}.pdf`
+
+// U-18 ticket album (UI-28): each ticket is "pasted" slightly tilted. The tilt comes from
+// the booking ID, so a ticket keeps its tilt every time the page opens.
+const TILTS = [-1.5, -0.75, 0.75, 1.5]
+export function tiltFor(id) {
+  let sum = 0
+  for (const ch of String(id)) sum += ch.charCodeAt(0)
+  return TILTS[sum % TILTS.length]
+}
+
+// Past stubs: rubber stamp text + tone ("Watched" comes with gate check-in, Phase 7)
+export const STAMPS = { cancelled: { text: 'Cancelled', tone: 'maroon' }, transferred: { text: 'Transferred', tone: 'mustard' } }
+
+// Short date for a stub: "Wed 7 Oct 2026 · 9:45 PM" (IST)
+export function stubDateText(show) {
+  const ist = new Date(new Date(show.startAt).getTime() + 5.5 * 60 * 60 * 1000).toISOString()
+  const [h, m] = ist.slice(11, 16).split(':').map(Number)
+  return `${formatShortDay(ist.slice(0, 10))} ${ist.slice(0, 4)} · ${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
+}
