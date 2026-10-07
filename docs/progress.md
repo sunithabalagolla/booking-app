@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-07 (second part)
-- **Phase 5 Step 6 built: JOB-02 payment safety check (PAY-05).** Waiting for your check (see Next step), then tick.
+- **Phase 5 Step 6 done: JOB-02 payment safety check (PAY-05).** Tested by you (2026-10-07): both cases work. Ticked. **Phase 5 done.**
   - Your decisions (2026-10-07): mock "payment captured" webhook; 2-minute grace; hold over but seats free → confirm, show started / cancelled → refund; a never-paid order fails after **max(15 min, seat hold time)** (requirements JOB-02 changed); refund email wording OK.
   - Server: the fake gateway now saves `paymentId` + `capturedAt` on success (new `Payment.capturedAt`); an order can be paid only once (`already_paid`); no new order while a paid one waits (`payment_pending`). The confirm transaction is now one function (`confirmPaidBooking`) used by verify and JOB-02; every payment change checks `status: 'created'`, so verify and JOB-02 never both confirm or refund. `settleCapturedPayment`: hold runs → confirm; hold over + seats free + show ahead → takes the seats again (unique index decides) and confirms; else refund (`seats_taken` · `show_closed` · `amount_changed` · `booking_closed`) + new "Payment refunded" email; a running hold stays on `amount_changed`. A late verify after a refund says "This payment was refunded: ₹…". If JOB-02 fails an order while the user is paying, the money goes straight back. `jobs/paymentSafety.js` every 5 minutes (IST, `noOverlap`, errors logged per payment): part 1 captured + not verified after 2 min; part 2 `created` without capture older than max(15, hold minutes) → `failed` (`timeout`) + pending booking released, seats freed and pushed. Numbers in `config/payment.js` (`VERIFY_GRACE_MINUTES`, `STUCK_ORDER_MINUTES`). Log lines `[JOB-02] payment order_…: confirmed / refunded (reason)`.
   - Client: no change (the payment page shows the new server messages).
@@ -325,11 +325,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check JOB-02** (the job runs every 5 minutes inside the dev server; set "Seat hold time" back to 10 minutes first):
-  - Paid, browser closed: book seats → pay with `success@test` → close the tab at once on "Processing…" (before "Booking confirmed"). Within 2–7 minutes the server terminal shows `[JOB-02] payment order_…: confirmed` + the E-03 email; open `/bookings/<id>` (or the seat map: seats ✕).
-  - Never paid: book seats → open the payment page → close the tab without paying. After about 15–20 minutes: `[JOB-02]` marks it failed (Payments: `failed`, `timeout`) and the seats are free on the map.
-  - (Optional, harder by hand) seats taken: the tests cover "refund + Payment refunded email".
-  - After that: tick JOB-02. **Phase 5 is then done** (Done when: full booking works, ticket email arrives). Next: Phase 6, U-18 Ticket album — plan first.
+- **Next: Phase 6 Step 1, U-18 Ticket album (UI-28).** Plan shown 2026-10-07, waiting for OK.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -442,7 +438,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] NF-04 colour-blind marks (seat marks + legend; Step 1, 2026-10-05)
 - [x] T-02, T-03 tests (`server/tests/bookings.hold.test.js`, 2026-10-05)
 
-## Phase 5 – Booking + payment
+## Phase 5 – Booking + payment ✅ done (full booking works, ticket email arrives; tested by the developer 2026-10-07)
 - [x] U-13 Food (Phase 5 Step 1, 2026-10-06; tested in the browser by the developer 2026-10-06)
 - [x] U-14 Summary (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06)
 - [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) built in Step 3, tested with A-06 2026-10-06
@@ -451,7 +447,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-17 QR ticket + PDF (Phase 5 Step 5, 2026-10-07; tested in the browser by the developer 2026-10-07)
 - [x] GST invoice (11.3) (built 2026-10-07 with U-17, tested by the developer 2026-10-07; credit notes GST-02 come with Phase 6, GST-03 report Phase 8)
 - [x] E-01 to E-03 emails (E-01, E-02 done in Phase 1; E-03 built 2026-10-07 with U-17, tested by the developer 2026-10-07)
-- [ ] JOB-02 (built 2026-10-07, Phase 5 Step 6; waiting for the developer's check)
+- [x] JOB-02 (Phase 5 Step 6, 2026-10-07; tested by the developer 2026-10-07: paid + tab closed → confirmed, never paid → failed + seats free)
 - [x] T-04, T-05 tests (T-05: `server/tests/t05.pricing.test.js`; T-04: `server/tests/t04.payments.test.js`, 2026-10-06)
 
 ## Phase 6 – Album + cancellations
