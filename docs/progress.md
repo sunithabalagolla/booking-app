@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-06 (fifth part)
-- **Phase 5 Step 4 built: U-16 Mock payment (PAY-01 … PAY-04, T-04).** Waiting for your browser check (see Next step), then tick U-16.
+- **Phase 5 Step 4 done: U-16 Mock payment (PAY-01 … PAY-04, T-04).** Tested in the browser by you (2026-10-07): works. Ticked.
   - Your decisions (2026-10-06): netbanking = every test bank succeeds except "Test Bank (fails)"; `PAYMENT_SECRET` added to your local `.env` by me (random, not shown; `.env.example` has the empty line; CLAUDE.md says the server needs it); simple "Booking confirmed" page now, full UI-27 ticket with U-17; a coupon used up during payment is **honoured** (database.md changed).
   - Server: `services/payment/` = the fake Razorpay (createOrder, pay, verifySignature, refund; HMAC-SHA256 signature of `orderId|paymentId`). Test lists in `config/payment.js` (client copy + test). `Payment` model (payments collection). `services/bookingPayment.js`: create order (coupon checked again and removed with the new total if it stopped working; a new order replaces older unpaid ones), gateway pay (failure = `PAYMENT_FAILED`, the hold stays), verify (bad signature refused; same payment again = fine; total changed → refund; hold over → refund at once + released) and ONE confirm transaction (booking confirmed + `confirmedAt`, held seats → booked, payment success, coupon +1 + usage, show booked count). After it: live `seats:update` booked. Rate limit 10 / 10 min per user for the 3 payment steps. Server refuses to start without `PAYMENT_SECRET`. Not in this step: GST invoice, E-03 email, QR / PDF (U-17), JOB-02.
   - Client: summary "Pay ₹…" now opens `/bookings/:id/pay` (UI-25): paper card, amount, a "Test payment, no real money" line with the test values, UPI / Card / Netbanking tabs (arrow keys move between tabs), card number in groups of 4, expiry gets its slash, quick field checks; "Processing…" with the new film reel (UI-32, `FilmReel.jsx`, 1 s per turn, still with reduce motion) for at least 2 s; failure = "Payment failed" + Try again / Give up seats; hold timer + Interval card. Success → `/bookings/:id`: simple "Booking confirmed" (booking number, Paid stamp, movie, show, screen, seats, food, total, "Your ticket with the QR code comes in the next step").
@@ -302,13 +302,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check U-16 in the browser** (set "Seat hold time" back to 10 minutes first):
-  - Seats → canteen → summary → "Pay ₹…" → payment page. Try each tab: UPI `fail@test` (fails: Try again / Give up seats), UPI `success@test`, card `4111 1111 1111 1111` (any future MM/YY, any 3-digit CVV), another card number (fails), netbanking "Test Bank (fails)" and another bank.
-  - Success → "Booking confirmed" page; in a second browser the seats show as booked (✕) at once.
-  - With a coupon: pay → the coupon count goes up (admin Coupons: "Used 1").
-  - Let the timer run out on the payment page → Interval card.
-  - On your phone: the tabs, the card form and the reel fit.
-  - After that: tick U-16. Next: Phase 5 Step 5, U-17 QR ticket + PDF (UI-27 ticket page) — plan first.
+- **Next: Phase 5 Step 5, U-17 QR ticket + PDF + GST invoice (11.3) + E-03 email** (UI-27 ticket page). Plan shown 2026-10-07, waiting for OK.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -426,7 +420,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-14 Summary (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06)
 - [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) built in Step 3, tested with A-06 2026-10-06
 - [x] A-06 Admin coupons (Phase 5 Step 3, 2026-10-06, with "Show to users" + "End now"; tested in the browser by the developer 2026-10-06)
-- [ ] U-16 Mock payment (PAY-01 to PAY-04) (built 2026-10-06, Phase 5 Step 4; waiting for the developer's browser check)
+- [x] U-16 Mock payment (PAY-01 to PAY-04) (built 2026-10-06, Phase 5 Step 4; tested in the browser by the developer 2026-10-07)
 - [ ] U-17 QR ticket + PDF
 - [ ] GST invoice (11.3)
 - [ ] E-01 to E-03 emails
