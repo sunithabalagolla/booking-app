@@ -3,7 +3,7 @@
 ## Last session
 
 - Date: 2026-10-07
-- **Phase 5 Step 5 built: U-17 QR ticket + PDF, GST invoice (11.3), E-03 email.** Waiting for your browser check (see Next step), then tick.
+- **Phase 5 Step 5 done: U-17 QR ticket + PDF, GST invoice (11.3), E-03 email.** Tested in the browser by you (2026-10-07): works. Ticked.
   - Your decisions (2026-10-07): packages `qrcode` + `pdfkit` (server); random `QR_SECRET` added to your local `.env` by me (not shown; `.env.example` has the empty line); PDFs use the Talkies fonts + Noto Sans for the ₹ sign (licences in the new `docs/credits.md`); email has the QR as a picture inside + ticket PDF + invoice PDF; no invoice backfill for older test bookings.
   - Server: `services/qr/` signed QR token `<booking ID>.<qrNonce>.<HMAC-SHA256>` with `QR_SECRET` (SEC-09) + `verifyQrToken` for the gate scanner (Phase 7); server refuses to start without `QR_SECRET`. GST invoice made **inside the confirm transaction**: `counters` (`invoice:2026-27`, IST financial year 1 Apr–31 Mar) → `INV/2026-27/000001`; new `Invoice` + `Counter` models; lines from `pricing.gstLines` + HSN/SAC from the booking's rates; seller = theatre (state from settings cities, else from the GSTIN), platform from settings, buyer name + email; `bookings.invoiceId`. PDFs (`services/pdf/`, made on download, nothing stored): ticket = UI-27 paper ticket on A4 (QR, Admit n, show, theatre, screen, class, seats, food + pickup, counterfoil with ticket no. + total); invoice = A4 tax invoice (header, seller / platform / buyer, table with HSN/SAC, taxable, GST %, CGST, SGST, amount; money always with 2 decimals; new page when long). `GET /api/bookings/:id/ticket.pdf` (own, confirmed only), `GET /api/invoices/:id/pdf` (buyer, owner of the theatre, admin; staff 403). `GET /api/bookings/:id` + verify answer: `qrDataUrl`, `invoiceId`, `confirmedAt`. E-03 (`services/bookingEmail.js`) sent after the confirm in the background; an error is logged (`[email] E-03 for booking … failed`) and the booking stays confirmed; `sendEmail` now takes attachments (Postmark `ContentID` for the QR picture; console mode lists the attachments). Fonts in `server/assets/fonts/` with their licence files.
   - Client: `/bookings/:id` is now UI-27: "Booking confirmed" + "Your ticket is also sent to your email.", cream paper ticket with maroon border (TALKIES, Admit n, movie, show, theatre, screen + class, seats, food + pickup, QR + booking number), counterfoil behind a dotted line with ticket no. + total that **tears off** (UI-34, CSS `.ticket-stub`, 800 ms after 300 ms; reduce motion = full ticket stays). Below: Paid stamp + total, **Download ticket**, **Download GST invoice** (only when the booking has an invoice), Back to home. Downloads use the logged-in API call (`apiFetch(..., { blob: true })`, token refresh works). Not here: Transfer to a friend (SF-02, Phase 9), badge card (Phase 10).
@@ -314,14 +314,7 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check U-17 in the browser** (set "Seat hold time" back to 10 minutes first):
-  - Book a show (seats → canteen with food → summary, maybe a coupon → pay) → "Booking confirmed": paper ticket, QR, counterfoil tears off; with reduce motion on (phone setting) the full ticket stays.
-  - **Download ticket** and **Download GST invoice**: open both PDFs (fonts, ₹ sign, numbers; invoice total = amount paid; coupon / food lines).
-  - Server terminal: the E-03 email text with "Attachments: …-qr.png · Talkies-ticket-….pdf · Talkies-invoice-….pdf".
-  - Refresh the page: same ticket. Old booking TK54RENF35: ticket without the invoice button.
-  - On your phone: the ticket fits (counterfoil goes under the ticket).
-  - As owner (Chandni Talkies) or admin: no screen yet to open invoices (owner reports Phase 8); the API allows it.
-  - After that: tick U-17, GST invoice, E-01 to E-03. Next: Phase 5 Step 6, **JOB-02** payment safety job — plan first.
+- **Next: Phase 5 Step 6, JOB-02 payment safety job.** Plan shown 2026-10-07, waiting for OK.
 - Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
@@ -440,9 +433,9 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [x] U-15 Coupon (Phase 5 Step 2, 2026-10-06; tested in the browser by the developer 2026-10-06). "Available offers" list (new, 2026-10-06) built in Step 3, tested with A-06 2026-10-06
 - [x] A-06 Admin coupons (Phase 5 Step 3, 2026-10-06, with "Show to users" + "End now"; tested in the browser by the developer 2026-10-06)
 - [x] U-16 Mock payment (PAY-01 to PAY-04) (built 2026-10-06, Phase 5 Step 4; tested in the browser by the developer 2026-10-07)
-- [ ] U-17 QR ticket + PDF (built 2026-10-07, Phase 5 Step 5; waiting for the developer's browser check)
-- [ ] GST invoice (11.3) (built 2026-10-07 with U-17; credit notes GST-02 come with Phase 6, GST-03 report Phase 8)
-- [ ] E-01 to E-03 emails (E-01, E-02 done in Phase 1; E-03 built 2026-10-07 with U-17)
+- [x] U-17 QR ticket + PDF (Phase 5 Step 5, 2026-10-07; tested in the browser by the developer 2026-10-07)
+- [x] GST invoice (11.3) (built 2026-10-07 with U-17, tested by the developer 2026-10-07; credit notes GST-02 come with Phase 6, GST-03 report Phase 8)
+- [x] E-01 to E-03 emails (E-01, E-02 done in Phase 1; E-03 built 2026-10-07 with U-17, tested by the developer 2026-10-07)
 - [ ] JOB-02
 - [x] T-04, T-05 tests (T-05: `server/tests/t05.pricing.test.js`; T-04: `server/tests/t04.payments.test.js`, 2026-10-06)
 
