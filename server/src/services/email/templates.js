@@ -134,3 +134,48 @@ You can fix the details and save the theatre again. It then goes back to our tea
 Edit my theatre: ${link}`
   return { subject, html, text }
 }
+
+// E-03: booking confirmed (U-17). `t` = ticketDetails(booking). The QR is an attached
+// picture shown inside the email (cid:, because Gmail blocks data: pictures); the
+// ticket PDF and the GST invoice PDF are attached too.
+export function bookingConfirmedTemplate({ name, t, link, qrCid, invoiceNumber }) {
+  const subject = `Talkies – booking confirmed: ${t.movieTitle} (${t.bookingNumber})`
+  const rows = [
+    ['Show', t.showText],
+    ['Theatre', `${t.theatreName}, ${t.theatreAddress}`],
+    ['Screen', t.screenName],
+    ['Class', t.classText],
+    [t.admit === 1 ? 'Seat' : 'Seats', t.seatsText],
+    t.foodText && ['Food', `${t.foodText}${t.pickupText ? ` (pickup: ${t.pickupText})` : ''}`],
+    ['Total paid', t.totalText],
+  ].filter(Boolean)
+  const rowHtml = rows
+    .map(([label, value]) => `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;color:#7D5100;white-space:nowrap;">${escapeHtml(label)}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>`)
+    .join('')
+  const html = layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Your booking is confirmed. Enjoy the show!</p>
+    <div style="border:2px solid #7B1E1E;border-radius:8px;padding:16px;background:#FFFDF5;">
+      <p style="margin:0;font-family:Georgia,serif;font-size:22px;color:#7B1E1E;">${escapeHtml(t.movieTitle)}</p>
+      <p style="margin:4px 0 12px;font-size:14px;">${escapeHtml(t.movieInfo)} · Admit ${t.admit}</p>
+      <table role="presentation" style="font-size:15px;border-collapse:collapse;">${rowHtml}</table>
+      <p style="text-align:center;margin:16px 0 4px;"><img src="cid:${qrCid}" width="200" height="200" alt="QR code of ticket ${escapeHtml(t.bookingNumber)}" style="background:#FFFFFF;"></p>
+      <p style="text-align:center;margin:0;font-size:18px;letter-spacing:2px;"><strong>${escapeHtml(t.bookingNumber)}</strong></p>
+      <p style="text-align:center;margin:4px 0 0;font-size:13px;">Show this QR at the gate. The staff can also type the booking number.</p>
+    </div>
+    <p>Your ticket (PDF) and GST invoice ${escapeHtml(invoiceNumber)} (PDF) are attached. All times are in IST.</p>
+    ${button(link, 'Open my ticket')}`)
+  const text = `Namaste ${name},
+
+Your booking is confirmed. Enjoy the show!
+
+${t.movieTitle} (${t.movieInfo}) · Admit ${t.admit}
+${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}
+Booking number: ${t.bookingNumber}
+
+Show the QR code (in the attached ticket PDF) at the gate. The staff can also type the booking number.
+Your ticket (PDF) and GST invoice ${invoiceNumber} (PDF) are attached. All times are in IST.
+
+Open my ticket: ${link}`
+  return { subject, html, text }
+}

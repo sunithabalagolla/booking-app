@@ -8,6 +8,8 @@ import { ShowSeat } from '../models/ShowSeat.js'
 import { emitSeatsUpdate } from '../sockets/index.js'
 import { AppError } from '../utils/AppError.js'
 import { couponProblem, removeCoupon } from './bookingCoupon.js'
+import { sendBookingConfirmedEmail } from './bookingEmail.js'
+import { createInvoice } from './invoice.js'
 import * as gateway from './payment/index.js'
 import { releaseIfExpired } from './seatHold.js'
 
@@ -15,7 +17,8 @@ import { releaseIfExpired } from './seatHold.js'
 //   1. createBookingOrder: an order for the amount the server calculates
 //   2. payOnGateway:       the fake Razorpay page (success → paymentId + signature)
 //   3. verifyAndConfirm:   signature check, then ONE confirm transaction (database.md 2)
-// Not here yet: GST invoice (11.3), E-03 email, QR ticket (U-17), JOB-02.
+//      … with the GST invoice (11.3, U-17); after it the E-03 email (ticket + invoice).
+// Not here yet: JOB-02.
 
 const rupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', paise % 100 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
 const holdExpired = (message = 'Your seat hold time is over. Please pick seats again.') => new AppError(409, 'HOLD_EXPIRED', message)
@@ -122,6 +125,10 @@ export async function verifyAndConfirm({ orderId, paymentId, signature }, user, 
         await CouponUsage.create([{ couponId: booking.couponId, userId: booking.userId, bookingId: booking._id }], { session })
       }
       await Show.updateOne({ _id: booking.showId }, { $inc: { bookedCount: booking.seats.length } }, { session })
+
+      // 11.3 GST invoice: its number is used only when the whole confirm succeeds
+      const invoice = await createInvoice(booking, { session, now })
+      await Booking.updateOne({ _id: booking._id }, { $set: { invoiceId: invoice._id } }, { session })
     })
   } catch (error) {
     if (!(error instanceof HoldGone)) throw error
@@ -133,5 +140,8 @@ export async function verifyAndConfirm({ orderId, paymentId, signature }, user, 
 
   // U-10: the seats are booked for everybody looking at the map
   emitSeatsUpdate(booking.showId, booking.seats.map((s) => ({ seatId: s.seatId, status: 'booked' })))
-  return Booking.findById(booking._id)
+  const confirmed = await Booking.findById(booking._id)
+  // E-03 in the background: the booking stays confirmed even if the email fails
+  sendBookingConfirmedEmail(confirmed).catch((error) => console.error(`[email] E-03 for booking ${confirmed.bookingNumber} failed: ${error.message}`))
+  return confirmed
 }

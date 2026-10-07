@@ -14,6 +14,7 @@ import cityRoutes from './routes/cities.js'
 import meRoutes from './routes/me.js'
 import movieRoutes from './routes/movies.js'
 import ownerRoutes from './routes/owner.js'
+import invoiceRoutes from './routes/invoices.js'
 import { mockGatewayRoutes, paymentRoutes } from './routes/payments.js'
 import settingsRoutes from './routes/settings.js'
 import showRoutes from './routes/shows.js'
@@ -52,6 +53,7 @@ app.use('/api/theatres', theatreRoutes) // U-13 canteen menu
 app.use('/api/bookings', bookingRoutes) // U-12 seat hold
 app.use('/api/mock-gateway', mockGatewayRoutes) // U-16 fake Razorpay (PAY-01)
 app.use('/api/payments', paymentRoutes) // U-16 verify + confirm
+app.use('/api/invoices', invoiceRoutes) // U-17 GST invoice PDF (11.3)
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)

@@ -52,3 +52,17 @@ export const useRemoveCoupon = (bookingId) => useCouponMutation(bookingId, () =>
 export function useOffers(bookingId, { enabled = true } = {}) {
   return useQuery({ queryKey: ['offers', bookingId], queryFn: async () => (await apiFetch(`/bookings/${bookingId}/offers`)).offers, enabled: Boolean(bookingId) && enabled, retry: false })
 }
+
+// U-17 PDF downloads (logged-in calls, so not a plain link): the file is saved by the browser.
+// GET /api/bookings/:id/ticket.pdf · GET /api/invoices/:id/pdf
+export async function downloadPdf(path, fileName) {
+  const blob = await apiFetch(path, { blob: true })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.append(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}

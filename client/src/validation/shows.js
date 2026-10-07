@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 export const MAX_DATES = 14
 export const MAX_DAYS_AHEAD = 30
-const SEAT_CLASSES = ['balcony', 'first', 'second']
+export const SEAT_CLASSES = ['balcony', 'first', 'second']
 export const CLASS_NAMES = { balcony: 'Balcony', first: 'First class', second: 'Second class' }
 
 // BR-22 label names

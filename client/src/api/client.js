@@ -16,7 +16,8 @@ export class ApiError extends Error {
 const SESSION_EXPIRED_MESSAGE = 'Interval over! Please log in again to continue the show.'
 
 // One HTTP call. Adds the access token when there is one.
-async function request(path, { method = 'GET', body } = {}) {
+// blob: true = a file answer (PDF download, U-17); errors are still JSON.
+async function request(path, { method = 'GET', body, blob = false } = {}) {
   const token = useAuthStore.getState().accessToken
   const headers = {}
   // FormData (image uploads): the browser sets the multipart Content-Type itself
@@ -37,6 +38,7 @@ async function request(path, { method = 'GET', body } = {}) {
     throw new ApiError({ status: 0, code: 'NETWORK_ERROR', message: 'Power cut! Waiting for the generator… Please check your internet and try again.' })
   }
 
+  if (blob && res.ok) return res.blob()
   const data = res.status === 204 ? {} : await res.json().catch(() => ({}))
   if (!res.ok) {
     const error = data.error ?? {}

@@ -15,4 +15,6 @@ export const motion = {
   filmReel: 1000, // UI-32 payment "Processing…" reel: one turn (CSS .film-reel)
   paymentMinimum: 2000, // PAY-02: "Processing…" shows at least this long
   ticketsSwing: 4000, // UI-20 "TICKETS" board swings once back and forth (CSS .tickets-board)
+  ticketTear: 800, // UI-34 counterfoil tears off on Booking confirmed (CSS .ticket-stub)
+  ticketTearDelay: 300, // … starts after this
 }

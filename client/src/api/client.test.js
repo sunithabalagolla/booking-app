@@ -10,7 +10,7 @@ function fakeServer(routes) {
     calls.push({ path, auth: options.headers.Authorization })
     const next = routes[path].shift()
     const body = typeof next.body === 'function' ? next.body() : next.body
-    return { ok: next.status < 400, status: next.status, json: async () => body }
+    return { ok: next.status < 400, status: next.status, json: async () => body, blob: async () => next.blob }
   })
   vi.stubGlobal('fetch', fetch)
   return calls
@@ -118,5 +118,23 @@ describe('login hint', () => {
 
     useAuthStore.getState().clearSession()
     expect(storage.has('talkies_was_logged_in')).toBe(false)
+  })
+})
+
+describe('apiFetch file answers (U-17 PDF downloads)', () => {
+  it('blob: true gives the file; an expired token is refreshed first', async () => {
+    const pdf = { size: 1234, type: 'application/pdf' }
+    const calls = fakeServer({
+      '/bookings/b1/ticket.pdf': [expired, { status: 200, blob: pdf }],
+      '/auth/refresh': [refreshed('new-token')],
+    })
+    expect(await apiFetch('/bookings/b1/ticket.pdf', { blob: true })).toBe(pdf)
+    expect(calls[0].auth).toBe('Bearer old-token')
+    expect(calls.at(-1)).toEqual({ path: '/bookings/b1/ticket.pdf', auth: 'Bearer new-token' })
+  })
+
+  it('an error answer is still the server message', async () => {
+    fakeServer({ '/bookings/b1/ticket.pdf': [{ status: 400, body: { error: { code: 'RULE_BROKEN', message: 'A ticket is ready only for a confirmed booking.' } } }] })
+    await expect(apiFetch('/bookings/b1/ticket.pdf', { blob: true })).rejects.toMatchObject({ code: 'RULE_BROKEN', message: 'A ticket is ready only for a confirmed booking.' })
   })
 })

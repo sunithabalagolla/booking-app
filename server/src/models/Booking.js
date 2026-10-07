@@ -105,6 +105,7 @@ const bookingSchema = new Schema(
       rates: ratesSchema, // copy of the settings at hold time (A-05)
     },
     qrNonce: { type: String, required: true }, // random; QR token = booking ID + nonce (SEC-09, U-17)
+    invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // GST invoice, set in the confirm transaction (U-17)
   },
   { timestamps: true },
 )

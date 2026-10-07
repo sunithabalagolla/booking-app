@@ -755,3 +755,21 @@
     animation: none;
   }
 }
+
+/* UI-34 ticket tear (U-17, UI-27 Booking confirmed): the counterfoil tears along the
+   dotted line, drops a little and fades. 800 ms, starts after 300 ms (motion.js
+   ticketTear). Only transform + opacity. Reduce motion: the full ticket stays. */
+.ticket-stub {
+  transform-origin: top left;
+  animation: ticket-tear 800ms ease-in 300ms forwards;
+}
+@keyframes ticket-tear {
+  0% { transform: none; opacity: 1; }
+  25% { transform: rotate(2deg); opacity: 1; }
+  100% { transform: translateY(48px) rotate(7deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-stub {
+    animation: none;
+  }
+}

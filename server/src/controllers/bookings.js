@@ -2,12 +2,15 @@ import { Booking } from '../models/Booking.js'
 import { AppError } from '../utils/AppError.js'
 import { applyCoupon, availableOffers, removeCoupon } from '../services/bookingCoupon.js'
 import { setBookingFood } from '../services/bookingFood.js'
+import { ticketFileName } from '../services/bookingEmail.js'
 import { createBookingOrder, payOnGateway, verifyAndConfirm } from '../services/bookingPayment.js'
+import { ticketPdf } from '../services/pdf/ticketPdf.js'
+import { qrDataUrl } from '../services/qr/index.js'
 import { holdSeats, releaseBooking, releaseIfExpired } from '../services/seatHold.js'
 import { loadShowForUsers } from './shows.js'
 
 // /api/bookings (api.md Section 6): U-12 seat hold, U-13 food, U-14 summary (pricing in every
-// answer), U-15 coupon. Payment etc. come next.
+// answer), U-15 coupon, U-16 payment, U-17 ticket (QR + PDF).
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'We could not find this booking.')
 
@@ -39,7 +42,7 @@ function publicPricing(p) {
   }
 }
 
-// What the API sends (more fields come with U-16, U-17)
+// What the API sends
 export function publicBooking(booking, now = new Date()) {
   const pending = booking.status === 'pending'
   return {
@@ -55,7 +58,16 @@ export function publicBooking(booking, now = new Date()) {
     food: (booking.food ?? []).map((f) => ({ foodItemId: String(f.foodItemId), name: f.name, isVeg: f.isVeg, unitPricePaise: f.unitPricePaise, qty: f.qty })),
     foodPickup: booking.foodPickup ?? null,
     pricing: publicPricing(booking.pricing),
+    confirmedAt: booking.confirmedAt ?? null,
+    invoiceId: booking.invoiceId ? String(booking.invoiceId) : null, // U-17 GST invoice PDF
   }
+}
+
+// U-17: a confirmed booking also gets its signed QR picture (SEC-09)
+async function ticketView(booking) {
+  const view = publicBooking(booking)
+  if (booking.status === 'confirmed') view.qrDataUrl = await qrDataUrl(booking)
+  return view
 }
 
 // Only the user's own bookings; someone else's looks the same as a missing one
@@ -79,7 +91,7 @@ export async function hold(req, res) {
 // GET /api/bookings/:id (own). A hold whose time is over shows as released.
 export async function getBooking(req, res) {
   const booking = await releaseIfExpired(await findOwn(req))
-  res.json({ booking: publicBooking(booking) })
+  res.json({ booking: await ticketView(booking) })
 }
 
 // DELETE /api/bookings/:id/hold (own): "Give up seats" (9.2) → released, seats free.
@@ -129,5 +141,20 @@ export async function gatewayPay(req, res) {
 
 // U-16 POST /api/payments/verify → { booking } (confirmed)
 export async function verifyPayment(req, res) {
-  res.json({ booking: publicBooking(await verifyAndConfirm(req.valid.body, req.user)) })
+  res.json({ booking: await ticketView(await verifyAndConfirm(req.valid.body, req.user)) })
+}
+
+// U-17 GET /api/bookings/:id/ticket.pdf (own, confirmed only)
+export async function getTicketPdf(req, res) {
+  const booking = await findOwn(req)
+  if (booking.status !== 'confirmed') {
+    throw new AppError(400, 'RULE_BROKEN', 'A ticket is ready only for a confirmed booking.', { rule: 'U-17', reason: 'not_confirmed' })
+  }
+  sendPdf(res, ticketFileName(booking), await ticketPdf(booking))
+}
+
+// A PDF download (the page saves it with this file name)
+export function sendPdf(res, fileName, pdf) {
+  res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${fileName}"`, 'Cache-Control': 'private, no-store' })
+  res.send(pdf)
 }

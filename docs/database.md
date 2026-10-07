@@ -35,7 +35,7 @@ Code uses `session.withTransaction(...)`, which retries by itself on temporary t
 | Action | Changes in one transaction |
 | --- | --- |
 | Hold seats (U-12) | Insert all `showseats` (held) + insert the `bookings` document (`pending`). If any seat is taken, the whole hold fails and no seat is held |
-| Confirm booking (U-16) | `payments` → `success` · `showseats` held → booked · `bookings` → `confirmed` · `counters` +1 and insert `invoices` · `coupons.usedCount` +1 and insert `couponusages` · `shows.bookedCount` + seats. **Built 2026-10-06** without `counters` / `invoices` (GST invoice task, 11.3) |
+| Confirm booking (U-16) | `payments` → `success` · `showseats` held → booked · `bookings` → `confirmed` · `counters` +1 and insert `invoices` · `coupons.usedCount` +1 and insert `couponusages` · `shows.bookedCount` + seats. **Built 2026-10-06**; `counters` + `invoices` + `bookings.invoiceId` added 2026-10-07 (U-17) |
 | Cancel booking (U-20) | `bookings` → `cancelled` · delete its `showseats` · refund in `payments` · credit note in `invoices` (+ `counters`) · `shows.bookedCount` − seats |
 | Show cancelled (O-06, JOB-04) | Per booking, the same steps as cancel, with 100% refund |
 | Ticket transfer (SF-02) | `bookings` owner / QR nonce change + `transfer` data |
@@ -392,11 +392,11 @@ See **Section 3** for the full locking rules.
 | `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11, by the owner or Gate Staff of that theatre. Set once only (atomic update, like check-in) |
 | `pricing` | object | yes | Calculated by the backend only (SEC-10). See below |
 | `couponId` / `couponCode` | ObjectId / String | | U-15. Not together with a deal (BR-16) |
-| `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid |
+| `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid. **Built 2026-10-07 (U-17):** token = `<booking ID>.<qrNonce>.<HMAC-SHA256 of "<booking ID>.<qrNonce>", base64url>` (`services/qr/`); the QR picture is made when needed, not stored |
 | `checkIn.usedAt` / `checkIn.staffId` | Date / ObjectId → users | | S-04. Set with an atomic update: `{ _id, status: 'confirmed', 'checkIn.usedAt': null }`, so only one scan can win |
 | `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending` |
 | `transfer` | object | | SF-02, once per booking (BR-15): `status` (`pending_claim` · `done`), `fromUserId`, `toEmail`, `toUserId`, `claimTokenHash`, `requestedAt`, `completedAt` |
-| `invoiceId` | ObjectId → invoices | | Set on confirm |
+| `invoiceId` | ObjectId → invoices | | Set on confirm (built 2026-10-07, U-17). Bookings confirmed before U-17 have none (no backfill, decided 2026-10-07) |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
 
 > Built 2026-10-05 (U-12, Phase 4): the `pending` hold part only: number, IDs, status, `holdExpiresAt`, `releasedAt` (when it became `released`), `show` snapshot, `seats`, `qrNonce`, and `pricing.ticketsPaise`. Added 2026-10-06 (U-13): `food`, `foodPickup`, `pricing.foodPaise` (default 0). Added 2026-10-06 (U-14, U-15): the full `pricing` below (`gstLines` also have `seatClass` on ticket lines, `discountPaise` per line, and `description` / `qty` / `unitPricePaise`; `couponCode` is also in `pricing`), `couponId` / `couponCode`. `pricing.rates` = copy at **hold** time (also `hsnSac`). A last-minute deal on at hold time is fixed for the hold (`dealPercent`, decided 2026-10-06). The discount is shared by the ticket lines by their amount; the last ticket line gets the paise left over (decided 2026-10-06). The other fields come with their tasks (Phase 5+).
@@ -453,13 +453,14 @@ Tax invoices and credit notes. The PDF is made on demand from this data (pdfkit)
 | `number` | String | yes | Unique. Invoice `INV/2026-27/000123`. Credit note: own series `CN/2026-27/000001` |
 | `financialYear` | String | yes | e.g. `2026-27` |
 | `bookingId` / `theatreId` / `ownerId` | ObjectId | yes | |
+| `bookingNumber` | String | yes | Snapshot, printed on the invoice (added 2026-10-07) |
 | `userId` | ObjectId → users | | Removed when the user deletes the account (U-26) |
 | `invoiceId` | ObjectId → invoices | credit note: yes | The invoice this credit note is for (GST-02) |
 | `issuedAt` | Date | yes | |
 | `seller` | { `theatreName`, `address`, `gstin`, `state` } | yes | Snapshot. `state` = the GST state for all lines |
-| `platform` | { `companyName`, `gstin` } | yes | Snapshot |
+| `platform` | { `companyName`, `gstin`, `address` } | yes | Snapshot of `settings.platform` (`address` added 2026-10-07) |
 | `buyer` | { `name`, `email` } | yes | Snapshot. No state (users have no state field). `name` / `email` set to empty on account delete (U-26) |
-| `lines` | [{ `kind` (`ticket` · `food` · `convenience_fee`), `description`, `hsnSac`, `qty`, `taxablePaise`, `gstPercent`, `cgstPaise`, `sgstPaise`, `totalPaise` }] | yes | Always CGST + SGST of the theatre's state (each = half of `gstPercent`). Rates from settings (BR-20) |
+| `lines` | [{ `kind` (`ticket` · `food` · `convenience_fee`), `description`, `hsnSac`, `qty`, `taxablePaise`, `gstPercent`, `cgstPaise`, `sgstPaise`, `totalPaise` }] | yes | Always CGST + SGST of the theatre's state (each = half of `gstPercent`). Rates from settings (BR-20). **Built 2026-10-07:** copied from `booking.pricing.gstLines` (after the discount) + `pricing.rates.hsnSac`; descriptions `Movie ticket: 2 × Balcony`, `Food: 2 × Tea`, `Convenience fee (2 tickets)`. `seller.state` = the city's state in settings (else from the GSTIN state code) |
 | `totals` | { `taxablePaise`, `cgstPaise`, `sgstPaise`, `totalPaise` } | yes | |
 
 **Indexes**
