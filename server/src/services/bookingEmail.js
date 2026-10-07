@@ -1,11 +1,11 @@
 import { Invoice } from '../models/Invoice.js'
 import { User } from '../models/User.js'
 import { sendEmail } from './email/index.js'
-import { bookingConfirmedTemplate } from './email/templates.js'
+import { bookingConfirmedTemplate, paymentRefundedTemplate } from './email/templates.js'
 import { invoicePdf } from './pdf/invoicePdf.js'
 import { ticketPdf } from './pdf/ticketPdf.js'
 import { qrPng } from './qr/index.js'
-import { ticketDetails } from './ticketText.js'
+import { istDateTime, rupees, ticketDetails } from './ticketText.js'
 
 // E-03 booking confirmed (Section 12, U-17): ticket details + QR picture inside the email,
 // ticket PDF + GST invoice PDF attached. Called after the confirm transaction.
@@ -37,4 +37,18 @@ export async function sendBookingConfirmedEmail(booking) {
       { name: invoiceFileName(invoice), content: invoiceFile, contentType: 'application/pdf' },
     ],
   })
+}
+
+// JOB-02: the money came back because the booking could not be kept
+export async function sendPaymentRefundedEmail(booking, payment) {
+  const user = await User.findById(booking.userId)
+  if (!user) throw new Error('user missing')
+  const start = istDateTime(booking.show.startAt)
+  const { subject, html, text } = paymentRefundedTemplate({
+    name: user.name,
+    movieTitle: booking.show.movieTitle,
+    showText: `${start.day.slice(0, -5)}, ${start.time}`,
+    amountText: rupees(payment.amountPaise),
+  })
+  await sendEmail({ to: user.email, subject, html, text })
 }

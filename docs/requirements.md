@@ -478,7 +478,7 @@ Emails use the vintage style too: cream background, maroon header "Talkies" in a
 | ID | Job | Runs |
 | --- | --- | --- |
 | JOB-01 | Release expired holds (backup to TTL index) + push seat updates | Every minute |
-| JOB-02 | Payment safety check: payment Success but booking not Confirmed → confirm if seats free, else refund + email; payments stuck in Created > 15 min → mark Failed, free seats | Every 5 minutes |
+| JOB-02 | Payment safety check: payment Success but booking not Confirmed → confirm if seats free, else refund + email; payments stuck in Created longer than **max(15 min, the seat hold time BR-01)** → mark Failed, free seats (so a user still inside a longer hold never loses seats; changed 2026-10-07) | Every 5 minutes |
 | JOB-03 | Waitlist offers (next person after 10 min) | Every minute |
 | JOB-04 | Show cancellation refunds (queue) | Every minute |
 | JOB-05 | Last-minute deals switch-on | Every minute |

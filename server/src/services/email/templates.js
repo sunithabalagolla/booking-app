@@ -179,3 +179,18 @@ Your ticket (PDF) and GST invoice ${invoiceNumber} (PDF) are attached. All times
 Open my ticket: ${link}`
   return { subject, html, text }
 }
+
+// JOB-02: paid, but the booking could not be kept (seats taken, show started, …) → refunded.
+// No E-number in Section 12; the JOB-02 rule asks for this email (wording OK'd 2026-10-07).
+export function paymentRefundedTemplate({ name, movieTitle, showText, amountText }) {
+  const subject = `Talkies – payment refunded: ${movieTitle}`
+  const html = layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>Your payment for <strong>${escapeHtml(movieTitle)}</strong> (${escapeHtml(showText)}) went through, but we could not keep your seats.</p>
+    <p>We refunded <strong>${escapeHtml(amountText)}</strong>. No booking was made.</p>`)
+  const text = `Namaste ${name},
+
+Your payment for ${movieTitle} (${showText}) went through, but we could not keep your seats.
+We refunded ${amountText}. No booking was made.`
+  return { subject, html, text }
+}

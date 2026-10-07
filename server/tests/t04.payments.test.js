@@ -14,7 +14,7 @@ import { Show } from '../src/models/Show.js'
 import { ShowSeat } from '../src/models/ShowSeat.js'
 import { Theatre } from '../src/models/Theatre.js'
 import { User } from '../src/models/User.js'
-import { verifySignature } from '../src/services/payment/index.js'
+import { pay as gatewayPay, verifySignature } from '../src/services/payment/index.js'
 import { buildLayout } from '../src/utils/seatLayout.js'
 import { istDayToDate, istToday } from '../src/utils/time.js'
 import { clearTestDB, closeTestDB, connectTestDB } from './helpers/db.js'
@@ -127,30 +127,34 @@ describe('POST /api/bookings/:id/payments (create order, PAY-01)', () => {
 describe('POST /api/mock-gateway/pay (PAY-02, PAY-03 test values)', () => {
   it('UPI success@test → paymentId + a good signature; other UPI IDs fail and close the order', async () => {
     const booking = await hold()
+    const first = (await order(booking)).body.orderId
+    const fail = await payUpi(first, 'fail@test')
+    expect(fail.status).toBe(400)
+    expect(fail.body.error).toMatchObject({ code: 'PAYMENT_FAILED', message: 'Payment failed. No money was taken. You can try again.' })
+    expect(await Payment.findOne({ orderId: first })).toMatchObject({ status: 'failed', failureReason: 'declined', method: 'upi' })
+    expect((await Booking.findById(booking.id)).status).toBe('pending') // the hold stays: try again
+    expect((await payUpi((await order(booking)).body.orderId, 'meena@okbank')).status).toBe(400)
+
     const { orderId } = (await order(booking)).body
     const ok = await payUpi(orderId, 'SUCCESS@test')
     expect(ok.status).toBe(200)
     expect(ok.body).toEqual({ paymentId: expect.stringMatching(/^pay_/), signature: expect.stringMatching(/^[0-9a-f]{64}$/) })
     expect(verifySignature({ orderId, ...ok.body })).toBe(true)
-    expect((await Payment.findOne({ orderId })).method).toBe('upi')
-
-    const second = (await order(booking)).body.orderId
-    const fail = await payUpi(second, 'fail@test')
-    expect(fail.status).toBe(400)
-    expect(fail.body.error).toMatchObject({ code: 'PAYMENT_FAILED', message: 'Payment failed. No money was taken. You can try again.' })
-    expect(await Payment.findOne({ orderId: second })).toMatchObject({ status: 'failed', failureReason: 'declined', method: 'upi' })
-    expect((await Booking.findById(booking.id)).status).toBe('pending') // the hold stays: try again
-    expect((await payUpi((await order(booking)).body.orderId, 'meena@okbank')).status).toBe(400)
+    // Mock "payment captured" webhook (JOB-02): the server knows about the money before verify
+    expect(await Payment.findOne({ orderId })).toMatchObject({ method: 'upi', status: 'created', paymentId: ok.body.paymentId, capturedAt: expect.any(Date) })
+    // An order is paid only once, and no new order while a paid one waits for its confirm
+    expect((await payUpi(orderId)).body.error.details.reason).toBe('already_paid')
+    expect((await order(booking)).body.error.details).toMatchObject({ rule: 'JOB-02', reason: 'payment_pending' })
   })
 
   it('card 4111 1111 1111 1111 succeeds, any other card fails; card data is checked and never stored', async () => {
     const booking = await hold()
     const cardPay = async (card) => meena.post('/api/mock-gateway/pay', { orderId: (await order(booking)).body.orderId, method: 'card', card })
-    expect((await cardPay(GOOD_CARD)).status).toBe(200)
     expect((await cardPay({ ...GOOD_CARD, number: '5555 5555 5555 4444' })).body.error.code).toBe('PAYMENT_FAILED')
     expect((await cardPay({ ...GOOD_CARD, number: '4111' })).body.error.code).toBe('VALIDATION_ERROR')
     expect((await cardPay({ ...GOOD_CARD, expiry: '01/20' })).body.error.code).toBe('VALIDATION_ERROR')
     expect((await cardPay({ ...GOOD_CARD, cvv: '12' })).body.error.code).toBe('VALIDATION_ERROR')
+    expect((await cardPay(GOOD_CARD)).status).toBe(200)
     const stored = JSON.stringify(await Payment.find().lean())
     expect(stored).not.toContain('4111')
     expect(stored).not.toContain('5555')
@@ -159,9 +163,9 @@ describe('POST /api/mock-gateway/pay (PAY-02, PAY-03 test values)', () => {
   it('netbanking: every bank succeeds except "Test Bank (fails)"', async () => {
     const booking = await hold()
     const bankPay = async (bank) => meena.post('/api/mock-gateway/pay', { orderId: (await order(booking)).body.orderId, method: 'netbanking', bank })
-    expect((await bankPay('sbi_test')).status).toBe(200)
     expect((await bankPay('fail_test')).body.error.code).toBe('PAYMENT_FAILED')
     expect((await bankPay('no_bank')).body.error.code).toBe('VALIDATION_ERROR')
+    expect((await bankPay('sbi_test')).status).toBe(200)
   })
 
   it('only the owner of the order can pay it', async () => {
@@ -256,9 +260,11 @@ describe('T-04: POST /api/payments/verify', () => {
 
   it('a failed or replaced order cannot be verified; another user’s order → 404; bad input → 400', async () => {
     const booking = await hold()
+    const old = (await order(booking)).body.orderId
+    await order(booking) // replaces the unpaid order
+    const signed = await gatewayPay({ orderId: old, method: 'upi', upiId: 'success@test' }) // a signature the gateway made for it
+    expect((await verify({ orderId: old, ...signed })).body.error.details.reason).toBe('order_closed')
     const paid = await payFor(booking)
-    await order(booking) // replaces the paid-but-not-verified order
-    expect((await verify(paid)).body.error.details.reason).toBe('order_closed')
     expect((await verify(paid, ravi)).status).toBe(404)
     expect((await verify({ orderId: 'nope', paymentId: paid.paymentId, signature: paid.signature })).status).toBe(400)
   })

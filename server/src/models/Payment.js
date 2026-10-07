@@ -14,16 +14,17 @@ const paymentSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     orderId: { type: String, required: true }, // from createOrder
     paymentId: String, // from the gateway after paying
+    capturedAt: Date, // mock "payment captured" webhook: money taken, maybe not verified yet (JOB-02)
     method: { type: String, enum: PAYMENT_METHODS },
     amountPaise: { type: Number, required: true }, // always from the backend (SEC-10)
     status: { type: String, enum: PAYMENT_STATUSES, required: true, default: 'created' },
-    failureReason: String, // 'declined' · 'replaced' (a newer order) …
+    failureReason: String, // 'declined' · 'replaced' (a newer order) · 'timeout' (JOB-02: never paid)
     refunds: [
       {
         _id: false,
         refundId: { type: String, required: true },
         amountPaise: { type: Number, required: true },
-        reason: { type: String, required: true }, // 'hold_expired' · 'amount_changed' · later: cancellations
+        reason: { type: String, required: true }, // 'hold_expired' · 'amount_changed' · JOB-02: 'seats_taken' · 'show_closed' · 'booking_closed' · later: cancellations
         at: { type: Date, required: true },
         creditNoteId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // 11.3 (later)
         payoutId: { type: Schema.Types.ObjectId, ref: 'Payout' }, // 11.1 (later)

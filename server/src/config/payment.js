@@ -12,3 +12,11 @@ export const BANKS = [
 
 // UPI success@test = success (anything else fails); card 4111 1111 1111 1111 = success
 export const TEST_VALUES = { upiSuccess: 'success@test', cardSuccess: '4111111111111111', failingBank: 'fail_test' }
+
+// JOB-02 payment safety check (every 5 minutes)
+// - a payment captured at the gateway but not verified is settled after this grace time
+//   (a normal verify call is still on its way during it) (decided 2026-10-07)
+export const VERIFY_GRACE_MINUTES = 2
+// - an order never paid is failed after max(this, the seat hold time), so nobody still
+//   inside a longer hold loses seats (decided 2026-10-07)
+export const STUCK_ORDER_MINUTES = 15

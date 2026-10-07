@@ -427,11 +427,12 @@ One document per payment attempt (a booking can have several attempts after fail
 | `bookingId` / `userId` | ObjectId | yes | |
 | `orderId` | String | yes | From the mock service (`createOrder`), unique |
 | `paymentId` | String | | From the mock service after paying |
+| `capturedAt` | Date | | **Added 2026-10-07 (JOB-02):** set by the mock "payment captured" webhook when the gateway takes the money (status stays `created` until verify / JOB-02). An order can be paid only once |
 | `method` | String | | `upi` · `card` · `netbanking` |
 | `amountPaise` | Number | yes | Always from the backend (SEC-10) |
 | `status` | String | yes | `created` · `success` · `failed` · `refunded` · `partially_refunded` (PAY-04) |
-| `failureReason` | String | | `declined` (gateway said no) · `replaced` (a newer order for the same booking, built 2026-10-06) |
-| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1). `reason` so far: `hold_expired`, `amount_changed` (U-16, built 2026-10-06) |
+| `failureReason` | String | | `declined` (gateway said no) · `replaced` (a newer order for the same booking, built 2026-10-06) · `timeout` (JOB-02: never paid, older than max(15 min, hold time), built 2026-10-07) |
+| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1). `reason` so far: `hold_expired`, `amount_changed` (U-16, built 2026-10-06); JOB-02 (2026-10-07): `seats_taken`, `show_closed`, `booking_closed`, `amount_changed` |
 
 > Built 2026-10-06 (U-16). Bookings also got `confirmedAt` (Date, set in the confirm transaction).
 
@@ -439,7 +440,7 @@ One document per payment attempt (a booking can have several attempts after fail
 - `{ orderId: 1 }` unique
 - `{ paymentId: 1 }` unique, partial (only when set)
 - `{ bookingId: 1 }`
-- `{ status: 1, createdAt: 1 }` (JOB-02: `created` older than 15 min → `failed`)
+- `{ status: 1, createdAt: 1 }` (JOB-02: `created` older than max(15 min, hold time) → `failed`; also finds captured payments not verified)
 
 ---
 
