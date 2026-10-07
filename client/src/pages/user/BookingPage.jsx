@@ -204,11 +204,12 @@ function CancelledView({ booking }) {
   const { busy, error, download } = useDownload()
   const t = ticketInfo(booking)
   const c = booking.cancellation
+  const byTheatre = booking.status === 'cancelled_by_theatre' // O-06
   return (
     <div className="space-y-6 py-6">
       <div className="space-y-1">
         <AlbumLink />
-        <h1 className={pageTitle}>Booking cancelled</h1>
+        <h1 className={pageTitle}>{byTheatre ? 'Show cancelled' : 'Booking cancelled'}</h1>
       </div>
       <section aria-label={`Ticket ${booking.bookingNumber}`} className="paper relative max-w-xl space-y-1 rounded-card border-2 border-dashed border-maroon bg-cream p-5 text-ink">
         <Stamp tone="maroon" className="absolute top-4 right-4">
@@ -224,10 +225,12 @@ function CancelledView({ booking }) {
         </p>
       </section>
       <div className="space-y-2">
-        <p>{booking.status === 'cancelled' ? 'You cancelled this booking.' : 'The theatre cancelled this show.'}</p>
+        <p>{byTheatre ? 'We are sorry. The theatre cancelled this show.' : 'You cancelled this booking.'}</p>
+        {byTheatre && c?.reason && <p className="font-type">Reason: {c.reason}</p>}
         {c && (
           <p className="font-body text-lg">
-            Refund <strong>{formatRupees(c.refundPaise)}</strong>
+            {byTheatre ? 'Full refund' : 'Refund'} <strong>{formatRupees(c.refundPaise)}</strong>
+            {byTheatre && ' (tickets, food and convenience fee)'}
             {c.refundStatus === 'done' ? ' sent back to your payment method.' : ' is on its way to your payment method.'}
           </p>
         )}

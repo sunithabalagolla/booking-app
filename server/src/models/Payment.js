@@ -24,7 +24,7 @@ const paymentSchema = new Schema(
         _id: false,
         refundId: { type: String, required: true },
         amountPaise: { type: Number, required: true },
-        reason: { type: String, required: true }, // 'hold_expired' · 'amount_changed' · JOB-02: 'seats_taken' · 'show_closed' · 'booking_closed' · later: cancellations
+        reason: { type: String, required: true }, // 'hold_expired' · 'amount_changed' · JOB-02: 'seats_taken' · 'show_closed' · 'booking_closed' · U-20: 'user_cancelled' · O-06: 'show_cancelled'
         at: { type: Date, required: true },
         creditNoteId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // 11.3 (later)
         payoutId: { type: Schema.Types.ObjectId, ref: 'Payout' }, // 11.1 (later)

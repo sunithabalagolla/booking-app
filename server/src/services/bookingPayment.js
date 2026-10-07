@@ -97,6 +97,7 @@ function closedPayment(payment) {
 }
 
 class HoldGone extends Error {}
+class ShowClosed extends Error {} // O-06: the show was cancelled while the user was paying
 class PaymentTaken extends Error {} // JOB-02 or the verify call was first
 
 // Give the money back at once (mock) and close the attempt as refunded.
@@ -150,7 +151,10 @@ async function confirmPaidBooking(booking, payment, paymentId, now, { rebook = f
       await Coupon.updateOne({ _id: booking.couponId }, { $inc: { usedCount: 1 } }, { session })
       await CouponUsage.create([{ couponId: booking.couponId, userId: booking.userId, bookingId: booking._id }], { session })
     }
-    await Show.updateOne({ _id: booking.showId }, { $inc: { bookedCount: booking.seats.length } }, { session })
+    // Only on a show that still runs. This also makes a confirm and an O-06 cancel of the
+    // same show wait for each other (both write the show), so no seat is kept by mistake.
+    const counted = await Show.updateOne({ _id: booking.showId, status: 'scheduled' }, { $inc: { bookedCount: booking.seats.length } }, { session })
+    if (counted.modifiedCount !== 1) throw new ShowClosed()
 
     // 11.3 GST invoice: its number is used only when the whole confirm succeeds
     const invoice = await createInvoice(booking, { session, now })
@@ -191,6 +195,11 @@ export async function verifyAndConfirm({ orderId, paymentId, signature }, user, 
     return await confirmPaidBooking(booking, payment, paymentId, now)
   } catch (error) {
     if (error instanceof PaymentTaken) return afterSomeoneElse(payment, paymentId)
+    if (error instanceof ShowClosed || (error instanceof HoldGone && (await showCancelled(booking.showId)))) {
+      if (!(await refundPayment(payment, paymentId, 'show_closed', now))) return afterSomeoneElse(payment, paymentId)
+      await releaseIfExpired(await Booking.findById(booking._id), now)
+      throw new AppError(400, 'RULE_BROKEN', `Sorry, the theatre cancelled this show while you were paying. We refunded ${rupees(payment.amountPaise)}.`, { rule: 'O-06', reason: 'show_cancelled' })
+    }
     if (!(error instanceof HoldGone)) throw error
     // Paid, but the hold ended first: money back at once (JOB-02 is only the backup)
     if (!(await refundPayment(payment, paymentId, 'hold_expired', now))) return afterSomeoneElse(payment, paymentId)
@@ -198,6 +207,8 @@ export async function verifyAndConfirm({ orderId, paymentId, signature }, user, 
     throw holdExpired(`Your seat hold ended before the payment finished. We refunded ${rupees(payment.amountPaise)}. Please pick seats again.`)
   }
 }
+
+const showCancelled = async (showId) => (await Show.findById(showId, 'status'))?.status === 'cancelled'
 
 // JOB-02 settled this payment at the same moment: answer with what it did
 async function afterSomeoneElse(payment, paymentId) {
@@ -233,6 +244,7 @@ export async function settleCapturedPayment(payment, now = new Date()) {
     return { result: 'confirmed' }
   } catch (error) {
     if (error instanceof PaymentTaken) return { result: 'skipped' } // the verify call was first
+    if (error instanceof ShowClosed) return refund('show_closed')
     if (error instanceof HoldGone || error?.code === 11000) return refund('seats_taken')
     throw error
   }

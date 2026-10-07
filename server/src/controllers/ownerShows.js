@@ -4,6 +4,8 @@ import { Movie } from '../models/Movie.js'
 import { Screen } from '../models/Screen.js'
 import { Show } from '../models/Show.js'
 import { Theatre } from '../models/Theatre.js'
+import { cancelShow, showCancelPreview } from '../services/showCancel.js'
+import { runCancellationsSoon } from '../jobs/cancellationRefunds.js'
 import { AppError } from '../utils/AppError.js'
 import { CLASS_NAMES, SEAT_CLASSES } from '../utils/seatLayout.js'
 import { formatShortDay, istParts, istDateTime, showEnd, showLabel } from '../utils/showTime.js'
@@ -51,10 +53,12 @@ export function publicShow(show) {
     totalSeats: show.totalSeats,
     bookedCount: show.bookedCount,
     status: show.status,
+    cancelReason: show.cancelReason ?? null, // O-06
+    cancelledAt: show.cancelledAt ?? null,
   }
 }
 
-const POPULATE = [
+export const POPULATE = [
   { path: 'movieId', select: 'title certificate durationMinutes' },
   { path: 'theatreId', select: 'name' },
   { path: 'screenId', select: 'name' },
@@ -246,4 +250,20 @@ export async function updateShow(req, res) {
   await saveWithoutOverlap(ctx.screen._id, [doc], (session) => show.set(doc).save({ session }), { exceptId: show._id })
   await show.populate(POPULATE)
   res.json({ show: publicShow(show) })
+}
+
+// O-06 (owner: own shows; admin: any show, same handlers, findOwned allows all for admin)
+// GET /shows/:id/cancel-preview → { bookings, refundPaise } (BR-06: 100% back)
+export async function cancelShowPreview(req, res) {
+  const show = await findOwned(Show, req.valid.params.id, req.user)
+  res.json(await showCancelPreview(show))
+}
+
+// POST /shows/:id/cancel { reason } → { show, bookings, refundPaise }. Refunds + E-05 by JOB-04.
+export async function cancelOwnedShow(req, res) {
+  const show = await findOwned(Show, req.valid.params.id, req.user)
+  const result = await cancelShow(show, req.valid.body.reason, req)
+  runCancellationsSoon() // JOB-04 now, not in up to a minute
+  await result.show.populate(POPULATE)
+  res.json({ show: publicShow(result.show), bookings: result.bookings, refundPaise: result.refundPaise })
 }

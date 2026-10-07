@@ -336,7 +336,7 @@ Numbers that must go up one by one without duplicates (invoice series).
 | `deal.enabled` / `deal.percent` | Boolean / Number | | O-12. `percent` ≤ `settings.dealMaxPercent` |
 | `deal.active` | Boolean | | Set to `true` by JOB-05 from `startAt − dealStartMinutes` (BR-14) |
 | `status` | String | yes | `scheduled` · `cancelled`. A show is "completed" when `endAt < now` and not cancelled (used for payouts) |
-| `cancelReason` / `cancelledBy` / `cancelledAt` | String / ObjectId / Date | | O-06. Not allowed after `startAt` (BR-07) |
+| `cancelReason` / `cancelledBy` / `cancelledAt` | String / ObjectId / Date | | O-06. Not allowed after `startAt` (BR-07). **Built 2026-10-07**: reason 5–300 characters; `bookedCount` set to 0 |
 
 **Overlap check (BR-10, T-08)**: a new show on a screen is refused when a show exists with the same `screenId`, `status: 'scheduled'`, `startAt < newEndAt` and `endAt > newStartAt`. Touching edges are allowed. The check runs in a transaction that first changes `screens.showLock`, so two saves at the same moment cannot both win.
 
@@ -394,7 +394,7 @@ See **Section 3** for the full locking rules.
 | `couponId` / `couponCode` | ObjectId / String | | U-15. Not together with a deal (BR-16) |
 | `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid. **Built 2026-10-07 (U-17):** token = `<booking ID>.<qrNonce>.<HMAC-SHA256 of "<booking ID>.<qrNonce>", base64url>` (`services/qr/`); the QR picture is made when needed, not stored |
 | `checkIn.usedAt` / `checkIn.staffId` | Date / ObjectId → users | | S-04. Set with an atomic update: `{ _id, status: 'confirmed', 'checkIn.usedAt': null }`, so only one scan can win |
-| `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending`. **Built 2026-10-07 (U-20)** + `creditNoteId` (→ invoices, GST-02) |
+| `cancellation` | object | | `at`, `by` (user / staff ObjectId), `reason`, `refundPaise`, `refundStatus` (`pending` · `done`). JOB-04 handles `pending`. **Built 2026-10-07 (U-20)** + `creditNoteId` (→ invoices, GST-02). **O-06 (2026-10-07)** + `refundLockUntil` (Date: the refund is claimed first by the cancel request or JOB-04, so it is never sent twice; runs out after 2 min) + `emailStatus` (`pending` · `sent`: E-05 still to send, show cancels only). For `cancelled_by_theatre` the credit note is made by JOB-04 |
 | `transfer` | object | | SF-02, once per booking (BR-15): `status` (`pending_claim` · `done`), `fromUserId`, `toEmail`, `toUserId`, `claimTokenHash`, `requestedAt`, `completedAt`. Fields + the `transfer.fromUserId` index added 2026-10-07 (U-18 album reads them); filled in Phase 9 |
 | `invoiceId` | ObjectId → invoices | | Set on confirm (built 2026-10-07, U-17). Bookings confirmed before U-17 have none (no backfill, decided 2026-10-07) |
 | `payoutId` | ObjectId → payouts | | Set when the booking is counted in a payout (9.9) |
@@ -415,6 +415,7 @@ See **Section 3** for the full locking rules.
 - `{ ownerId: 1, createdAt: -1 }` and `{ theatreId: 1, createdAt: -1 }` (owner lists, reports)
 - `{ status: 1, holdExpiresAt: 1 }` (JOB-02, releasing old pending bookings)
 - `{ 'cancellation.refundStatus': 1 }` (sparse, JOB-04)
+- `{ 'cancellation.emailStatus': 1 }` (sparse, JOB-04 E-05 emails; added 2026-10-07)
 
 ---
 
@@ -432,7 +433,7 @@ One document per payment attempt (a booking can have several attempts after fail
 | `amountPaise` | Number | yes | Always from the backend (SEC-10) |
 | `status` | String | yes | `created` · `success` · `failed` · `refunded` · `partially_refunded` (PAY-04) |
 | `failureReason` | String | | `declined` (gateway said no) · `replaced` (a newer order for the same booking, built 2026-10-06) · `timeout` (JOB-02: never paid, older than max(15 min, hold time), built 2026-10-07) |
-| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1). `reason` so far: `hold_expired`, `amount_changed` (U-16, built 2026-10-06); JOB-02 (2026-10-07): `seats_taken`, `show_closed`, `booking_closed`, `amount_changed` |
+| `refunds` | [{ `refundId`, `amountPaise`, `reason`, `at`, `creditNoteId`, `payoutId` }] | | `payoutId`: the payout that took this refund back from the owner (11.1). `reason` so far: `hold_expired`, `amount_changed` (U-16, built 2026-10-06); JOB-02 (2026-10-07): `seats_taken`, `show_closed`, `booking_closed`, `amount_changed`; cancellations (2026-10-07): `user_cancelled` (U-20), `show_cancelled` (O-06, 100%), both with `creditNoteId`; `show_closed` also when a show is cancelled during the payment |
 
 > Built 2026-10-06 (U-16). Bookings also got `confirmedAt` (Date, set in the confirm transaction).
 

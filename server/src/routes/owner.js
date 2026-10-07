@@ -4,11 +4,11 @@ import { requireApprovedOwner, requireRole } from '../middleware/role.js'
 import { validate } from '../middleware/validate.js'
 import { createTheatre, getMyTheatre, listCities, listMyTheatres, updateTheatre } from '../controllers/ownerTheatres.js'
 import { createFood, deleteFood, listTheatreFood, updateFood } from '../controllers/ownerFood.js'
-import { createShows, getMyShow, listMyShows, listOwnerMovies, updateShow } from '../controllers/ownerShows.js'
+import { cancelOwnedShow, cancelShowPreview, createShows, getMyShow, listMyShows, listOwnerMovies, updateShow } from '../controllers/ownerShows.js'
 import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
 import { idParams } from '../validation/common.js'
 import { createFoodSchema, updateFoodSchema } from '../validation/food.js'
-import { createShowSchema, listShowsQuery, updateShowSchema } from '../validation/shows.js'
+import { cancelShowSchema, createShowSchema, listShowsQuery, updateShowSchema } from '../validation/shows.js'
 import { createScreenSchema, updateScreenSchema } from '../validation/screens.js'
 import { createTheatreSchema, updateTheatreSchema } from '../validation/theatres.js'
 
@@ -47,5 +47,9 @@ router.get('/shows', validate({ query: listShowsQuery }), listMyShows)
 router.post('/shows', validate({ body: createShowSchema }), createShows)
 router.get('/shows/:id', validate({ params: idParams }), getMyShow)
 router.patch('/shows/:id', validate({ params: idParams, body: updateShowSchema }), updateShow)
+
+// O-06 cancel show (BR-06 100% refund, BR-07 not after the start; refunds + E-05 by JOB-04)
+router.get('/shows/:id/cancel-preview', validate({ params: idParams }), cancelShowPreview)
+router.post('/shows/:id/cancel', validate({ params: idParams, body: cancelShowSchema }), cancelOwnedShow)
 
 export default router

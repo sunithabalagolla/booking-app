@@ -6,12 +6,14 @@ import { createCoupon, endCoupon, getCoupon, listCoupons, updateCoupon } from '.
 import { createMovie, deleteMovie, getMovie, listMovies, updateMovie } from '../controllers/adminMovies.js'
 import { approveOwner, blockUser, listOwners, rejectOwner, unblockUser } from '../controllers/adminOwners.js'
 import { approveTheatre, listTheatres, rejectTheatre } from '../controllers/adminTheatres.js'
+import { cancelOwnedShow, cancelShowPreview } from '../controllers/ownerShows.js'
 import { getAdminSettings, updateSettings } from '../controllers/settings.js'
 import { idParams } from '../validation/common.js'
 import { createCouponSchema, listCouponsQuery, updateCouponSchema } from '../validation/coupons.js'
 import { createMovieSchema, listMoviesQuery, updateMovieSchema } from '../validation/movies.js'
 import { blockSchema, listOwnersQuery, listTheatresQuery, rejectOwnerSchema } from '../validation/owners.js'
 import { settingsPatchSchema } from '../validation/settings.js'
+import { cancelShowSchema } from '../validation/shows.js'
 
 // /api/admin (api.md Section 10). Admin only (ROLE-01).
 // More endpoints come with A-07 onwards.
@@ -50,5 +52,10 @@ router.post('/coupons', validate({ body: createCouponSchema }), createCoupon)
 router.get('/coupons/:id', validate({ params: idParams }), getCoupon)
 router.patch('/coupons/:id', validate({ params: idParams, body: updateCouponSchema }), updateCoupon)
 router.post('/coupons/:id/end', validate({ params: idParams }), endCoupon)
+
+// O-06 / flow 9.6: the admin can cancel any show (same as the owner cancel; the admin
+// screen for it comes with A-08 in Phase 8, decided 2026-10-07)
+router.get('/shows/:id/cancel-preview', validate({ params: idParams }), cancelShowPreview)
+router.post('/shows/:id/cancel', validate({ params: idParams, body: cancelShowSchema }), cancelOwnedShow)
 
 export default router

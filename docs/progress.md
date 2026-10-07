@@ -2,8 +2,22 @@
 
 ## Last session
 
+- Date: 2026-10-07 (fifth part)
+- U-20 + T-06 ticked (you tested U-20 in the browser: works).
+- **Phase 6 Step 3 built: O-06 Cancel show (flow 9.6, BR-06, BR-07, JOB-04, E-05).** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-07): the admin cancel is **API only** for now (the admin screen comes with A-08, Phase 8); "Admin notified" = the audit log entry `show.cancel` (A-14 page in Phase 8, no admin email because of BR-25); reason 5–300 characters.
+  - Server: `services/showCancel.js`: `GET /api/owner/shows/:id/cancel-preview` → `{ bookings, refundPaise }`; `POST /api/owner/shows/:id/cancel { reason }`: ONE transaction (show → `cancelled` + reason / by / at, `bookedCount` 0; every confirmed booking → `cancelled_by_theatre` with a 100% refund (BR-06), `refundStatus` + `emailStatus` pending; unpaid holds released; all show seats deleted; audit `show.cancel`). Then the live seat update and JOB-04 at once. Not after the start (BR-07), not twice. The admin has the same two endpoints under `/api/admin/shows/:id/…` (any show).
+  - **JOB-04** (`jobs/cancellationRefunds.js`, every minute + right after a show cancel): per booking: credit note (own small transaction, never twice), gateway refund (payment → `refunded`, reason `show_cancelled`), then **E-05** once ("We are sorry… Reason… We refunded the full amount ₹… (tickets, food and convenience fee)", or "is on its way" when the gateway failed; credit note PDF attached). Also retries U-20 refunds that failed (no new email). The refund is sent by a new shared `services/bookingRefund.js`, which **claims** it first (`cancellation.refundLockUntil`), so the cancel request and JOB-04 never refund twice (U-20 uses it too now).
+  - Payment safety: a payment can no longer confirm seats on a cancelled show (the confirm transaction now only counts seats on a `scheduled` show). Someone paying while the show is cancelled gets "Sorry, the theatre cancelled this show while you were paying. We refunded ₹…".
+  - Client: owner Shows page: **Cancel show** link on upcoming shows → panel under the row "Cancel this show?" (movie · label · date, time · screen; "2 bookings · ₹480 goes back to the users in full (tickets, food and convenience fee)."; reason box; "Yes, cancel show" / "Keep the show"; focus moves to the panel title). After it: "Show cancelled. 2 bookings are refunded in full and the users get an email." and a maroon **Cancelled** stamp in the row. The "Has bookings" text is gone (the Cancel show link is there instead). User ticket page for these bookings: "Show cancelled", "We are sorry. The theatre cancelled this show.", "Reason: …", "Full refund ₹… (tickets, food and convenience fee) sent back to your payment method.", Download credit note. The album stub already says Cancelled.
+  - Checked: tests only. One test booking made through the API for your check: **TKS85HKAZN** (seed Sample User, "Operation Monsoon", Thu 8 Oct 9:30 AM, Chandni Talkies (Sample) Screen 1, seats L1 + L2, ₹560). **Not checked in Chrome**: logging in as the owner needs the seed password from `.env`, and reading it was blocked by the permission check, so I stopped there.
+  - api.md + database.md updated.
+  - Tests: **604 pass** (client 184: cancel-show helpers 3; server 420: `o06.cancelShow.test.js` 9 = preview + full cancel (show, seats, hold released, audit, credit notes with the fee, payments refunded, E-05 once each, ticket page reason, album stamp, show closed for holds), no bookings, rules (reason, 404 / 403, BR-07, twice), two cancels at once, admin cancel, gateway down → "on its way" then refunded with no second email, U-20 refund retry, two JOB-04 runs at once, paying while cancelled). Lint + build OK.
+
+## Earlier on 2026-10-07 (U-20)
+
 - Date: 2026-10-07 (fourth part)
-- **Phase 6 Step 2 built: U-20 Cancel booking (flow 9.5, BR-04, BR-05, GST-02, E-04, T-06).** Waiting for your browser check (see Next step), then tick.
+- **Phase 6 Step 2 done: U-20 Cancel booking (flow 9.5, BR-04, BR-05, GST-02, E-04, T-06).** Tested in the browser by you (2026-10-07): works. Ticked.
   - Your decisions (2026-10-07): the cutoff is **copied into the booking** at hold (`pricing.rates.cancelCutoffMinutes`; older bookings use the current setting); refund per line rounded to the nearest paisa; cancel allowed **up to and exactly at** 2:00 h before; inline "Yes, cancel" panel.
   - Server: `refundFor(pricing, mode)` in `services/pricing.js` (T-06): user = tickets after discount × 75%, food × 100%, fee 0 (percents from the booking's rates copy); theatre (BR-06, for O-06 next) = 100% of all; GST worked back per refunded line. `services/bookingCancel.js`: `GET /api/bookings/:id/cancel-preview` (`allowed`, `reason` not_confirmed / cutoff, `cutoffAt`, lines, `refundPaise`); `POST /api/bookings/:id/cancel`: ONE transaction (booking → cancelled with `cancellation`, booked seats deleted, show count −, credit note `CN/2026-27/000001` against the invoice, own counter); then the mock gateway refund (payment → `partially_refunded` + refund entry `user_cancelled` with the credit note; a gateway error leaves `refundStatus: pending` for JOB-04), live seat update, **E-04** email with the credit note PDF. Credit note PDF = the invoice layout with "CREDIT NOTE", "Against invoice", "Amount refunded"; downloads through `/api/invoices/:id/pdf`. Booking answers have `cancellation`. Bookings without an invoice (before U-17) cancel without a credit note. Coupon use not given back. Not here: waitlist offer (SF-04, Phase 9), "not after check-in" (Phase 7).
   - Client: ticket page ("Your ticket" / "Booking confirmed"): "You can cancel until Wed 7 Oct, 6:00 PM." + **Cancel booking** → ruled bill panel "Cancel this booking?" (refund lines with "75% back of ₹230" / "not refunded", double-ruled "You get back", "Yes, cancel" / "Keep my booking", focus moves to the panel title). After the cutoff: "Cancellation closed. It was possible until …". Cancelled booking page: "← Ticket album", "Booking cancelled", dashed stub with a Cancelled stamp, "Refund ₹… sent back to your payment method" (or "is on its way" while pending), **Download credit note**, Download GST invoice, Back to ticket album. The album list reloads after a cancel.
@@ -347,8 +361,8 @@
 ## Next step
 
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check U-20 in the browser:** book a show more than 2 hours away (with food and a coupon if you like) → Ticket album → tap it → "Cancel booking" → check the refund lines (75% of tickets after the coupon, food 100%, fee not refunded) → "Keep my booking" closes the panel → "Yes, cancel" → cancelled page, **Download credit note** (CN/…, "Against invoice", amount refunded) → album shows the stub with the Cancelled stamp → server terminal: E-04 email with the credit note attachment → seat map: the seats are free again. A show less than 2 hours away: "Cancellation closed…". Phone width. After that: tick U-20 + T-06. Next: Phase 6 Step 3, **O-06 Cancel show** (BR-06, BR-07, flow 9.6, JOB-04, E-05) — plan first.
-- Your Chrome is logged in as the seed test user (from the browser checks); log in as owner again when you need it.
+- **Check O-06 in the browser:** log in as the seed owner → Shows → Thu 8 Oct, 9:30 AM "Operation Monsoon" (has test booking TKS85HKAZN) → **Cancel show** → panel says "1 booking · ₹560 goes back…" → try "Keep the show" → open again, a short reason (under 5 characters) shows the error → a real reason → "Yes, cancel show" → message + Cancelled stamp. Server terminal: `[JOB-04] … 1 refunded` and the E-05 email with the credit note attached. Then log in as the seed user → Ticket album → past: Cancelled stub → tap → "Show cancelled", reason, full refund ₹560, Download credit note (CN/…, 100% lines incl. the convenience fee). Also: a started show has no Cancel show link; phone / tablet width of the panel. After that: tick O-06, JOB-04, E-05 (Phase 6 then done). Next: **Phase 7 Step 1** (gate staff scanner, S-02 … S-05, T-07) — plan first; also ask again about the "Watched" stamp (your U-18 note).
+- Your Chrome may still be logged in as the seed test user; log in as the seed owner for the O-06 check.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
@@ -474,10 +488,11 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 6 – Album + cancellations
 - [x] U-18 Ticket album (Phase 6 Step 1, 2026-10-07; tested in the browser by the developer 2026-10-07)
-- [ ] U-20 Cancel booking (built 2026-10-07, Phase 6 Step 2; waiting for the developer's browser check)
-- [ ] O-06 Cancel show
-- [ ] JOB-04, E-04, E-05
-- [ ] T-06 test (BR-05 + BR-06 refund amounts built 2026-10-07 with U-20; the show-cancel part is tested again with O-06)
+- [x] U-20 Cancel booking (Phase 6 Step 2, 2026-10-07; tested in the browser by the developer 2026-10-07)
+- [ ] O-06 Cancel show (built 2026-10-07, Phase 6 Step 3; waiting for the developer's browser check)
+- [x] E-04 (built and tested with U-20, 2026-10-07)
+- [ ] JOB-04, E-05 (built 2026-10-07 with O-06; waiting for the same browser check)
+- [x] T-06 test (BR-05 + BR-06 refund amounts, 2026-10-07 with U-20; the show-cancel flow gets its own tests with O-06)
 
 ## Phase 7 – Gate + canteen counter
 - [ ] S-02 to S-05 Scanner + verify

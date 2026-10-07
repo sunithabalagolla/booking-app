@@ -62,10 +62,11 @@ export function publicBooking(booking, now = new Date()) {
     pricing: publicPricing(booking.pricing),
     confirmedAt: booking.confirmedAt ?? null,
     invoiceId: booking.invoiceId ? String(booking.invoiceId) : null, // U-17 GST invoice PDF
-    // U-20: when cancelled
+    // U-20 / O-06: when cancelled (reason only when the theatre cancelled the show)
     cancellation: booking.cancellation?.at
       ? {
           at: booking.cancellation.at,
+          reason: booking.cancellation.reason ?? null,
           refundPaise: booking.cancellation.refundPaise,
           refundStatus: booking.cancellation.refundStatus,
           creditNoteId: booking.cancellation.creditNoteId ? String(booking.cancellation.creditNoteId) : null,

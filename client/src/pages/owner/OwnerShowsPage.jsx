@@ -6,11 +6,14 @@ import { useMyTheatres } from '../../api/ownerTheatres.js'
 import Button from '../../components/ui/Button.jsx'
 import ButtonLink from '../../components/ui/ButtonLink.jsx'
 import SelectField from '../../components/ui/SelectField.jsx'
+import Stamp from '../../components/ui/Stamp.jsx'
 import TextField from '../../components/ui/TextField.jsx'
 import { formatRupees } from '../../validation/food.js'
 import { CLASS_NAMES, formatShortDay, formatTime12, istToday, SHOW_LABEL_NAMES } from '../../validation/shows.js'
+import CancelShowPanel from './CancelShowPanel.jsx'
+import { canCancelShow, cancelledMessage } from './showCancel.js'
 
-// O-05: my shows, 7 days at a time, grouped by day (UI-30 register look)
+// O-05: my shows, 7 days at a time, grouped by day (UI-30 register look). O-06: Cancel show.
 const cell = 'border border-ink px-3 py-2 align-top dark:border-cream-light'
 const PAGE_SIZE = 100
 const addDays = (day, n) => new Date(Date.parse(`${day}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10)
@@ -27,6 +30,8 @@ export default function OwnerShowsPage() {
   const pages = shows.data ? Math.max(1, Math.ceil(shows.data.total / PAGE_SIZE)) : 1
   const days = groupByDay(shows.data?.items ?? [])
   const [now] = useState(() => Date.now()) // page open time: decides which shows can still be edited
+  const [cancelling, setCancelling] = useState(null) // show ID with the open O-06 panel
+  const [message, setMessage] = useState(location.state?.message ?? null)
 
   return (
     <div className="space-y-6">
@@ -35,9 +40,9 @@ export default function OwnerShowsPage() {
         <ButtonLink to="/owner/shows/new">+ New show</ButtonLink>
       </div>
 
-      {location.state?.message && (
+      {message && (
         <p role="status" className="font-type">
-          {location.state.message}
+          {message}
         </p>
       )}
 
@@ -101,7 +106,7 @@ export default function OwnerShowsPage() {
                       {formatShortDay(day)}
                     </th>
                   </tr>
-                  {items.map((show) => (
+                  {items.map((show) => [
                     <tr key={show.id}>
                       <td className={`${cell} whitespace-nowrap`}>
                         <span className="font-type">{SHOW_LABEL_NAMES[show.label]}</span> · {formatTime12(show.startTime)}
@@ -137,17 +142,46 @@ export default function OwnerShowsPage() {
                         {show.bookedCount} / {show.totalSeats}
                       </td>
                       <td className={cell}>
-                        {/* Edit only before the start and while nobody has booked (O-05) */}
-                        {new Date(show.startAt).getTime() > now && show.bookedCount === 0 && show.status === 'scheduled' ? (
-                          <Link to={`/owner/shows/${show.id}`} className="font-type underline" aria-label={`Edit ${show.movie.title} on ${formatShortDay(show.date)} at ${formatTime12(show.startTime)}`}>
-                            Edit
-                          </Link>
-                        ) : (
-                          <span className="text-sm">{show.status === 'cancelled' ? 'Cancelled' : new Date(show.startAt).getTime() <= now ? 'Started' : 'Has bookings'}</span>
-                        )}
+                        <div className="flex flex-col items-start gap-2">
+                          {/* Edit only before the start and while nobody has booked (O-05) */}
+                          {new Date(show.startAt).getTime() > now && show.bookedCount === 0 && show.status === 'scheduled' && (
+                            <Link to={`/owner/shows/${show.id}`} className="font-type underline" aria-label={`Edit ${show.movie.title} on ${formatShortDay(show.date)} at ${formatTime12(show.startTime)}`}>
+                              Edit
+                            </Link>
+                          )}
+                          {show.status === 'cancelled' && <Stamp tone="maroon">Cancelled</Stamp>}
+                          {show.status === 'scheduled' && new Date(show.startAt).getTime() <= now && <span className="text-sm">Started</span>}
+                          {canCancelShow(show, now) && cancelling !== show.id && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCancelling(show.id)
+                                setMessage(null)
+                              }}
+                              className="min-h-11 font-type text-maroon underline dark:text-gold"
+                              aria-label={`Cancel show ${show.movie.title} on ${formatShortDay(show.date)} at ${formatTime12(show.startTime)}`}
+                            >
+                              Cancel show
+                            </button>
+                          )}
+                        </div>
                       </td>
-                    </tr>
-                  ))}
+                    </tr>,
+                    cancelling === show.id && (
+                      <tr key={`${show.id}-cancel`}>
+                        <td colSpan={8} className={cell}>
+                          <CancelShowPanel
+                            show={show}
+                            onClose={() => setCancelling(null)}
+                            onCancelled={(result) => {
+                              setCancelling(null)
+                              setMessage(cancelledMessage(result))
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ),
+                  ])}
                 </Fragment>
               ))}
             </tbody>

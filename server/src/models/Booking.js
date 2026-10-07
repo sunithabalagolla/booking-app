@@ -107,8 +107,8 @@ const bookingSchema = new Schema(
     },
     qrNonce: { type: String, required: true }, // random; QR token = booking ID + nonce (SEC-09, U-17)
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // GST invoice, set in the confirm transaction (U-17)
-    // U-20 user cancel (O-06 theatre cancel later). refundStatus 'pending' = the gateway
-    // refund is not done yet (JOB-04 retries); 'done' = money sent back.
+    // U-20 user cancel / O-06 show cancelled by the theatre. refundStatus 'pending' = the
+    // gateway refund is not done yet (JOB-04 sends it); 'done' = money sent back.
     cancellation: {
       at: Date,
       by: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -116,6 +116,8 @@ const bookingSchema = new Schema(
       refundPaise: Number,
       refundStatus: { type: String, enum: ['pending', 'done'] },
       creditNoteId: { type: Schema.Types.ObjectId, ref: 'Invoice' }, // GST-02 (none for bookings without an invoice)
+      refundLockUntil: Date, // whoever sends the refund claims it first, so it is never sent twice
+      emailStatus: { type: String, enum: ['pending', 'sent'] }, // O-06: E-05 still to send (JOB-04)
     },
     // SF-02 ticket transfer (built in Phase 9). Here already because the ticket album (U-18)
     // shows tickets transferred away (transfer.fromUserId = me) as "Transferred".
@@ -140,5 +142,6 @@ bookingSchema.index({ ownerId: 1, createdAt: -1 })
 bookingSchema.index({ theatreId: 1, createdAt: -1 })
 bookingSchema.index({ status: 1, holdExpiresAt: 1 }) // releasing old pending bookings
 bookingSchema.index({ 'cancellation.refundStatus': 1 }, { sparse: true }) // JOB-04: refunds still to send
+bookingSchema.index({ 'cancellation.emailStatus': 1 }, { sparse: true }) // JOB-04: E-05 emails still to send
 
 export const Booking = mongoose.model('Booking', bookingSchema)

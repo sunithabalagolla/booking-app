@@ -213,3 +213,27 @@ ${creditNoteNumber ? `Your credit note ${creditNoteNumber} (PDF) is attached.\n`
 We hope to see you at the movies again soon.`
   return { subject, html, text }
 }
+
+// E-05 show cancelled by the theatre (O-06, BR-06): apology + 100% refund
+export function showCancelledTemplate({ name, movieTitle, bookingNumber, theatreName, showText, reason, refundText, refunded, creditNoteNumber }) {
+  const subject = `Talkies – show cancelled: ${movieTitle} (${bookingNumber})`
+  const refundLine = refunded
+    ? `We refunded the full amount, ${refundText} (tickets, food and convenience fee), to your payment method.`
+    : `Your full refund of ${refundText} (tickets, food and convenience fee) is on its way to your payment method.`
+  const html = layout(`
+    <p>Namaste ${escapeHtml(name)},</p>
+    <p>We are sorry. ${escapeHtml(theatreName)} had to cancel the show of <strong>${escapeHtml(movieTitle)}</strong> (${escapeHtml(showText)}).</p>
+    <p>Reason: ${escapeHtml(reason)}</p>
+    <p>Your booking <strong>${escapeHtml(bookingNumber)}</strong> is cancelled. ${escapeHtml(refundLine)}</p>
+    ${creditNoteNumber ? `<p>Your credit note ${escapeHtml(creditNoteNumber)} (PDF) is attached.</p>` : ''}
+    <p>We hope to see you at the movies again soon.</p>`)
+  const text = `Namaste ${name},
+
+We are sorry. ${theatreName} had to cancel the show of ${movieTitle} (${showText}).
+Reason: ${reason}
+
+Your booking ${bookingNumber} is cancelled. ${refundLine}
+${creditNoteNumber ? `Your credit note ${creditNoteNumber} (PDF) is attached.\n` : ''}
+We hope to see you at the movies again soon.`
+  return { subject, html, text }
+}

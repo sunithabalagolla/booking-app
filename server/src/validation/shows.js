@@ -70,3 +70,12 @@ export const listShowsQuery = z.object({
   to: dayField.optional(),
   ...pageQuery,
 })
+
+// O-06 cancel show: reason required (5–300 characters, decided 2026-10-07)
+export const cancelShowSchema = z.object({
+  reason: z
+    .string({ error: 'Please give a reason.' })
+    .trim()
+    .min(5, { error: 'Please give a reason (at least 5 characters).' })
+    .max(300, { error: 'The reason can have at most 300 characters.' }),
+})

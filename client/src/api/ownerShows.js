@@ -27,3 +27,11 @@ function useShowMutation(mutationFn) {
 
 export const useCreateShows = () => useShowMutation((body) => apiFetch('/owner/shows', { method: 'POST', body }))
 export const useUpdateShow = (id) => useShowMutation((body) => apiFetch(`/owner/shows/${id}`, { method: 'PATCH', body }))
+
+// O-06 cancel show: { bookings, refundPaise } before saying yes (fetched when the panel opens)
+export function useShowCancelPreview(id) {
+  return useQuery({ queryKey: [...KEY, id, 'cancel-preview'], queryFn: () => apiFetch(`/owner/shows/${id}/cancel-preview`), staleTime: 0 })
+}
+
+// { reason } → { show, bookings, refundPaise }
+export const useCancelShow = (id) => useShowMutation((body) => apiFetch(`/owner/shows/${id}/cancel`, { method: 'POST', body }))
