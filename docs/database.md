@@ -121,7 +121,7 @@ One collection for all 4 roles (Section 3). Role-specific data is in the `owner`
 | `owner.rejectReason` | String | | A-03 |
 | `owner.decidedBy` / `owner.decidedAt` | ObjectId → users / Date | | Admin who approved / rejected |
 | `staff.ownerId` | ObjectId → users | staff: yes | The owner who created this staff login (ROLE-05) |
-| `staff.theatreIds` | [ObjectId → theatres] | staff: yes | One or more theatres of that owner (ROLE-05). Used by the S-03 check |
+| `staff.theatreIds` | [ObjectId → theatres] | staff: yes | One or more theatres of that owner (ROLE-05). Used by the S-03 check. **O-09 (2026-10-12):** any of the owner's theatres (also pending / rejected); the owner can change them any time |
 | `prefs.theme` | String | | `auto` · `day` · `night` or `null`. Default `null` = not chosen yet (UI-02). At login: `null` → the device choice is kept and saved here; a choice here wins over localStorage |
 | `prefs.sound` | Boolean | yes | Default `false` (UI-40) |
 | `prefs.reduceMotion` | Boolean | yes | Default `false` (UI-41). The phone setting is also followed |
@@ -613,7 +613,7 @@ Read only. The app only inserts; it never updates or deletes.
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `actorId` / `actorRole` | ObjectId / String | yes | Who |
-| `action` | String | yes | e.g. `owner.approve`, `theatre.reject`, `show.cancel`, `settings.update`, `payout.mark_paid` |
+| `action` | String | yes | e.g. `owner.approve`, `theatre.reject`, `show.cancel`, `settings.update`, `payout.mark_paid`. O-09 (2026-10-12): `staff.create`, `staff.update`, `staff.block`, `staff.unblock` (actor = the owner, target = the staff user) |
 | `targetType` / `targetId` | String / ObjectId **or** String | yes | What. `targetId` is text where the target has a text ID, e.g. `'platform'` for settings |
 | `details` | Object | | e.g. `{ before, after }` for settings (only the changed fields, by path like `gst.ticketPercent`), reason |
 | `ip` | String | | |

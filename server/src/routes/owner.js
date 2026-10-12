@@ -6,7 +6,9 @@ import { createTheatre, getMyTheatre, listCities, listMyTheatres, updateTheatre 
 import { createFood, deleteFood, listTheatreFood, updateFood } from '../controllers/ownerFood.js'
 import { cancelOwnedShow, cancelShowPreview, createShows, getMyShow, listMyShows, listOwnerMovies, updateShow } from '../controllers/ownerShows.js'
 import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
+import { createStaff, listStaff, updateStaff } from '../controllers/ownerStaff.js'
 import { idParams } from '../validation/common.js'
+import { createStaffSchema, updateStaffSchema } from '../validation/staffAccounts.js'
 import { createFoodSchema, updateFoodSchema } from '../validation/food.js'
 import { cancelShowSchema, createShowSchema, listShowsQuery, updateShowSchema } from '../validation/shows.js'
 import { createScreenSchema, updateScreenSchema } from '../validation/screens.js'
@@ -51,5 +53,10 @@ router.patch('/shows/:id', validate({ params: idParams, body: updateShowSchema }
 // O-06 cancel show (BR-06 100% refund, BR-07 not after the start; refunds + E-05 by JOB-04)
 router.get('/shows/:id/cancel-preview', validate({ params: idParams }), cancelShowPreview)
 router.post('/shows/:id/cancel', validate({ params: idParams, body: cancelShowSchema }), cancelOwnedShow)
+
+// O-09 Gate Staff accounts (ROLE-05; any of my theatres; block, no delete)
+router.get('/staff', listStaff)
+router.post('/staff', validate({ body: createStaffSchema }), createStaff)
+router.patch('/staff/:id', validate({ params: idParams, body: updateStaffSchema }), updateStaff)
 
 export default router

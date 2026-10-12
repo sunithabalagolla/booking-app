@@ -215,9 +215,9 @@ All paths below start with `/api/owner`. **Who = Owner (approved)** and **own** 
 | GET | `/bookings` | `showId?, theatreId?, number?, from?, to?`, page | O-08: bookings of my shows, search by booking number, check-in status |
 | GET | `/bookings/:id` | — | |
 | GET | `/shows/:id/checkins` | — | O-10: booked vs Entered |
-| GET | `/staff` | — | O-09 |
-| POST | `/staff` | `name, email, password, theatreIds[]` | O-09, ROLE-05. `emailVerified: true`. `theatreIds` must be mine |
-| PATCH | `/staff/:id` | `name?, theatreIds?, status?` (`active` · `blocked`) | Block / unblock, change theatres |
+| GET | `/staff` | — | O-09. **Built 2026-10-12:** `{ items: [{ id, name, email, status, theatres: [{ id, name }], createdAt }] }`, my staff only, A to Z by name |
+| POST | `/staff` | `name, email, password, theatreIds[]` | O-09, ROLE-05. `emailVerified: true`. `theatreIds` must be mine **Built 2026-10-12:** 1 or more of my theatres, any status (pending / rejected too; repeats removed); not mine → `400 VALIDATION_ERROR` (`details.theatreIds`). Password BR-18, set by the owner and given in person (no email, BR-25). Email used by anyone (any role, any case) → `409 ALREADY_EXISTS` "This email is already used." (`details.email`); a user account is never turned into staff. Audit `staff.create` (`details.theatreIds`). `201 { staff }` |
+| PATCH | `/staff/:id` | `name?, theatreIds?, status?` (`active` · `blocked`), `password?` | Block / unblock, change theatres **Built 2026-10-12:** at least one field. My staff only (else `404`). No delete. `password` = new password (BR-18, decided 2026-10-12). Block or new password → logged out everywhere (refresh tokens deleted; a new password sets `passwordChangedAt`, so older access tokens get `401`; a blocked staff gets `403 ACCOUNT_BLOCKED` on the next request). New theatres work at once (requireAuth reads the user every request). Audit: `staff.update` (`details.changed`: `name` · `theatreIds` · `password`, never the password itself; + `theatreIds`), `staff.block`, `staff.unblock` (only when the status really changes). `200 { staff }` |
 | GET | `/reports/sales` | `period` (`daily` · `weekly` · `monthly`), `from, to, theatreId?, format?` (`json` · `xlsx` · `pdf`) | O-13 |
 | GET | `/reports/food` | same | O-13 |
 | GET | `/reports/gst` | `month` (`2026-10`), `theatreId?, format?` | O-13, GST-03 |

@@ -2,6 +2,18 @@
 
 ## Last session
 
+- Date: 2026-10-12
+- Client `npm audit fix` (`source-map-js` 1.2.2, 0 vulnerabilities). Flaky O-06 / JOB-04 test fixed (spies undone in `afterEach`, waits up to 5 s). Pushed with the scanner commit.
+- **Phase 7 Step 2 built: O-09 Gate Staff accounts (ROLE-05).** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-12): optional **New password** on the edit form (logs the staff out everywhere: refresh tokens deleted + `passwordChangedAt`); staff can be linked to **any** of the owner's theatres (also pending / rejected); audit log `staff.create`, `staff.update`, `staff.block`, `staff.unblock`; an email that is already used is refused ("This email is already used."), a user account is never turned into staff.
+  - Server: `controllers/ownerStaff.js` + `validation/staffAccounts.js` (the scanner schema stays in `validation/staff.js`). `GET /api/owner/staff`, `POST /api/owner/staff`, `PATCH /api/owner/staff/:id` (approved owners only; own staff only, else 404; no delete). Block → refresh tokens deleted, the next request gets 403 (requireAuth already reads the user every time). New theatres work at once. The audit `staff.update` lists what changed (`name` · `theatreIds` · `password`), never the password.
+  - Client: sidebar **Gate staff** → `/owner/staff` (register table: Name · Email · Theatres · Active / Blocked stamp · Edit, Block / Unblock). Block / Unblock opens a small panel under the row ("Block Raju? They are logged out at once and cannot scan tickets." · Yes, block / No; focus moves to the panel title). **+ New staff** → `/owner/staff/new`: name, email, password, tick boxes for my theatres; edit `/owner/staff/:id`: email shown (not editable), "New password (optional)". Messages after saving: "Raju: added. Give them the email and password." Owner with no theatres: "Add a theatre first…".
+  - Checked: tests only. **Not checked in Chrome**: owner login needs the seed password from `.env`.
+  - api.md + database.md updated.
+  - Tests: **630 pass** (client 191: staff form helpers 4, sidebar link; server 439: `o09.staff.test.js` 9 = create (pending theatre too, no email, audit without password), list mine A to Z, refusals (other owner's theatre, no theatre, weak password, used email any case + user stays a user), two creates at once = one, 403 / 404 / nothing to change, new staff logs in + scans own theatre + other theatre `wrong_theatre`, theatre change works at once + audit, block (open session 403, refresh 401, login 403, twice = one audit) + unblock, new password (old access token 401, refresh 401, old password 401, new works, audit `changed: ['password']`)). Lint + build OK.
+
+## Earlier on 2026-10-07 (scanner)
+
 - Date: 2026-10-07 (sixth part)
 - O-06, JOB-04, E-05 ticked (you tested O-06: works). **Phase 6 done.** Pushed to GitHub (`d9cd58c`, `fda2db1`).
 - **Phase 7 Step 1 built: gate staff scanner (S-02 … S-05, flow 9.7, UI-31, UI-35, T-07).** Waiting for your browser check (see Next step), then tick.
@@ -373,11 +385,12 @@
 
 ## Next step
 
-- Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
-- **Check the scanner in the browser** (laptop webcam): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or in another tab change nothing and test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over. After that: tick S-02 … S-05 + T-07. Next: Phase 7 Step 2, **O-09 Gate Staff accounts** — plan first.
-- Your Chrome may still be logged in as the seed test user; log in as the seed owner for the O-06 check.
-- Done 2026-10-12: `npm audit fix` in the client (`source-map-js` 1.2.1 → 1.2.2, now 0 vulnerabilities); tests, lint and build OK.
-- Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
+- **Try by hand (your list):**
+  - **O-09 Gate staff** (new): log in as the seed owner → sidebar **Gate staff** → **+ New staff** (name, a new email, a password like `gatepass9`, tick one theatre) → it shows Active. Log in as that staff in another browser (or a private window) → the scanner shows that theatre. As the owner: Edit → tick another theatre → reload the staff scanner: both theatres. **Block** → the staff page stops at the next scan / reload; login says the account is blocked. **Unblock** → login works. Edit → New password → the old password stops working. Try an email that is already used (e.g. the seed user's) → "This email is already used." Night show + phone / tablet width. Then tick O-09.
+  - **Scanner** (S-02 … S-05 + T-07, still unticked): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over.
+  - The Home "Stage" design: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
+  - The login page autofill colour (fix from 2026-10-04).
+- Next task after that: Phase 7 Step 3, **O-10 Check-in report** (per show: booked vs Entered) — plan first.
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -512,7 +525,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 
 ## Phase 7 – Gate + canteen counter
 - [ ] S-02 to S-05 Scanner + verify (built 2026-10-07, Phase 7 Step 1; waiting for the developer's browser check)
-- [ ] O-09 Staff accounts
+- [ ] O-09 Staff accounts (built 2026-10-12, Phase 7 Step 2; waiting for the developer's browser check)
 - [ ] O-10 Check-in report
 - [ ] O-11 Food pickup
 - [ ] T-07 test (built 2026-10-07 with the scanner)
