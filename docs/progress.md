@@ -382,7 +382,7 @@
 
 ## Known bugs
 
-- Flaky test (2026-10-12): one full `npm test` run had 4 failures in `server/tests/o06.cancelShow.test.js` (JOB-04 "gateway down", "U-20 refund retry", "two runs at the same moment", "payment verify after the cancel"). The file alone passed 2 times, and the full suite then passed 3 times. Likely cause: the "gateway down" test only restores its `gateway.refund` mock at the end, so if it fails part-way (maybe its `vi.waitFor` 1 s timeout under load), the broken gateway leaks into the next tests. Possible fix: `afterEach(() => vi.restoreAllMocks())` + a longer `waitFor` timeout. Not fixed yet.
+- Fixed 2026-10-12: flaky test in `server/tests/o06.cancelShow.test.js` (one full run had 4 failures). Cause: the JOB-04 "gateway down" test only restored its `gateway.refund` spy at the end, so a failure part-way left the gateway "down" for the next tests. Fix: `afterEach(() => vi.restoreAllMocks())`, `vi.waitFor` up to 5 s (was 1 s), test time limit 20 s for this file. Full suite passed 3 times in a row after the fix.
 
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 

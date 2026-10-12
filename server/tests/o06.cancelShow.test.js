@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import request from 'supertest'
 import app from '../src/app.js'
 import { resetRateLimits } from '../src/config/rateLimits.js'
@@ -54,9 +54,14 @@ async function pay(who, held) {
 const cancelPath = (base = '/api/owner') => `${base}/shows/${show._id}/cancel`
 const REASON = 'Projector lamp broke, sorry'
 const mails = (prefix) => sendEmail.mock.calls.map((c) => c[0]).filter((m) => m.subject.startsWith(prefix))
+// Background work (JOB-04, emails) can be slow when the full suite runs, so wait up to 5 s
+// (the default is 1 s) and give each test more time than that
+const WAIT = { timeout: 5000 }
+vi.setConfig({ testTimeout: 20000 })
+
 // JOB-04 runs in the background after the cancel; wait until everything is sent
 const allSettled = () =>
-  vi.waitFor(async () => expect(await Booking.countDocuments({ $or: [{ 'cancellation.refundStatus': 'pending' }, { 'cancellation.emailStatus': 'pending' }] })).toBe(0))
+  vi.waitFor(async () => expect(await Booking.countDocuments({ $or: [{ 'cancellation.refundStatus': 'pending' }, { 'cancellation.emailStatus': 'pending' }] })).toBe(0), WAIT)
 
 beforeAll(async () => {
   await connectTestDB()
@@ -99,6 +104,11 @@ beforeEach(async () => {
   meena = as(await login('meena@example.com'))
   ravi = as(await login('ravi@example.com'))
   sita = as(await login('sita@example.com'))
+})
+// A test that fails half-way never reaches its own mockRestore(); undo every spy here,
+// so a "gateway down" spy cannot break the next tests
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 afterAll(async () => {
   await runCancellationsSoon()
@@ -246,7 +256,7 @@ describe('JOB-04 cancellation refunds', () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     const spy = vi.spyOn(gateway, 'refund').mockRejectedValue(new Error('gateway down'))
     await owner.post(cancelPath(), { reason: REASON })
-    await vi.waitFor(async () => expect(await Booking.countDocuments({ 'cancellation.emailStatus': 'sent' })).toBe(2))
+    await vi.waitFor(async () => expect(await Booking.countDocuments({ 'cancellation.emailStatus': 'sent' })).toBe(2), WAIT)
     expect(await Booking.countDocuments({ 'cancellation.refundStatus': 'pending' })).toBe(2)
     expect(mails('Talkies – show cancelled').find((x) => x.to === 'ravi@example.com').text).toContain('Your full refund of ₹150 (tickets, food and convenience fee) is on its way')
     expect(log).toHaveBeenCalledWith(expect.stringContaining('left pending: gateway down'))
@@ -268,7 +278,7 @@ describe('JOB-04 cancellation refunds', () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     const spy = vi.spyOn(gateway, 'refund').mockRejectedValueOnce(new Error('gateway down'))
     expect((await meena.post(`/api/bookings/${m.id}/cancel`)).body.booking.cancellation.refundStatus).toBe('pending')
-    await vi.waitFor(() => expect(mails('Talkies – booking cancelled')).toHaveLength(1)) // E-04 (background)
+    await vi.waitFor(() => expect(mails('Talkies – booking cancelled')).toHaveLength(1), WAIT) // E-04 (background)
     sendEmail.mockClear()
 
     expect(await processCancellations()).toEqual({ refunded: 1, failed: 0, emailed: 0 })
