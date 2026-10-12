@@ -376,10 +376,13 @@
 - Try the new Home "Stage" design by hand: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
 - **Check the scanner in the browser** (laptop webcam): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or in another tab change nothing and test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over. After that: tick S-02 … S-05 + T-07. Next: Phase 7 Step 2, **O-09 Gate Staff accounts** — plan first.
 - Your Chrome may still be logged in as the seed test user; log in as the seed owner for the O-06 check.
+- Done 2026-10-12: `npm audit fix` in the client (`source-map-js` 1.2.1 → 1.2.2, now 0 vulnerabilities); tests, lint and build OK.
 - Check the login page autofill colour (fix from 2026-10-04, not checked by hand yet).
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
+
+- Flaky test (2026-10-12): one full `npm test` run had 4 failures in `server/tests/o06.cancelShow.test.js` (JOB-04 "gateway down", "U-20 refund retry", "two runs at the same moment", "payment verify after the cancel"). The file alone passed 2 times, and the full suite then passed 3 times. Likely cause: the "gateway down" test only restores its `gateway.refund` mock at the end, so if it fails part-way (maybe its `vi.waitFor` 1 s timeout under load), the broken gateway leaks into the next tests. Possible fix: `afterEach(() => vi.restoreAllMocks())` + a longer `waitFor` timeout. Not fixed yet.
 
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
 
