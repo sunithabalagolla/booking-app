@@ -7,6 +7,8 @@ import { createFood, deleteFood, listTheatreFood, updateFood } from '../controll
 import { cancelOwnedShow, cancelShowPreview, createShows, getMyShow, listMyShows, listOwnerMovies, updateShow } from '../controllers/ownerShows.js'
 import { createScreen, getMyScreen, listTheatreScreens, updateScreen } from '../controllers/ownerScreens.js'
 import { createStaff, listStaff, updateStaff } from '../controllers/ownerStaff.js'
+import { checkinReport } from '../controllers/ownerCheckins.js'
+import { checkinReportQuery } from '../validation/checkinReport.js'
 import { idParams } from '../validation/common.js'
 import { createStaffSchema, updateStaffSchema } from '../validation/staffAccounts.js'
 import { createFoodSchema, updateFoodSchema } from '../validation/food.js'
@@ -58,5 +60,8 @@ router.post('/shows/:id/cancel', validate({ params: idParams, body: cancelShowSc
 router.get('/staff', listStaff)
 router.post('/staff', validate({ body: createStaffSchema }), createStaff)
 router.patch('/staff/:id', validate({ params: idParams, body: updateStaffSchema }), updateStaff)
+
+// O-10 check-in report (per show: tickets booked vs came)
+router.get('/checkin-report', validate({ query: checkinReportQuery }), checkinReport)
 
 export default router

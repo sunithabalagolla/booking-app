@@ -36,6 +36,7 @@ describe('dashboardMenuFor (UI-30 sidebar)', () => {
       { to: '/owner/theatres', label: 'Theatres' },
       { to: '/owner/shows', label: 'Shows' },
       { to: '/owner/staff', label: 'Gate staff' },
+      { to: '/owner/checkins', label: 'Check-in report' },
     ])
     expect(dashboardMenuFor(admin)).toEqual([
       { to: '/admin', label: 'Box office register' },

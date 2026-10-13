@@ -2,6 +2,18 @@
 
 ## Last session
 
+- Date: 2026-10-13
+- **Phase 7 Step 3 built: O-10 Check-in report.** Waiting for your browser check (see Next step), then tick.
+  - Your decisions (2026-10-13): a **separate page** (not columns on Shows); **Refresh** button + auto-refresh every 30 s **only while a gate is open** on that day; **no list** of who came for now.
+  - Counting: one gate scan lets the whole booking in, so the numbers are **tickets (seats)**. Booked = seats in `confirmed` bookings; Came = seats in `confirmed` bookings with `checkIn.usedAt`. Holds, cancelled and released bookings are not counted (a cancelled show shows 0 / 0 with its Cancelled stamp).
+  - Server: `controllers/ownerCheckins.js` + `validation/checkinReport.js`. `GET /api/owner/checkin-report?date=&theatreId=` (approved owners, own shows only; date = IST day, default today). One aggregation on bookings (existing `{ showId, status }` index). Each show also gets `gate` (`not_open` · `open` · `over` · `cancelled`, BR-08 with the `checkinBeforeMinutes` setting) and `gateOpensAt`; plus a day `totals`. Replaces the planned `/shows/:id/checkins` in api.md (one call for the whole day).
+  - Client: sidebar **Check-in report** → `/owner/checkins` (UI-30 register): Date picker + ← Previous day / Next day →, theatre filter, Refresh button. Table: Time · Movie · Theatre · Screen · Booked · Came · Not come · Came % · Gate (green "Gate open", mustard "Not open yet" + "opens 6:30 PM", plain "Over", maroon "Cancelled"); numbers in Courier Prime; **Day total** row. Empty day: "No shows on this day." While a gate is open the page says "A gate is open: this page updates every 30 seconds."
+  - Checked: tests only. **Not checked in Chrome** (owner login needs the seed password from `.env`).
+  - api.md updated (database.md: no change, no new fields or indexes).
+  - Tests: **639 pass** (client 194: report helpers 3, sidebar link; server 445: `o10.checkinReport.test.js` 6 = seat counts with scanned / not scanned / hold / cancelled / released, cancelled show, IST day edges, other owner left out, totals, gateOpensAt; theatre filter + other owner's theatre empty; gate open / not open from the setting; gateState edges; default today + empty day; 401 / 403 user / 403 pending owner / 400 bad date / bad theatre ID). Lint + build OK.
+
+## Earlier on 2026-10-12 (O-09)
+
 - Date: 2026-10-12
 - Client `npm audit fix` (`source-map-js` 1.2.2, 0 vulnerabilities). Flaky O-06 / JOB-04 test fixed (spies undone in `afterEach`, waits up to 5 s). Pushed with the scanner commit.
 - **Phase 7 Step 2 built: O-09 Gate Staff accounts (ROLE-05).** Waiting for your browser check (see Next step), then tick.
@@ -386,11 +398,12 @@
 ## Next step
 
 - **Try by hand (your list):**
+  - **O-10 Check-in report** (new): log in as the seed owner → sidebar **Check-in report** → today's shows with Booked / Came / Not come / Came % and the Gate stamp. Scan a ticket as staff (or type its booking number) for a show whose gate is open → the owner page shows Came +seats within 30 s (or press Refresh). ← Previous day / Next day →, theatre filter, a day with no shows ("No shows on this day."), a cancelled show (TKS85HKAZN's show, Thu 8 Oct: Cancelled stamp, 0 / 0). Night show + phone width (the table scrolls inside its box). Then tick O-10.
   - **O-09 Gate staff** (new): log in as the seed owner → sidebar **Gate staff** → **+ New staff** (name, a new email, a password like `gatepass9`, tick one theatre) → it shows Active. Log in as that staff in another browser (or a private window) → the scanner shows that theatre. As the owner: Edit → tick another theatre → reload the staff scanner: both theatres. **Block** → the staff page stops at the next scan / reload; login says the account is blocked. **Unblock** → login works. Edit → New password → the old password stops working. Try an email that is already used (e.g. the seed user's) → "This email is already used." Night show + phone / tablet width. Then tick O-09.
   - **Scanner** (S-02 … S-05 + T-07, still unticked): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over.
   - The Home "Stage" design: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
   - The login page autofill colour (fix from 2026-10-04).
-- Next task after that: Phase 7 Step 3, **O-10 Check-in report** (per show: booked vs Entered) — plan first.
+- Next task after that: Phase 7 Step 4, **O-11 Food pickup screen** (canteen counter: scan ticket QR → food order → mark "Collected", SF-06; owner or gate staff of that theatre) — plan first.
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -526,7 +539,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 ## Phase 7 – Gate + canteen counter
 - [ ] S-02 to S-05 Scanner + verify (built 2026-10-07, Phase 7 Step 1; waiting for the developer's browser check)
 - [ ] O-09 Staff accounts (built 2026-10-12, Phase 7 Step 2; waiting for the developer's browser check)
-- [ ] O-10 Check-in report
+- [ ] O-10 Check-in report (built 2026-10-13, Phase 7 Step 3; waiting for the developer's browser check)
 - [ ] O-11 Food pickup
 - [ ] T-07 test (built 2026-10-07 with the scanner)
 

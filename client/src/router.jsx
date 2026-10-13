@@ -22,6 +22,7 @@ import OwnerScreensPage from './pages/owner/OwnerScreensPage.jsx'
 import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
 import OwnerTheatresPage from './pages/owner/OwnerTheatresPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
+import OwnerCheckinsPage from './pages/owner/OwnerCheckinsPage.jsx'
 import OwnerStaffFormPage from './pages/owner/OwnerStaffFormPage.jsx'
 import OwnerStaffPage from './pages/owner/OwnerStaffPage.jsx'
 import CheckEmailPage from './pages/public/CheckEmailPage.jsx'
@@ -110,6 +111,8 @@ const router = createBrowserRouter([
       { path: '/owner/staff', element: guard(['owner'], <OwnerStaffPage />) },
       { path: '/owner/staff/new', element: guard(['owner'], <OwnerStaffFormPage />) },
       { path: '/owner/staff/:id', element: guard(['owner'], <OwnerStaffFormPage />) },
+      // O-10 check-in report
+      { path: '/owner/checkins', element: guard(['owner'], <OwnerCheckinsPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },

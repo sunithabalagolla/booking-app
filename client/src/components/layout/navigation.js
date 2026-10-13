@@ -41,6 +41,7 @@ export function dashboardMenuFor(user) {
         { to: '/owner/theatres', label: 'Theatres' }, // O-03 (+ screens O-04, canteen O-07)
         { to: '/owner/shows', label: 'Shows' }, // O-05
         { to: '/owner/staff', label: 'Gate staff' }, // O-09
+        { to: '/owner/checkins', label: 'Check-in report' }, // O-10
       ]
     case 'admin':
       return [
