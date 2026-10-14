@@ -19,6 +19,7 @@ import { mockGatewayRoutes, paymentRoutes } from './routes/payments.js'
 import settingsRoutes from './routes/settings.js'
 import showRoutes from './routes/shows.js'
 import staffRoutes from './routes/staff.js'
+import foodPickupRoutes from './routes/foodPickup.js'
 import theatreRoutes from './routes/theatres.js'
 import uploadRoutes from './routes/uploads.js'
 
@@ -57,6 +58,7 @@ app.use('/api/invoices', invoiceRoutes) // U-17 GST invoice PDF (11.3)
 // Role groups: each checks login + role once for all its paths (ROLE-01)
 app.use('/api/owner', ownerRoutes)
 app.use('/api/staff', staffRoutes)
+app.use('/api/food-pickup', foodPickupRoutes) // O-11 canteen counter
 app.use('/api/admin', adminRoutes)
 app.use('/api/uploads', uploadRoutes) // SEC-11, NF-08
 

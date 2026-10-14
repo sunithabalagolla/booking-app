@@ -19,7 +19,7 @@ import { ticketDetails } from './ticketText.js'
 
 const MIN = 60 * 1000
 
-const rejected = (reason, extra = {}) => ({ result: 'rejected', reason, ...extra })
+export const rejected = (reason, extra = {}) => ({ result: 'rejected', reason, ...extra })
 
 // What the gate needs to see (S-05): movie, show, screen, seats, food + pickup
 function gateView(booking) {
@@ -38,8 +38,8 @@ function gateView(booking) {
   }
 }
 
-// { qrToken } or { bookingNumber } → the booking, or a rejection
-async function findTicket({ qrToken, bookingNumber }) {
+// { qrToken } or { bookingNumber } → the booking, or a rejection (also used by O-11 food pickup)
+export async function findTicket({ qrToken, bookingNumber }) {
   if (bookingNumber) {
     const number = bookingNumber.replace(/\s+/g, '').toUpperCase()
     const booking = await Booking.findOne({ bookingNumber: number })
@@ -56,6 +56,17 @@ async function findTicket({ qrToken, bookingNumber }) {
   return { booking }
 }
 
+// BR-08: from checkinBeforeMinutes before the start until the end → null, else a rejection
+// (also the O-11 food pickup window, decided 2026-10-13)
+export async function outsideWindow(booking, now = new Date()) {
+  const base = { bookingNumber: booking.bookingNumber }
+  const { checkinBeforeMinutes } = await getSettings()
+  const opensAt = new Date(new Date(booking.show.startAt).getTime() - checkinBeforeMinutes * MIN)
+  if (now < opensAt) return rejected('too_early', { ...base, opensAt })
+  if (now >= new Date(booking.show.endAt)) return rejected('too_late', { ...base, endedAt: booking.show.endAt })
+  return null
+}
+
 export async function checkIn(input, staff, now = new Date()) {
   const { booking, rejection } = await findTicket(input)
   if (rejection) return rejection
@@ -67,10 +78,8 @@ export async function checkIn(input, staff, now = new Date()) {
   const myTheatres = (staff.staff?.theatreIds ?? []).map(String)
   if (!myTheatres.includes(String(booking.theatreId))) return rejected('wrong_theatre', base)
 
-  const { checkinBeforeMinutes } = await getSettings()
-  const opensAt = new Date(new Date(booking.show.startAt).getTime() - checkinBeforeMinutes * MIN)
-  if (now < opensAt) return rejected('too_early', { ...base, opensAt })
-  if (now >= new Date(booking.show.endAt)) return rejected('too_late', { ...base, endedAt: booking.show.endAt })
+  const outside = await outsideWindow(booking, now)
+  if (outside) return outside
 
   if (booking.status !== 'confirmed') return rejected('cancelled', base)
   if (booking.checkIn?.usedAt) return rejected('already_used', { ...base, usedAt: booking.checkIn.usedAt })

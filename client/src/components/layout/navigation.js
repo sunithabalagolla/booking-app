@@ -32,6 +32,12 @@ export function accountLinksFor(status, user) {
   return { kind: 'user', name: user.name, ownPage: label ? { to: homePathFor(user), label } : null }
 }
 
+// Gate Staff tabs under the wooden bar (StaffLayout)
+export const STAFF_TABS = [
+  { to: '/staff/scan', label: 'Gate scanner' },
+  { to: '/staff/counter', label: 'Canteen counter' }, // O-11
+]
+
 // Dashboard sidebar menu (UI-30). More items come with their pages.
 export function dashboardMenuFor(user) {
   switch (roleKey(user)) {
@@ -42,6 +48,7 @@ export function dashboardMenuFor(user) {
         { to: '/owner/shows', label: 'Shows' }, // O-05
         { to: '/owner/staff', label: 'Gate staff' }, // O-09
         { to: '/owner/checkins', label: 'Check-in report' }, // O-10
+        { to: '/owner/counter', label: 'Canteen counter' }, // O-11
       ]
     case 'admin':
       return [

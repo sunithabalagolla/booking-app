@@ -389,7 +389,7 @@ See **Section 3** for the full locking rules.
 | `seats` | [{ `seatId`, `seatClass`, `className`, `pricePaise` }] | yes | 1 to `maxSeatsPerBooking` (BR-02) |
 | `food` | [{ `foodItemId`, `name`, `isVeg`, `unitPricePaise`, `qty` }] | | U-13 (built 2026-10-06). A copy of name + price at save time. `qty` 1–10 per item |
 | `foodPickup` | String | | `before_movie` · `interval` (SF-06). Required if `food` is not empty |
-| `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11, by the owner or Gate Staff of that theatre. Set once only (atomic update, like check-in) |
+| `foodCollectedAt` / `foodCollectedBy` | Date / ObjectId → users | | O-11, by the owner or Gate Staff of that theatre. Set once only (atomic update, like check-in). **Built 2026-10-13** (no new index: found by booking ID / number) |
 | `pricing` | object | yes | Calculated by the backend only (SEC-10). See below |
 | `couponId` / `couponCode` | ObjectId / String | | U-15. Not together with a deal (BR-16) |
 | `qrNonce` | String | yes | Random. QR token = booking ID + nonce, signed with `QR_SECRET` (SEC-09). A new nonce on transfer makes the old QR invalid. **Built 2026-10-07 (U-17):** token = `<booking ID>.<qrNonce>.<HMAC-SHA256 of "<booking ID>.<qrNonce>", base64url>` (`services/qr/`); the QR picture is made when needed, not stored |

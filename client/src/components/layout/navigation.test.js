@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { accountLinksFor, dashboardMenuFor, FOOTER_LINKS } from './navigation.js'
+import { accountLinksFor, dashboardMenuFor, FOOTER_LINKS, STAFF_TABS } from './navigation.js'
 
 const user = { name: 'Asha', role: 'user' }
 const owner = { name: 'Ravi', role: 'owner', owner: { approvalStatus: 'approved' } }
@@ -37,6 +37,7 @@ describe('dashboardMenuFor (UI-30 sidebar)', () => {
       { to: '/owner/shows', label: 'Shows' },
       { to: '/owner/staff', label: 'Gate staff' },
       { to: '/owner/checkins', label: 'Check-in report' },
+      { to: '/owner/counter', label: 'Canteen counter' },
     ])
     expect(dashboardMenuFor(admin)).toEqual([
       { to: '/admin', label: 'Box office register' },
@@ -56,5 +57,14 @@ describe('dashboardMenuFor (UI-30 sidebar)', () => {
 describe('FOOTER_LINKS', () => {
   it('has the "For theatre owners" link (O-01)', () => {
     expect(FOOTER_LINKS).toEqual([{ to: '/owner/signup', label: 'For theatre owners' }])
+  })
+})
+
+describe('STAFF_TABS (Gate Staff bar)', () => {
+  it('links the gate scanner and the canteen counter (O-11)', () => {
+    expect(STAFF_TABS).toEqual([
+      { to: '/staff/scan', label: 'Gate scanner' },
+      { to: '/staff/counter', label: 'Canteen counter' },
+    ])
   })
 })

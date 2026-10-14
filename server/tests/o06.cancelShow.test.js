@@ -257,6 +257,8 @@ describe('JOB-04 cancellation refunds', () => {
     const spy = vi.spyOn(gateway, 'refund').mockRejectedValue(new Error('gateway down'))
     await owner.post(cancelPath(), { reason: REASON })
     await vi.waitFor(async () => expect(await Booking.countDocuments({ 'cancellation.emailStatus': 'sent' })).toBe(2), WAIT)
+    // emailStatus is claimed BEFORE the PDF is made and the email sent, so wait for the emails too
+    await vi.waitFor(() => expect(mails('Talkies – show cancelled')).toHaveLength(2), WAIT)
     expect(await Booking.countDocuments({ 'cancellation.refundStatus': 'pending' })).toBe(2)
     expect(mails('Talkies – show cancelled').find((x) => x.to === 'ravi@example.com').text).toContain('Your full refund of ₹150 (tickets, food and convenience fee) is on its way')
     expect(log).toHaveBeenCalledWith(expect.stringContaining('left pending: gateway down'))

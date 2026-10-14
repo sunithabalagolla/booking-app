@@ -2,6 +2,18 @@
 
 ## Last session
 
+- Date: 2026-10-14
+- **Phase 7 Step 4 built: O-11 Food pickup (canteen counter, SF-06).** It was built on 2026-10-13 and committed today. Waiting for your browser check (see Next step), then tick.
+  - Decisions (2026-10-13): the counter uses the **same time window as the gate** (BR-08: `checkinBeforeMinutes` before the start until the end). The gate scan ("Entered") is **not** needed first. Always `200` with `found` / `collected` / `rejected`, like the gate. The planned `409` in api.md is not used.
+  - Server: `services/foodPickup.js` + `controllers/foodPickup.js` + `routes/foodPickup.js`. `POST /api/food-pickup/lookup` (shows the order, changes nothing) and `POST /api/food-pickup/collect` (one atomic update sets `foodCollectedAt` + `foodCollectedBy`, so only one counter wins). Body = the same as the gate: `{ qrToken }` or `{ bookingNumber }`. Who: approved owners (own bookings) and Gate Staff (their theatres). Checks in order: bad QR / old QR (`bad_qr`, `transferred`; a hold → `bad_qr`) → `wrong_theatre` → `too_early` / `too_late` → `cancelled` → `no_food` → `already_collected`. Rate limit `scan` 60/min. `checkIn.js` now shares `findTicket`, `outsideWindow` and `rejected` with it.
+  - Client: one page `pages/counter/CounterPage.jsx`, used by both roles: staff get two tabs under the wooden bar (**Gate scanner** | **Canteen counter**, `/staff/counter`); owners get sidebar **Canteen counter** (`/owner/counter`). Scan the QR or type the booking number → the order (items with qty, pickup "Before movie" / "Interval", seats) → **Mark collected** → green "Collected" stamp, or maroon "Rejected" with the reason in plain words (e.g. "Already collected at 7:45 PM.", "This booking has no food order.") → **Next order**.
+  - Booking model: `foodCollectedAt`, `foodCollectedBy` (no new index). api.md + database.md updated.
+  - Also: one more wait in the O-06 JOB-04 test (wait for the 2 emails, not only `emailStatus`), so it does not fail now and then.
+  - Checked: tests only. **Not checked in Chrome.**
+  - Tests: **650 pass** (client 197: counter reason texts + item count, staff tabs; server 453: `o11.foodPickup.test.js` 8 = lookup changes nothing + collect once + second time rejected, typed number + owner, two collects at once = one wins, bad QR / transferred / hold, wrong theatre (staff + other owner), BR-08 window edges, cancelled + no food, 401 / 403 user / admin / pending owner / blocked staff + body + rate limit). Lint + build OK.
+
+## Earlier on 2026-10-13 (O-10)
+
 - Date: 2026-10-13
 - **Phase 7 Step 3 built: O-10 Check-in report.** Waiting for your browser check (see Next step), then tick.
   - Your decisions (2026-10-13): a **separate page** (not columns on Shows); **Refresh** button + auto-refresh every 30 s **only while a gate is open** on that day; **no list** of who came for now.
@@ -398,12 +410,13 @@
 ## Next step
 
 - **Try by hand (your list):**
+  - **O-11 Canteen counter** (new): book a ticket **with food** as the seed user (pickup "Interval"). Log in as `staff@talkies.test` → tab **Canteen counter** → scan the QR (or type the booking number) for a show whose gate is open → the order shows → **Mark collected** → green Collected. Same ticket again → "Already collected at …". A ticket without food → "This booking has no food order."; a later show → "Too early…"; TKS85HKAZN → cancelled. As the seed owner: sidebar **Canteen counter** works the same. Night show + phone width. Then tick O-11.
   - **O-10 Check-in report** (new): log in as the seed owner → sidebar **Check-in report** → today's shows with Booked / Came / Not come / Came % and the Gate stamp. Scan a ticket as staff (or type its booking number) for a show whose gate is open → the owner page shows Came +seats within 30 s (or press Refresh). ← Previous day / Next day →, theatre filter, a day with no shows ("No shows on this day."), a cancelled show (TKS85HKAZN's show, Thu 8 Oct: Cancelled stamp, 0 / 0). Night show + phone width (the table scrolls inside its box). Then tick O-10.
   - **O-09 Gate staff** (new): log in as the seed owner → sidebar **Gate staff** → **+ New staff** (name, a new email, a password like `gatepass9`, tick one theatre) → it shows Active. Log in as that staff in another browser (or a private window) → the scanner shows that theatre. As the owner: Edit → tick another theatre → reload the staff scanner: both theatres. **Block** → the staff page stops at the next scan / reload; login says the account is blocked. **Unblock** → login works. Edit → New password → the old password stops working. Try an email that is already used (e.g. the seed user's) → "This email is already used." Night show + phone / tablet width. Then tick O-09.
   - **Scanner** (S-02 … S-05 + T-07, still unticked): show a ticket QR on your phone (Ticket album of the seed user; a show starting within 30 min, or test "Too early"). Log in as `staff@talkies.test` → Gate scanner → Start camera (allow) → hold the QR up → green ENTERED with seats / food → after 3 s back to scanning → same QR again → REJECTED "Already used at …". Type booking number: a wrong one (TK2345ABCD) → "not a valid Talkies ticket"; a ticket of a later show → "Too early…"; a cancelled one (TKS85HKAZN, cancelled by the theatre) → "This booking is cancelled". Night show + phone width (typing works on the phone over Wi-Fi; the camera needs https there). Then as the seed user: the scanned ticket shows "Watched" once the show is over.
   - The Home "Stage" design: Home, header search, ☰ menu on your phone, Day / Night show, reduce motion on your phone (all animations should stop), a movie with a trailer link (add one in admin Movies).
   - The login page autofill colour (fix from 2026-10-04).
-- Next task after that: Phase 7 Step 4, **O-11 Food pickup screen** (canteen counter: scan ticket QR → food order → mark "Collected", SF-06; owner or gate staff of that theatre) — plan first.
+- Next task after that: Phase 7 is fully built. After your checks of Phase 7, start **Phase 8 – Dashboards + money**, first task **O-02 Owner dashboard**. Plan first.
 - Later (your choice when): Postmark account, then `POSTMARK_API_KEY` and `EMAIL_FROM` in `.env`.
 
 ## Known bugs
@@ -419,7 +432,7 @@
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
 
-- Client build warns that the main JS file is over 500 kB (571 kB after the Stage Home, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
+- Client build warns that the main JS file is over 500 kB (1,093 kB on 2026-10-14, cause not checked yet; 571 kB after the Stage Home, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
@@ -540,7 +553,7 @@ Order (your decision 2026-10-01): A-02 → A-05 (city list needed by O-03) → A
 - [ ] S-02 to S-05 Scanner + verify (built 2026-10-07, Phase 7 Step 1; waiting for the developer's browser check)
 - [ ] O-09 Staff accounts (built 2026-10-12, Phase 7 Step 2; waiting for the developer's browser check)
 - [ ] O-10 Check-in report (built 2026-10-13, Phase 7 Step 3; waiting for the developer's browser check)
-- [ ] O-11 Food pickup
+- [ ] O-11 Food pickup (built 2026-10-13, Phase 7 Step 4, committed 2026-10-14; waiting for the developer's browser check)
 - [ ] T-07 test (built 2026-10-07 with the scanner)
 
 ## Phase 8 – Dashboards + money

@@ -22,6 +22,7 @@ import OwnerScreensPage from './pages/owner/OwnerScreensPage.jsx'
 import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
 import OwnerTheatresPage from './pages/owner/OwnerTheatresPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
+import CounterPage from './pages/counter/CounterPage.jsx'
 import OwnerCheckinsPage from './pages/owner/OwnerCheckinsPage.jsx'
 import OwnerStaffFormPage from './pages/owner/OwnerStaffFormPage.jsx'
 import OwnerStaffPage from './pages/owner/OwnerStaffPage.jsx'
@@ -113,6 +114,8 @@ const router = createBrowserRouter([
       { path: '/owner/staff/:id', element: guard(['owner'], <OwnerStaffFormPage />) },
       // O-10 check-in report
       { path: '/owner/checkins', element: guard(['owner'], <OwnerCheckinsPage />) },
+      // O-11 canteen counter (same page as the staff one)
+      { path: '/owner/counter', element: guard(['owner'], <CounterPage />) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },
@@ -133,7 +136,11 @@ const router = createBrowserRouter([
   // S-01 staff open straight to the scanner
   {
     element: guard(['staff'], <StaffLayout />),
-    children: [{ path: '/staff/scan', element: <StaffScanPage /> }],
+    children: [
+      { path: '/staff/scan', element: <StaffScanPage /> },
+      // O-11 canteen counter
+      { path: '/staff/counter', element: <CounterPage /> },
+    ],
   },
 ])
 

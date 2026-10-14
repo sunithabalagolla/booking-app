@@ -112,6 +112,10 @@ const bookingSchema = new Schema(
       usedAt: Date,
       staffId: { type: Schema.Types.ObjectId, ref: 'User' },
     },
+    // O-11 food pickup at the canteen counter: set once with an atomic update (like check-in),
+    // by the owner or Gate Staff of that theatre
+    foodCollectedAt: Date,
+    foodCollectedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     // U-20 user cancel / O-06 show cancelled by the theatre. refundStatus 'pending' = the
     // gateway refund is not done yet (JOB-04 sends it); 'done' = money sent back.
     cancellation: {
