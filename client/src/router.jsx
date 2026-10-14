@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createBrowserRouter } from 'react-router'
 import DashboardLayout from './components/layout/DashboardLayout.jsx'
 import SiteLayout from './components/layout/SiteLayout.jsx'
@@ -22,7 +23,6 @@ import OwnerScreensPage from './pages/owner/OwnerScreensPage.jsx'
 import OwnerTheatreFormPage from './pages/owner/OwnerTheatreFormPage.jsx'
 import OwnerTheatresPage from './pages/owner/OwnerTheatresPage.jsx'
 import OwnerSignupPage from './pages/owner/OwnerSignupPage.jsx'
-import CounterPage from './pages/counter/CounterPage.jsx'
 import OwnerCheckinsPage from './pages/owner/OwnerCheckinsPage.jsx'
 import OwnerStaffFormPage from './pages/owner/OwnerStaffFormPage.jsx'
 import OwnerStaffPage from './pages/owner/OwnerStaffPage.jsx'
@@ -36,13 +36,13 @@ import ResetPasswordPage from './pages/public/ResetPasswordPage.jsx'
 import SearchPage from './pages/public/SearchPage.jsx'
 import SignupPage from './pages/public/SignupPage.jsx'
 import VerifyEmailPage from './pages/public/VerifyEmailPage.jsx'
-import StaffScanPage from './pages/staff/StaffScanPage.jsx'
 import BookingPage from './pages/user/BookingPage.jsx'
 import AlbumPage from './pages/user/AlbumPage.jsx'
 import FoodPage from './pages/user/FoodPage.jsx'
 import PaymentPage from './pages/user/PaymentPage.jsx'
 import SeatPage from './pages/user/SeatPage.jsx'
 import SummaryPage from './pages/user/SummaryPage.jsx'
+import { CounterPage, StaffScanPage } from './pages/lazyPages.js'
 import { PUBLIC } from './store/authStore.js'
 
 // All app routes live here. More pages are added phase by phase.
@@ -50,6 +50,9 @@ import { PUBLIC } from './store/authStore.js'
 // StaffLayout (Gate Staff). RoleRoute keeps each person on their own pages (ROLE-01).
 // Account pages (login, sign up, verify, reset…) are open to everyone, so email links always work.
 const guard = (allow, element) => <RoleRoute allow={allow}>{element}</RoleRoute>
+
+// Lazy pages (lazyPages.js) show "Loading…" while their file downloads
+const later = (element) => <Suspense fallback={<p role="status" className="p-4 font-type">Loading…</p>}>{element}</Suspense>
 
 const router = createBrowserRouter([
   {
@@ -115,7 +118,7 @@ const router = createBrowserRouter([
       // O-10 check-in report
       { path: '/owner/checkins', element: guard(['owner'], <OwnerCheckinsPage />) },
       // O-11 canteen counter (same page as the staff one)
-      { path: '/owner/counter', element: guard(['owner'], <CounterPage />) },
+      { path: '/owner/counter', element: guard(['owner'], later(<CounterPage />)) },
       { path: '/admin', element: guard(['admin'], <AdminHomePage />) },
       // A-03 owner approvals
       { path: '/admin/owners', element: guard(['admin'], <AdminOwnersPage />) },
@@ -137,9 +140,9 @@ const router = createBrowserRouter([
   {
     element: guard(['staff'], <StaffLayout />),
     children: [
-      { path: '/staff/scan', element: <StaffScanPage /> },
+      { path: '/staff/scan', element: later(<StaffScanPage />) },
       // O-11 canteen counter
-      { path: '/staff/counter', element: <CounterPage /> },
+      { path: '/staff/counter', element: later(<CounterPage />) },
     ],
   },
 ])
