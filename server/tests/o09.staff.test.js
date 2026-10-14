@@ -29,6 +29,10 @@ import { createUser, TEST_PASSWORD } from './helpers/users.js'
 
 vi.mock('../src/services/email/index.js', () => ({ sendEmail: vi.fn(async () => {}) }))
 
+// Several logins per test (bcrypt is slow on purpose): up to ~3 s alone, more when the
+// full suite runs in parallel, so give each test more than the default 5 s
+vi.setConfig({ testTimeout: 20000 })
+
 const MIN = 60 * 1000
 const STAFF_PASSWORD = 'gatepass9'
 const later = (minutes) => new Date(Date.now() + minutes * MIN)

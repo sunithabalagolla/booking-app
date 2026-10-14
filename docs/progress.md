@@ -8,7 +8,9 @@
   - Server: `services/foodPickup.js` + `controllers/foodPickup.js` + `routes/foodPickup.js`. `POST /api/food-pickup/lookup` (shows the order, changes nothing) and `POST /api/food-pickup/collect` (one atomic update sets `foodCollectedAt` + `foodCollectedBy`, so only one counter wins). Body = the same as the gate: `{ qrToken }` or `{ bookingNumber }`. Who: approved owners (own bookings) and Gate Staff (their theatres). Checks in order: bad QR / old QR (`bad_qr`, `transferred`; a hold → `bad_qr`) → `wrong_theatre` → `too_early` / `too_late` → `cancelled` → `no_food` → `already_collected`. Rate limit `scan` 60/min. `checkIn.js` now shares `findTicket`, `outsideWindow` and `rejected` with it.
   - Client: one page `pages/counter/CounterPage.jsx`, used by both roles: staff get two tabs under the wooden bar (**Gate scanner** | **Canteen counter**, `/staff/counter`); owners get sidebar **Canteen counter** (`/owner/counter`). Scan the QR or type the booking number → the order (items with qty, pickup "Before movie" / "Interval", seats) → **Mark collected** → green "Collected" stamp, or maroon "Rejected" with the reason in plain words (e.g. "Already collected at 7:45 PM.", "This booking has no food order.") → **Next order**.
   - Booking model: `foodCollectedAt`, `foodCollectedBy` (no new index). api.md + database.md updated.
-  - Also: one more wait in the O-06 JOB-04 test (wait for the 2 emails, not only `emailStatus`), so it does not fail now and then.
+  - **Build size (your request, 2026-10-14):** the main JS file grew from 571 kB to 1,093 kB. Cause: `html5-qrcode` (360 kB, the gate camera) was in the main file for everyone. Now the gate scanner and canteen counter pages load with `React.lazy` (`pages/lazyPages.js`, "Loading…" while the file comes): main file **714 kB** (gzip 320 → 207 kB); the QR library is a separate 371 kB file that only staff / the counter download. Not checked in Chrome yet (the scanner page should look the same after a short "Loading…").
+- Flaky test fixed: 3 O-09 tests timed out (5 s) in one full run. They do several logins (bcrypt, slow on purpose): 1.8–3.2 s alone. Test time limit 20 s for `o09.staff.test.js` (like O-06). Full suite passed twice after the fix.
+- Also: one more wait in the O-06 JOB-04 test (wait for the 2 emails, not only `emailStatus`), so it does not fail now and then.
   - Checked: tests only. **Not checked in Chrome.**
   - Tests: **650 pass** (client 197: counter reason texts + item count, staff tabs; server 453: `o11.foodPickup.test.js` 8 = lookup changes nothing + collect once + second time rejected, typed number + owner, two collects at once = one wins, bad QR / transferred / hold, wrong theatre (staff + other owner), BR-08 window edges, cancelled + no food, 401 / 403 user / admin / pending owner / blocked staff + body + rate limit). Lint + build OK.
 
@@ -421,6 +423,8 @@
 
 ## Known bugs
 
+- Fixed 2026-10-14: 3 timeouts in `server/tests/o09.staff.test.js` in one full run (several bcrypt logins per test, near the 5 s default when the suite runs in parallel). Fix: `testTimeout` 20 s for that file.
+
 - Fixed 2026-10-12: flaky test in `server/tests/o06.cancelShow.test.js` (one full run had 4 failures). Cause: the JOB-04 "gateway down" test only restored its `gateway.refund` spy at the end, so a failure part-way left the gateway "down" for the next tests. Fix: `afterEach(() => vi.restoreAllMocks())`, `vi.waitFor` up to 5 s (was 1 s), test time limit 20 s for this file. Full suite passed 3 times in a row after the fix.
 
 - One 502 on `/api/auth/login` during your browser test (2026-10-01). 502 comes from the Vite dev proxy when the Express server on port 5000 cannot be reached. The Express server process restarted at 14:33:44 (the `--watch` parent started 12:40:50); no project file changed at that time, so the cause is not known yet. Look at the server terminal near the 502: `Restarting 'src/server.js'` = watch restart; an error stack = crash. Vite also logs `http proxy error: /api/auth/login` with ECONNREFUSED (server down / restarting) or ECONNRESET (crashed during the request).
@@ -432,7 +436,7 @@
 
 - **Phase 10 (UI polish), decide later** (your note 2026-10-04): the UI-30 ledger lines look like a modern grid in Night show and run behind tables. Options: fainter lines, no lines behind tables, maybe no lines at all in Night show.
 
-- Client build warns that the main JS file is over 500 kB (1,093 kB on 2026-10-14, cause not checked yet; 571 kB after the Stage Home, 509 kB before O-04). Not a bug. Later (NF-09, Phase 10/12): split owner / admin pages with `lazy()` so users do not download them.
+- Client build warns that the main JS file is over 500 kB. **2026-10-14:** it had grown to 1,093 kB; the cause was the QR camera library `html5-qrcode` (360 kB, S-02) plus our own new pages. The gate scanner + canteen counter now load with `lazy()` (`pages/lazyPages.js`): main file **714 kB** (gzip 207 kB), the QR part is its own 371 kB file only for staff / counter. Earlier: 571 kB after the Stage Home, 509 kB before O-04. Not a bug. Later (NF-09, Phase 10/12): also split owner / admin pages with `lazy()`.
 
 - `/api/health` shows database status: decided **yes** in task 0.6 (written down 2026-10-01). Built 2026-10-01: `200 { status: 'ok', db: 'connected' }`, `503 { status: 'error', db: 'disconnected' }`.
 
